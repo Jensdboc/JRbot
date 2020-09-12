@@ -9,10 +9,13 @@ async def on_ready():
 @client.event
 async def on_message(message):
     if message.author == client.user:
+        if message.content == 'Welcome, I was expecting you...':
+            await message.pin()
         return
 
     if message.content.startswith('Oei'):
         await message.channel.send('Oei')
+
 
 @client.event
 async def on_message_delete(message): 
