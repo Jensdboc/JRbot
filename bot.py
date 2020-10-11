@@ -51,4 +51,21 @@ async def code(context,*,lobbycode):
 async def hotel(ctx):
     await ctx.send('Trivago!')
     
+@client.event
+async def on_member_join(member):
+    for i in member.guild.channels:
+        if i.name == 'general':
+            ch = i
+            await ch.send(f'Heyhey {member.display_name}!')
+            return 
+        
+@client.event
+async def on_member_remove(member):
+    for i in member.guild.channels:
+        if i.name == 'general':
+            ch = i
+            await ch.send(f'Byebye {member.display_name}!')
+            return 
+
+
 client.run('NzU0MDIwODIxMzc4MjY5MzI0.X1uqnA.o9Ea3VuoJpC797mfx0jFhLEozu4')
