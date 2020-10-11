@@ -67,5 +67,8 @@ async def on_member_remove(member):
             await ch.send(f'Byebye {member.display_name}!')
             return 
 
+@client.command()
+async def commands(context):
+    await context.send('```md\n' + '#!mute = Mutes the voice chat.\n#!unmute = Unmutes the voice chat.\n#!clear<#> = Clears the last number of messages (standard = 1)\n#!code = Formats 6-digit code.\n#!hotel = Just try it!'  + '```')
 
 client.run('NzU0MDIwODIxMzc4MjY5MzI0.X1uqnA.o9Ea3VuoJpC797mfx0jFhLEozu4')
