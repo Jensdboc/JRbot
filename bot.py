@@ -21,7 +21,7 @@ async def on_guild_channel_create(channel):
 
 @client.command(aliases = ['m'])
 async def mute(context):
-    vc = context.author.voice.channel
+    vc = context.message.author.voice.channel
     for member in vc.members:
         if member.voice.self_mute == 0:
             await member.edit(mute = 1)
