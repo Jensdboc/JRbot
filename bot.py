@@ -1,3 +1,5 @@
+import nest_asyncio
+nest_asyncio.apply()
 import discord
 from discord.ext import commands
 
@@ -45,5 +47,8 @@ async def code(context,*,lobbycode):
     if len(lobbycode) == 6:
         await context.channel.send('```' + lobbycode.upper() + '```')
 
-
+@client.command()
+async def hotel(ctx):
+    await ctx.send('Trivago!')
+    
 client.run('NzU0MDIwODIxMzc4MjY5MzI0.X1uqnA.o9Ea3VuoJpC797mfx0jFhLEozu4')
