@@ -50,14 +50,17 @@ async def code(context,*,lobbycode):
 @client.command()
 async def hotel(ctx):
     await ctx.send('Trivago!')
-    
+        
 @client.event
 async def on_member_join(member):
     for i in member.guild.channels:
         if i.name == 'general':
             ch = i
             await ch.send(f'Heyhey {member.display_name}!')
-            return 
+            for e in member.guild.roles:
+                if e.name == 'Crewmates':
+                    await member.add_roles(e,reason=None)
+                    return 
         
 @client.event
 async def on_member_remove(member):
@@ -65,6 +68,13 @@ async def on_member_remove(member):
         if i.name == 'general':
             ch = i
             await ch.send(f'Byebye {member.display_name}!')
+            return 
+
+@client.command()
+async def crew(context, member : discord.Member):
+    for e in context.guild.roles:
+        if e.name == 'Crewmates':
+            await member.add_roles(e)
             return 
 
 @client.command()
