@@ -44,7 +44,7 @@ async def clear(context,*,number=1):
 @client.command()
 async def code(context,*,lobbycode):
     await context.message.delete()
-    if len(lobbycode) == 6:
+    if len(lobbycode) == 9:
         await context.channel.send('```' + lobbycode.upper() + '```')
 
 @client.command()
