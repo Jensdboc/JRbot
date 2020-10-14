@@ -1,5 +1,5 @@
-import nest_asyncio
-nest_asyncio.apply()
+'''import nest_asyncio
+nest_asyncio.apply()'''
 import discord
 from discord.ext import commands
 
