@@ -44,11 +44,41 @@ async def clear(context,*,number=1):
 @client.command()
 async def code(context,*,lobbycode):
     await context.message.delete()
-    if len(lobbycode) == 6:
+    if len(lobbycode) == 9:
         await context.channel.send('```' + lobbycode.upper() + '```')
 
 @client.command()
 async def hotel(ctx):
     await ctx.send('Trivago!')
-    
+        
+@client.event
+async def on_member_join(member):
+    for i in member.guild.channels:
+        if i.name == 'general':
+            ch = i
+            await ch.send(f'Heyhey {member.display_name}!')
+            for e in member.guild.roles:
+                if e.name == 'Crewmates':
+                    await member.add_roles(e,reason=None)
+                    return 
+        
+@client.event
+async def on_member_remove(member):
+    for i in member.guild.channels:
+        if i.name == 'general':
+            ch = i
+            await ch.send(f'Byebye {member.display_name}!')
+            return 
+
+@client.command()
+async def crew(context, member : discord.Member):
+    for e in context.guild.roles:
+        if e.name == 'Crewmates':
+            await member.add_roles(e)
+            return 
+
+@client.command()
+async def commands(context):
+    await context.send('```md\n' + '#!mute = Mutes the voice chat.\n#!unmute = Unmutes the voice chat.\n#!clear<#> = Clears the last number of messages (standard = 1)\n#!code = Formats 6-digit code.\n#!hotel = Just try it!'  + '```')
+
 client.run('NzU0MDIwODIxMzc4MjY5MzI0.X1uqnA.o9Ea3VuoJpC797mfx0jFhLEozu4')
