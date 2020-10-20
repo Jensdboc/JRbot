@@ -42,7 +42,7 @@ async def clear(context,*,number=1):
     await context.channel.delete_messages(messages)
 
 code = None
-@client.command()
+@client.command(aliases = ['cd'])
 async def code(context,*,lobbycode=None):
     global code 
     await context.message.delete()
@@ -51,10 +51,6 @@ async def code(context,*,lobbycode=None):
     elif len(lobbycode) == 9:
         code = lobbycode
         await context.channel.send('```' + lobbycode.upper() + '```')    
-    
-@client.command()
-async def cd(context):
-    await context.channel.send(code)
         
 @client.command()
 async def hotel(ctx):
@@ -67,6 +63,16 @@ async def lekker_eten(ctx):
 @client.command()
 async def vliegt_de_blauwvoet(ctx):
     await ctx.send('``Storm op zee!``')
+
+@client.command()
+async def mock(ctx,*,to_mock):
+    mocked_text = ''
+    for i in range(0,len(to_mock)):
+        if (i%2):
+            mocked_text += to_mock[i].upper()
+        else:
+            mocked_text += to_mock[i].lower()
+    await ctx.send(mocked_text)
     
 @client.event
 async def on_member_join(member):
