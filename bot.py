@@ -41,16 +41,33 @@ async def clear(context,*,number=1):
     messages = await context.channel.history(limit = number+1).flatten()
     await context.channel.delete_messages(messages)
 
+code = None
 @client.command()
-async def code(context,*,lobbycode):
+async def code(context,*,lobbycode=None):
+    global code 
     await context.message.delete()
-    if len(lobbycode) == 9:
-        await context.channel.send('```' + lobbycode.upper() + '```')
-
+    if lobbycode == None:
+        await context.channel.send('```' + code + '```')
+    elif len(lobbycode) == 9:
+        code = lobbycode
+        await context.channel.send('```' + lobbycode.upper() + '```')    
+    
+@client.command()
+async def cd(context):
+    await context.channel.send(code)
+        
 @client.command()
 async def hotel(ctx):
     await ctx.send('Trivago!')
+    
+@client.command()
+async def lekker_eten(ctx):
+    await ctx.send('Wa een stom command is da!')
         
+@client.command()
+async def vliegt_de_blauwvoet(ctx):
+    await ctx.send('``Storm op zee!``')
+    
 @client.event
 async def on_member_join(member):
     for i in member.guild.channels:
@@ -79,6 +96,11 @@ async def crew(context, member : discord.Member):
 
 @client.command()
 async def commands(context):
-    await context.send('```md\n' + '#!mute = Mutes the voice chat.\n#!unmute = Unmutes the voice chat.\n#!clear<#> = Clears the last number of messages (standard = 1)\n#!code = Formats 6-digit code.\n#!hotel = Just try it!'  + '```')
+    await context.send('```md\n' + '#!mute = Mutes the voice chat.\n'
+                       '#!unmute = Unmutes the voice chat.\n'
+                       '#!clear <#> = Clears the last number of messages (standard = 1)\n'
+                       '#!code <******-**>= Formats 6-digit code.\n'
+                       '#!code = Resends current code.\n'
+                       '#!hotel = Just try it!' + '```')
 
 client.run('NzU0MDIwODIxMzc4MjY5MzI0.X1uqnA.o9Ea3VuoJpC797mfx0jFhLEozu4')
