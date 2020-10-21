@@ -41,16 +41,21 @@ async def clear(context,*,number=1):
     messages = await context.channel.history(limit = number+1).flatten()
     await context.channel.delete_messages(messages)
 
-code = None
+lobbycode = None
 @client.command(aliases = ['cd'])
-async def code(context,*,lobbycode=None):
-    global code 
+async def code(context,*,new_lobbycode=''):
+    global lobbycode 
     await context.message.delete()
-    if lobbycode == None:
-        await context.channel.send('```' + code + '```')
-    elif len(lobbycode) == 9:
-        code = lobbycode
-        await context.channel.send('```' + lobbycode.upper() + '```')    
+    if len(new_lobbycode) == 0:
+        if (lobbycode != None):
+            await context.channel.send('```' + lobbycode + '```')
+        else:
+            await context.channel.send('No code yet')
+    elif len(new_lobbycode) == 9 or len(new_lobbycode) == 6:
+        lobbycode = new_lobbycode.upper()
+        await context.channel.send('```' + lobbycode.upper() + '```')
+    else:
+        await context.channel.send(new_lobbycode.upper() + ' is not a valid code!')    
         
 @client.command()
 async def hotel(ctx):
