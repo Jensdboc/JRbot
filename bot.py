@@ -1,5 +1,5 @@
-'''import nest_asyncio
-nest_asyncio.apply()'''
+import nest_asyncio
+nest_asyncio.apply()
 import discord
 from discord.ext import commands
 
@@ -47,7 +47,7 @@ async def code(context,*,lobbycode=None):
     global code 
     await context.message.delete()
     if lobbycode == None:
-        await context.channel.send('```' + code + '```')
+        await context.channel.send('```' + code.upper() + '```')
     elif len(lobbycode) == 9:
         code = lobbycode
         await context.channel.send('```' + lobbycode.upper() + '```')    
@@ -74,6 +74,14 @@ async def mock(ctx,*,to_mock):
             mocked_text += to_mock[i].lower()
     await ctx.send(mocked_text)
     
+@client.command()
+async def python(ctx):
+    await ctx.send('Nu blij Benjamin?')
+    
+@client.command()
+async def stemopsimon(ctx):
+    await ctx.send('Sinds wanneer heeft een SSL stemmen nodig?')
+
 @client.event
 async def on_member_join(member):
     for i in member.guild.channels:
