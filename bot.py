@@ -1,5 +1,7 @@
-import nest_asyncio
-nest_asyncio.apply()
+with open('ID.txt', 'r') as IDfile:
+    if IDfile.readlines()[0] == 'Jens':
+        import nest_asyncio
+        nest_asyncio.apply()
 import discord
 from discord.ext import commands
 
@@ -72,7 +74,7 @@ async def vliegt_de_blauwvoet(ctx):
 @client.command()
 async def mock(ctx,*,to_mock):
     mocked_text = ''
-    for i in range(0,len(to_mock)):
+    for i in range(len(to_mock)):
         if (i%2):
             mocked_text += to_mock[i].upper()
         else:
