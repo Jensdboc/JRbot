@@ -11,14 +11,6 @@ client = commands.Bot(command_prefix='!')
 async def on_ready():
     print('euh ja het werkt fz')
 
-'''@client.event
-async def on_message_delete(message): 
-    if message.author == client.user:
-        await message.channel.send(message.content)
-        return
-    
-    await message.channel.send('Someone just deleted this message from ' + message.author.name +  ' : ' + '```' + message.content + '```')'''
-
 @client.event
 async def on_guild_channel_create(channel):
     await channel.send('Welcome, I was expecting you...')
