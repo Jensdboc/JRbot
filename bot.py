@@ -11,14 +11,6 @@ client = commands.Bot(command_prefix='!')
 async def on_ready():
     print('euh ja het werkt fz')
 
-'''@client.event
-async def on_message_delete(message): 
-    if message.author == client.user:
-        await message.channel.send(message.content)
-        return
-    
-    await message.channel.send('Someone just deleted this message from ' + message.author.name +  ' : ' + '```' + message.content + '```')'''
-
 @client.event
 async def on_guild_channel_create(channel):
     await channel.send('Welcome, I was expecting you...')
@@ -72,13 +64,11 @@ async def mock(ctx,*,to_mock):
 @client.command()
 async def hotel(ctx):
     await ctx.send('Trivago!')
-   @client.command()
-async def lekker_eten(ctx):
-    await ctx.send('Wa een stom command is da!')
         
 @client.command()
 async def vliegt_de_blauwvoet(ctx):
-    await ctx.send('``Storm op zee!``')    
+    await ctx.send('``Storm op zee!``') 
+    
 @client.command()
 async def python(ctx):
     await ctx.send('Nu blij Benjamin?')
@@ -115,8 +105,8 @@ async def crew(context, member : discord.Member):
 
 @client.command()
 async def commands(context):
-    await context.send('```md\n' + '#!mute = Mutes the voice chat.\n'
-                       '#!unmute = Unmutes the voice chat.\n'
+    await context.send('```md\n' + '#!mute (!m)= Mutes the voice chat.\n'
+                       '#!unmute (!um)= Unmutes the voice chat.\n'
                        '#!clear <#> = Clears the last number of messages (standard = 1)\n'
                        '#!code <******-**>= Formats 6-digit code.\n'
                        '#!code = Resends current code.\n'
