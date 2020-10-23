@@ -60,18 +60,6 @@ async def code(context,*,new_lobbycode=''):
         await context.channel.send(new_lobbycode.upper() + ' is not a valid code!')    
         
 @client.command()
-async def hotel(ctx):
-    await ctx.send('Trivago!')
-    
-@client.command()
-async def lekker_eten(ctx):
-    await ctx.send('Wa een stom command is da!')
-        
-@client.command()
-async def vliegt_de_blauwvoet(ctx):
-    await ctx.send('``Storm op zee!``')
-
-@client.command()
 async def mock(ctx,*,to_mock):
     mocked_text = ''
     for i in range(len(to_mock)):
@@ -80,7 +68,17 @@ async def mock(ctx,*,to_mock):
         else:
             mocked_text += to_mock[i].lower()
     await ctx.send(mocked_text)
-    
+            
+@client.command()
+async def hotel(ctx):
+    await ctx.send('Trivago!')
+   @client.command()
+async def lekker_eten(ctx):
+    await ctx.send('Wa een stom command is da!')
+        
+@client.command()
+async def vliegt_de_blauwvoet(ctx):
+    await ctx.send('``Storm op zee!``')    
 @client.command()
 async def python(ctx):
     await ctx.send('Nu blij Benjamin?')
