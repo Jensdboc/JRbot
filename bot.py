@@ -13,7 +13,7 @@ async def on_ready():
 
 #Command checks
 
-@client.check_once
+@client.check
 async def check_blacklist(ctx):
     with open('Blacklist.txt', 'r') as blacklist_file:
         for blacklisted_user in blacklist_file.readlines():
