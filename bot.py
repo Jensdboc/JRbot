@@ -1,5 +1,5 @@
 with open('ID.txt', 'r') as IDfile:
-    if IDfile.readlines()[0] == 'Jens':
+    if IDfile.readline(0) == 'Jens':
         import nest_asyncio
         nest_asyncio.apply()
 import discord
@@ -28,7 +28,7 @@ def admin_check(ctx):
                 return True
         return False
 
-#Admin only commands
+#Admin commands
 
 @client.command()
 @commands.check(admin_check)
@@ -41,7 +41,7 @@ async def blacklist(ctx,*,user_id):
 async def admin(ctx):
     await ctx.channel.send('Yup')
 
-#Open commands
+#User commands
 
 @client.command(aliases = ['m'])
 async def mute(context):
