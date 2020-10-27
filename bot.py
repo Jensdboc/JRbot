@@ -11,9 +11,37 @@ client = commands.Bot(command_prefix='!')
 async def on_ready():
     print('euh ja het werkt fz')
 
-@client.event
-async def on_guild_channel_create(channel):
-    await channel.send('Welcome, I was expecting you...')
+#Command checks
+
+@client.check_once
+async def check_blacklist(ctx):
+    with open('Blacklist.txt', 'r') as blacklist_file:
+        for blacklisted_user in blacklist_file.readlines():
+            if str(ctx.message.author.id) == blacklisted_user:
+                return False
+        return True
+
+def admin_check(ctx):
+    with open('Admin.txt', 'r') as admin_file:
+        for admin in admin_file.readlines():
+            if str(ctx.message.author.id) == admin:
+                return True
+        return False
+
+#Admin only commands
+
+@client.command()
+@commands.check(admin_check)
+async def blacklist(ctx,*,user_id):
+    with open('Blacklist.txt', 'a') as blacklist_file:
+        blacklist_file.write(user_id + '\n')
+
+@client.command()
+@commands.check(admin_check)
+async def admin(ctx):
+    await ctx.channel.send('Yup')
+
+#Open commands
 
 @client.command(aliases = ['m'])
 async def mute(context):
@@ -77,6 +105,28 @@ async def python(ctx):
 async def stemopsimon(ctx):
     await ctx.send('Sinds wanneer heeft een SSL stemmen nodig?')
 
+@client.command()
+async def crew(context, member : discord.Member):
+    for e in context.guild.roles:
+        if e.name == 'Crewmates':
+            await member.add_roles(e)
+            return 
+
+@client.command()
+async def commands(context):
+    await context.send('```md\n' + '#!mute (!m)= Mutes the voice chat.\n'
+                       '#!unmute (!um)= Unmutes the voice chat.\n'
+                       '#!clear <#> = Clears the last number of messages (standard = 1)\n'
+                       '#!code <******-**>= Formats 6-digit code.\n'
+                       '#!code = Resends current code.\n'
+                       '#!hotel = Just try it!' + '```')
+
+#Bot events
+
+@client.event
+async def on_guild_channel_create(channel):
+    await channel.send('Welcome, I was expecting you...')
+
 @client.event
 async def on_member_join(member):
     for i in member.guild.channels:
@@ -95,21 +145,5 @@ async def on_member_remove(member):
             ch = i
             await ch.send(f'Byebye {member.display_name}!')
             return 
-
-@client.command()
-async def crew(context, member : discord.Member):
-    for e in context.guild.roles:
-        if e.name == 'Crewmates':
-            await member.add_roles(e)
-            return 
-
-@client.command()
-async def commands(context):
-    await context.send('```md\n' + '#!mute (!m)= Mutes the voice chat.\n'
-                       '#!unmute (!um)= Unmutes the voice chat.\n'
-                       '#!clear <#> = Clears the last number of messages (standard = 1)\n'
-                       '#!code <******-**>= Formats 6-digit code.\n'
-                       '#!code = Resends current code.\n'
-                       '#!hotel = Just try it!' + '```')
 
 client.run('NzU0MDIwODIxMzc4MjY5MzI0.X1uqnA.o9Ea3VuoJpC797mfx0jFhLEozu4')
