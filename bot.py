@@ -1,9 +1,11 @@
 with open('ID.txt', 'r') as IDfile:
-    if IDfile.readline(0) == 'Jens':
-        import nest_asyncio
-        nest_asyncio.apply()
+    for ID in IDfile.readlines():
+        if ID == 'Jens':
+            import nest_asyncio
+            nest_asyncio.apply()   
+            
 import discord
-from discord.ext import commands
+from discord.ext import commands 
 
 client = commands.Bot(command_prefix='!')
 
@@ -17,14 +19,14 @@ async def on_ready():
 async def check_blacklist(ctx):
     with open('Blacklist.txt', 'r') as blacklist_file:
         for blacklisted_user in blacklist_file.readlines():
-            if str(ctx.message.author.id) == blacklisted_user:
+            if str(ctx.message.author.id) == str(blacklisted_user)[:-1]:
                 return False
         return True
 
 def admin_check(ctx):
     with open('Admin.txt', 'r') as admin_file:
         for admin in admin_file.readlines():
-            if str(ctx.message.author.id) == admin:
+            if str(ctx.message.author.id) == str(admin)[:-1]:
                 return True
         return False
 
@@ -41,6 +43,17 @@ async def blacklist(ctx,*,user_id):
 async def admin(ctx):
     await ctx.channel.send('Yup')
 
+@client.command()
+@commands.check(admin_check)
+async def start(ctx, dier):
+    with open('Dieren.txt','a') as txt: 
+        txt.truncate(0)
+        txt.write(dier + '\n')
+    with open('Last_user.txt', 'a') as user_file:
+        user_file.truncate(0)
+        user_file.write('placeholder')
+    await ctx.send('A new game has been started with ' + '`' + dier + '`' + ' as first word.')
+    
 #User commands
 
 @client.command(aliases = ['m'])
@@ -121,6 +134,48 @@ async def commands(context):
                        '#!code = Resends current code.\n'
                        '#!hotel = Just try it!' + '```')
 
+#User commands dierenketting
+
+@client.command(aliases = ['d'])
+async def dier(ctx, dier=None):
+    list = []
+    with open('Dieren.txt','r') as txt: 
+        for word in txt.readlines():
+            list.append(str(word[:-1]))
+            woord = list[-1] 
+            letter = list[-1][-1]
+    if dier in list:
+        await ctx.send('`' + dier + '`' + ' already in list!')
+        return
+    if dier == None:
+        await ctx.send('You need to find an animal starting with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`')
+        return 
+    elif dier.lower() == 'linx':
+        await ctx.send('Do you really have to be that guy?')
+        await ctx.send('`' + dier + '`' + ' has NOT been added!')
+        return 
+    with open('Last_user.txt', 'r') as user_file:
+        for user in user_file.readlines():
+            with open('Dieren.txt','a') as txt:
+                if str(ctx.message.author.id) != user and str(dier[0]).lower() == letter.lower():
+                    with open('Last_user.txt', 'a') as user_file:
+                        user_file.truncate(0)
+                        user_file.write(str(ctx.message.author.id)) 
+                        txt.write(dier + '\n')
+                        await ctx.send('`' + dier + '`' + ' has been added!')
+                elif str(dier[0]).lower() != letter.lower() and str(ctx.message.author.id) != user:
+                    await ctx.send('Animal should start with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`')
+                else:
+                    await ctx.send('You need to wait for someone else to submit an animal!')
+
+@client.command()
+async def count(ctx):
+    number = 0
+    with open('Dieren.txt','r') as txt: 
+        for word in txt.readlines():
+            number += 1
+    await ctx.send('The list contains ' + '`' + f'{number}' + '`' + ' animals so far.')
+    
 #Bot events
 
 @client.event
