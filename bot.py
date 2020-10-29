@@ -150,7 +150,7 @@ async def dier(ctx, dier=None):
     if dier == None:
         await ctx.send('You need to find an animal starting with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`')
         return 
-    elif dier.lower() == 'linx':
+    elif dier.lower() == 'linx' or dier.lower == 'lynx':
         await ctx.send('Do you really have to be that guy?')
         await ctx.send('`' + dier + '`' + ' has NOT been added!')
         return 
