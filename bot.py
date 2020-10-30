@@ -144,13 +144,13 @@ async def dier(ctx, dier=None):
             list.append(str(word[:-1]))
             woord = list[-1] 
             letter = list[-1][-1]
-    if dier in list:
+    if dier.lower() in list:
         await ctx.send('`' + dier + '`' + ' already in list!')
         return
     if dier == None:
         await ctx.send('You need to find an animal starting with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`')
         return 
-    elif dier.lower() == 'linx' or dier.lower == 'lynx':
+    elif dier.lower() == 'linx' or dier.lower() == 'lynx':
         await ctx.send('Do you really have to be that guy?')
         await ctx.send('`' + dier + '`' + ' has NOT been added!')
         return 
@@ -161,7 +161,7 @@ async def dier(ctx, dier=None):
                     with open('Last_user.txt', 'a') as user_file:
                         user_file.truncate(0)
                         user_file.write(str(ctx.message.author.id)) 
-                        txt.write(dier + '\n')
+                        txt.write(dier.lower() + '\n')
                         await ctx.send('`' + dier + '`' + ' has been added!')
                 elif str(dier[0]).lower() != letter.lower() and str(ctx.message.author.id) != user:
                     await ctx.send('Animal should start with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`')
