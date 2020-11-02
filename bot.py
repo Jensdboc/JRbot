@@ -52,7 +52,8 @@ async def start(ctx, dier):
     with open('Last_user.txt', 'a') as user_file:
         user_file.truncate(0)
         user_file.write('placeholder')
-    await ctx.send('A new game has been started with ' + '`' + dier + '`' + ' as first word.')
+    embed =  discord.Embed(title='Woordenketting', description='A new game has been started with ' + '`' + dier + '`' + ' as first word.', colour=0x11806a)
+    await ctx.send(embed=embed)
     
 #User commands
 
@@ -83,14 +84,18 @@ async def code(context,*,new_lobbycode=''):
     await context.message.delete()
     if len(new_lobbycode) == 0:
         if (lobbycode != None):
-            await context.channel.send('```' + lobbycode + '```')
+            embed1 = discord.Embed(title=lobbycode, color=0x2ecc71)
+            await context.channel.send(embed=embed1) 
         else:
-            await context.channel.send('No code yet')
+            embed2 = discord.Embed(title='No code yet', color=0xff0000)
+            await context.channel.send(embed=embed2) 
     elif len(new_lobbycode) == 9 or len(new_lobbycode) == 6:
         lobbycode = new_lobbycode.upper()
-        await context.channel.send('```' + lobbycode.upper() + '```')
+        embed3 = discord.Embed(title=lobbycode.upper(), color=0x2ecc71)
+        await context.channel.send(embed=embed3) 
     else:
-        await context.channel.send(new_lobbycode.upper() + ' is not a valid code!')    
+        embed4 = discord.Embed(title=new_lobbycode.upper()+ ' is not a valid code!', color=0xff0000)
+        await context.channel.send(embed=embed4)    
         
 @client.command()
 async def mock(ctx,*,to_mock):
@@ -104,7 +109,8 @@ async def mock(ctx,*,to_mock):
             
 @client.command()
 async def hotel(ctx):
-    await ctx.send('Trivago!')
+    embedVar = discord.Embed(title="Trivago!", color=0x992d22)
+    await ctx.send(embed=embedVar)
         
 @client.command()
 async def vliegt_de_blauwvoet(ctx):
@@ -137,22 +143,25 @@ async def commands(context):
 #User commands dierenketting
 
 @client.command(aliases = ['d'])
-async def dier(ctx, dier=None):
+async def dier(ctx,*, dier=None):
     list = []
     with open('Dieren.txt','r') as txt: 
         for word in txt.readlines():
             list.append(str(word[:-1]))
             woord = list[-1] 
             letter = list[-1][-1]
-    if dier.lower() in list:
-        await ctx.send('`' + dier + '`' + ' already in list!')
-        return
     if dier == None:
-        await ctx.send('You need to find an animal starting with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`')
+        embed =  discord.Embed(title='Woordenketting', description='You need to find an animal starting with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`', colour=0x11806a)
+        await ctx.send(embed=embed)
+        return
+    if dier.lower() in list:
+        embed =  discord.Embed(title='Woordenketting', description='`' + dier + '`' + ' already in list!', colour=0xff0000)
+        await ctx.send(embed=embed)
         return 
     elif dier.lower() == 'linx' or dier.lower() == 'lynx':
-        await ctx.send('Do you really have to be that guy?')
-        await ctx.send('`' + dier + '`' + ' has NOT been added!')
+        embed =  discord.Embed(title='Woordenketting', description='`' + dier + '`' + ' has NOT been added!', colour=0xff0000)
+        embed.add_field(name='Note', value='Do you really have to be that guy?')
+        await ctx.send(embed=embed)
         return 
     with open('Last_user.txt', 'r') as user_file:
         for user in user_file.readlines():
@@ -162,11 +171,14 @@ async def dier(ctx, dier=None):
                         user_file.truncate(0)
                         user_file.write(str(ctx.message.author.id)) 
                         txt.write(dier.lower() + '\n')
-                        await ctx.send('`' + dier + '`' + ' has been added!')
+                        embed =  discord.Embed(title='Woordenketting', description='`' + dier + '`' + ' has been added!', colour=0x11806a)
+                        await ctx.send(embed=embed)
                 elif str(dier[0]).lower() != letter.lower() and str(ctx.message.author.id) != user:
-                    await ctx.send('Animal should start with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`')
+                    embed =  discord.Embed(title='Animal should start with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`', colour=0xff0000)
+                    await ctx.send(embed=embed)
                 else:
-                    await ctx.send('You need to wait for someone else to submit an animal!')
+                    embed =  discord.Embed(title='Woordenketting', description='You need to wait for someone else to submit an animal!', colour=0xff0000)
+                    await ctx.send(embed=embed)
 
 @client.command()
 async def count(ctx):
@@ -174,7 +186,8 @@ async def count(ctx):
     with open('Dieren.txt','r') as txt: 
         for word in txt.readlines():
             number += 1
-    await ctx.send('The list contains ' + '`' + f'{number}' + '`' + ' animals so far.')
+    embed = discord.Embed(title='Woordenketting', description='The list contains ' + '`' + f'{number}' + '`' + ' animals so far.', colour=0x11806a)
+    await ctx.send(embed=embed)
     
 #Bot events
 
