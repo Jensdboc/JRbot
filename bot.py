@@ -154,6 +154,7 @@ async def dier(ctx,*, dier=None):
         embed =  discord.Embed(title='Woordenketting', description='You need to find an animal starting with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`', colour=0x11806a)
         await ctx.send(embed=embed)
         return
+    '''
     if dier.lower() in list:
         embed =  discord.Embed(title='Woordenketting', description='`' + dier + '`' + ' already in list!', colour=0xff0000)
         await ctx.send(embed=embed)
@@ -163,6 +164,7 @@ async def dier(ctx,*, dier=None):
         embed.add_field(name='Note', value='Do you really have to be that guy?')
         await ctx.send(embed=embed)
         return 
+    '''
     with open('Last_user.txt', 'r') as user_file:
         for user in user_file.readlines():
             with open('Dieren.txt','a') as txt:
@@ -178,8 +180,16 @@ async def dier(ctx,*, dier=None):
                     await ctx.send(embed=embed)
                 else:
                     embed =  discord.Embed(title='Woordenketting', description='You need to wait for someone else to submit an animal!', colour=0xff0000)
-                    await ctx.send(embed=embed)
-
+                    await ctx.send(embed=embed)        
+    if dier.lower() in list:
+        embed =  discord.Embed(title='Woordenketting', description='`' + dier + '`' + ' already in list!', colour=0xff0000)
+        await ctx.send(embed=embed)
+        return 
+    elif dier.lower() == 'linx' or dier.lower() == 'lynx':
+        embed =  discord.Embed(title='Woordenketting', description='`' + dier + '`' + ' has NOT been added!', colour=0xff0000)
+        embed.add_field(name='Note', value='Do you really have to be that guy?')
+        await ctx.send(embed=embed)
+        return 
 @client.command()
 async def count(ctx):
     number = 0
