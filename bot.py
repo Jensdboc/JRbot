@@ -105,7 +105,8 @@ async def mock(ctx,*,to_mock):
             mocked_text += to_mock[i].upper()
         else:
             mocked_text += to_mock[i].lower()
-    await ctx.send(mocked_text)
+    embed = discord.Embed(title=mocked_text,color=0xe67e22)
+    await ctx.send(embed=embed)
             
 @client.command()
 async def hotel(ctx):
@@ -119,10 +120,13 @@ async def vliegt_de_blauwvoet(ctx):
 @client.command()
 async def python(ctx):
     await ctx.send('Nu blij Benjamin?')
-    
+
 @client.command()
 async def stemopsimon(ctx):
-    await ctx.send('Sinds wanneer heeft een SSL stemmen nodig?')
+    embed = discord.Embed(title='Sinds wanneer heeft een SSL stemmen nodig?', color=0xff0000) 
+    link = 'https://www.biography.com/.image/ar_1:1%2Cc_fill%2Ccs_srgb%2Cg_face%2Cq_auto:good%2Cw_300/MTY2NjgyOTkyNTMyNTMwMjMx/gettyimages-2637237.jpg'
+    embed.set_image(url=link)
+    await ctx.send(embed=embed)
 
 @client.command()
 async def crew(context, member : discord.Member):
@@ -140,6 +144,10 @@ async def commands(context):
                        '#!code = Resends current code.\n'
                        '#!hotel = Just try it!' + '```')
 
+@client.command()
+async def ussr(ctx):
+    await ctx.send('-play https://www.youtube.com/watch?v=U06jlgpMtQs')
+    
 #User commands dierenketting
 
 @client.command(aliases = ['d'])
@@ -154,17 +162,6 @@ async def dier(ctx,*, dier=None):
         embed =  discord.Embed(title='Woordenketting', description='You need to find an animal starting with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`', colour=0x11806a)
         await ctx.send(embed=embed)
         return
-    '''
-    if dier.lower() in list:
-        embed =  discord.Embed(title='Woordenketting', description='`' + dier + '`' + ' already in list!', colour=0xff0000)
-        await ctx.send(embed=embed)
-        return 
-    elif dier.lower() == 'linx' or dier.lower() == 'lynx':
-        embed =  discord.Embed(title='Woordenketting', description='`' + dier + '`' + ' has NOT been added!', colour=0xff0000)
-        embed.add_field(name='Note', value='Do you really have to be that guy?')
-        await ctx.send(embed=embed)
-        return 
-    '''
     with open('Last_user.txt', 'r') as user_file:
         for user in user_file.readlines():
             with open('Dieren.txt','a') as txt:
@@ -190,6 +187,7 @@ async def dier(ctx,*, dier=None):
         embed.add_field(name='Note', value='Do you really have to be that guy?')
         await ctx.send(embed=embed)
         return 
+    
 @client.command()
 async def count(ctx):
     number = 0
@@ -203,14 +201,16 @@ async def count(ctx):
 
 @client.event
 async def on_guild_channel_create(channel):
-    await channel.send('Welcome, I was expecting you...')
+    embed =  discord.Embed(title='Welcome, I was expecting you...', colour=0xff0000)
+    await channel.send(embed=embed)
 
 @client.event
 async def on_member_join(member):
     for i in member.guild.channels:
         if i.name == 'general':
             ch = i
-            await ch.send(f'Heyhey {member.display_name}!')
+            embed = discord.Embed(title=f'Heyhey {member.display_name}!', colour=0xff0000)
+            await ch.send(embed=embed)
             for e in member.guild.roles:
                 if e.name == 'Crewmates':
                     await member.add_roles(e,reason=None)
@@ -221,7 +221,8 @@ async def on_member_remove(member):
     for i in member.guild.channels:
         if i.name == 'general':
             ch = i
-            await ch.send(f'Byebye {member.display_name}!')
+            embed = discord.Embed(title=f'Byebye {member.display_name}!', colour=0xff0000)
+            await ch.send(embed=embed)
             return 
 
 client.run('NzU0MDIwODIxMzc4MjY5MzI0.X1uqnA.o9Ea3VuoJpC797mfx0jFhLEozu4')
