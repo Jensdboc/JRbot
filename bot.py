@@ -129,6 +129,13 @@ async def stemopsimon(ctx):
     await ctx.send(embed=embed)
 
 @client.command()
+async def broederliefde(ctx):
+    embed = discord.Embed(color=0x9b59b6)
+    link = 'https://cdn.discordapp.com/attachments/770691436319342654/773576247254057000/unknown.png'
+    embed.set_image(url=link)
+    await ctx.send(embed=embed)
+
+@client.command()
 async def crew(context, member : discord.Member):
     for e in context.guild.roles:
         if e.name == 'Crewmates':
@@ -136,18 +143,22 @@ async def crew(context, member : discord.Member):
             return 
 
 @client.command()
-async def commands(context):
-    await context.send('```md\n' + '#!mute (!m)= Mutes the voice chat.\n'
-                       '#!unmute (!um)= Unmutes the voice chat.\n'
-                       '#!clear <#> = Clears the last number of messages (standard = 1)\n'
-                       '#!code <******-**>= Formats 6-digit code.\n'
-                       '#!code = Resends current code.\n'
-                       '#!hotel = Just try it!' + '```')
+async def commands(ctx):
+    embed = discord.Embed(title='List of commands', color=0x7289da)
+    embed.add_field(name='!Unmute [!um]', value='Unmutes the voicechat' )
+    embed.add_field(name='!Mute [!m]', value='Mutes the voicechat' )
+    embed.add_field(name='!clear <#>', value='Clears the last number of messages (standard = 1)' )
+    embed.add_field(name='!code <*\*\*\*\*\*-**>  [!cd]', value='Formats 6-digit code, NA/EU is optional' )
+    embed.add_field(name='!code', value='Resends current code' )
+    embed.add_field(name='!hotel', value='Just try it!' )
+    embed.add_field(name='!crew', value='Gives someone the crew-role' )
+    embed.add_field(name='!broederliefde', value=':)' )
+    embed.add_field(name='!stemopsimon', value='**ussr intensifies**' )
+    embed.add_field(name='!mock <...>', value='Mock inserted text' )
+    embed.add_field(name='!commands', value='Shows this message' )
+    embed.add_field(name='!python', value='Alstublieft Benjamin' )
+    await ctx.send(embed=embed)
 
-@client.command()
-async def ussr(ctx):
-    await ctx.send('-play https://www.youtube.com/watch?v=U06jlgpMtQs')
-    
 #User commands dierenketting
 
 @client.command(aliases = ['d'])
