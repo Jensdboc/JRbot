@@ -107,7 +107,11 @@ async def mock(ctx,*,to_mock):
             mocked_text += to_mock[i].lower()
     embed = discord.Embed(title=mocked_text,color=0xe67e22)
     await ctx.send(embed=embed)
-            
+    
+@client.command()
+async def nick(ctx, member : discord.Member, nickname):
+    await member.edit(nick=nickname)
+    
 @client.command()
 async def hotel(ctx):
     embedVar = discord.Embed(title="Trivago!", color=0x992d22)
