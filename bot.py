@@ -96,15 +96,26 @@ async def code(context,*,new_lobbycode=''):
     else:
         embed4 = discord.Embed(title=new_lobbycode.upper()+ ' is not a valid code!', color=0xff0000)
         await context.channel.send(embed=embed4)    
-        
+
+autist_id = 383952659310444544
 @client.command()
 async def mock(ctx,*,to_mock):
     mocked_text = ''
-    for i in range(len(to_mock)):
-        if (i%2):
-            mocked_text += to_mock[i].upper()
-        else:
-            mocked_text += to_mock[i].lower()
+    if(ctx.message.author.id == autist_id):
+        c = 0
+        for i in range(len(to_mock)):
+            if (c%2):
+                mocked_text += to_mock[i].upper()
+            else:
+                mocked_text += to_mock[i].lower()
+            if(to_mock[i] != ' '):
+                c += 1
+    else:
+        for i in range(len(to_mock)):
+            if (i%2):
+                mocked_text += to_mock[i].upper()
+            else:
+                mocked_text += to_mock[i].lower()
     embed = discord.Embed(title=mocked_text,color=0xe67e22)
     await ctx.send(embed=embed)
             
