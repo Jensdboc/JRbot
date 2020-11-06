@@ -105,9 +105,9 @@ async def mock(ctx,*,to_mock):
         c = 0
         for i in range(len(to_mock)):
             if (c%2):
-                mocked_text += to_mock[i].upper()
-            else:
                 mocked_text += to_mock[i].lower()
+            else:
+                mocked_text += to_mock[i].upper()
             if(to_mock[i] != ' '):
                 c += 1
     else:
@@ -120,7 +120,7 @@ async def mock(ctx,*,to_mock):
     await ctx.send(embed=embed)
     
 @client.command()
-async def nick(ctx, member : discord.Member, nickname):
+async def nick(ctx, member : discord.Member,*, nickname):
     await member.edit(nick=nickname)
     
 @client.command()
