@@ -6,6 +6,7 @@ with open('ID.txt', 'r') as IDfile:
             
 import discord
 from discord.ext import commands 
+import requests
 
 client = commands.Bot(command_prefix='!')
 
@@ -156,6 +157,23 @@ async def crew(context, member : discord.Member):
         if e.name == 'Crewmates':
             await member.add_roles(e)
             return 
+        
+import urllib.request
+@client.command(aliases = ['tm'])
+async def thumbmail(ctx, url):
+    urllib.request.urlretrieve(url, filename = 'secret.html')
+    with open('secret.html', 'r', encoding = 'utf-8') as infile:
+            start = '<meta property="og:image"'
+            for line in infile:
+                if start in str(line):
+                    jpg = ''
+                    for i in range(len(line)):
+                        if line[i] == 'j' and line[i+1] == 'p' and line[i+2] == 'g':
+                            jpg += 'jpg'
+                            await ctx.send(jpg)
+                            await ctx.message.delete()
+                        if i > 38:
+                            jpg += line[i]                       
 
 @client.command()
 async def commands(ctx):
@@ -172,6 +190,8 @@ async def commands(ctx):
     embed.add_field(name='!mock <...>', value='Mock inserted text' )
     embed.add_field(name='!commands', value='Shows this message' )
     embed.add_field(name='!python', value='Alstublieft Benjamin' )
+    embed.add_field(name='!nick <@person> <nick>', value='Changes the nickname of a certain person' )
+    embed.add_field(name='!thumbmail <url> [!tm]', value='Provide a youtube link and recieve the thumbmail' )
     await ctx.send(embed=embed)
 
 #User commands dierenketting
