@@ -6,9 +6,10 @@ with open('ID.txt', 'r') as IDfile:
             
 import discord
 from discord.ext import commands 
-import requests
 
 client = commands.Bot(command_prefix='!')
+
+client.mute_message = None
 
 @client.event
 async def on_ready():
@@ -58,7 +59,7 @@ async def start(ctx, dier):
     
 #User commands
 
-@client.command(aliases = ['m'])
+@client.command(aliases = ['m'], brief = "Mutes voicechannel")
 async def mute(context):
     vc = context.message.author.voice.channel
     for member in vc.members:
@@ -66,7 +67,7 @@ async def mute(context):
             await member.edit(mute = 1)
     await context.message.delete()
 
-@client.command(aliases = ['um'])
+@client.command(aliases = ['um'], brief = "Unmutes voicechannel")
 async def unmute(context):
     vc = context.message.author.voice.channel
     for member in vc.members:
@@ -86,18 +87,22 @@ async def code(context,*,new_lobbycode=''):
     if len(new_lobbycode) == 0:
         if (lobbycode != None):
             embed1 = discord.Embed(title=lobbycode, color=0x2ecc71)
-            await context.channel.send(embed=embed1) 
         else:
-            embed2 = discord.Embed(title='No code yet', color=0xff0000)
-            await context.channel.send(embed=embed2) 
+            embed1 = discord.Embed(title='No code yet', color=0xff0000)
+        await context.channel.send(embed=embed1)
     elif len(new_lobbycode) == 9 or len(new_lobbycode) == 6:
         lobbycode = new_lobbycode.upper()
-        embed3 = discord.Embed(title=lobbycode.upper(), color=0x2ecc71)
-        await context.channel.send(embed=embed3) 
+        embed2 = discord.Embed(title=lobbycode.upper(), color=0x2ecc71)
+        if (client.mute_message):
+            await client.mute_message.delete()
+        client.mute_message = await context.channel.send(embed=embed2)
+        await client.mute_message.add_reaction('\N{Speaker with Cancellation Stroke}')
+        await client.mute_message.add_reaction('\N{Speaker with Three Sound Waves}')
+        await client.mute_message.add_reaction('\N{Cross Mark}')
     else:
-        embed4 = discord.Embed(title=new_lobbycode.upper()+ ' is not a valid code!', color=0xff0000)
-        await context.channel.send(embed=embed4)    
-
+        embed3 = discord.Embed(title=new_lobbycode.upper()+ ' is not a valid code!', color=0xff0000)
+        await context.channel.send(embed=embed3)
+    
 autist_id = 383952659310444544
 @client.command()
 async def mock(ctx,*,to_mock):
@@ -270,5 +275,30 @@ async def on_member_remove(member):
             embed = discord.Embed(title=f'Byebye {member.display_name}!', colour=0xff0000)
             await ch.send(embed=embed)
             return 
+
+
+@client.event
+async def on_reaction_add(reaction,user):
+    if(user.id != client.user.id):
+        if (reaction.message.id == client.mute_message.id):
+            mute_emoji = '\N{Speaker with Cancellation Stroke}'
+            unmute_emoji = '\N{Speaker with Three Sound Waves}'
+            cancel_emoji = '\N{Cross Mark}'
+            if (str(reaction.emoji) == unmute_emoji):
+                await reaction.remove(user)
+                if (user.voice):
+                    vc = user.voice.channel
+                    for member in vc.members:
+                        await member.edit(mute = 0)
+            if (str(reaction.emoji) == mute_emoji):
+                await reaction.remove(user)
+                if (user.voice):
+                    vc = user.voice.channel
+                    for member in vc.members:
+                        if member.voice.self_mute == 0 and member.id != 235088799074484224:
+                            await member.edit(mute = 1)
+            if (str(reaction.emoji) == cancel_emoji and user.voice):
+                await client.mute_message.delete()
+
 
 client.run('NzU0MDIwODIxMzc4MjY5MzI0.X1uqnA.o9Ea3VuoJpC797mfx0jFhLEozu4')
