@@ -63,6 +63,7 @@ async def start(ctx, dier):
 async def mute(context):
     vc = context.message.author.voice.channel
     for member in vc.members:
+        print(member)
         if member.voice.self_mute == 0 and member.id != 235088799074484224:
             await member.edit(mute = 1)
     await context.message.delete()
