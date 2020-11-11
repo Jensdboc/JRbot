@@ -63,7 +63,7 @@ async def start(ctx, dier):
 async def mute(context):
     vc = context.message.author.voice.channel
     for member in vc.members:
-        if member.voice.self_mute == 0 and member.id != 235088799074484224:
+        if member.id != 235088799074484224:
             await member.edit(mute = 1)
     await context.message.delete()
 
@@ -201,9 +201,9 @@ async def commands(ctx):
     embed.add_field(name='!Mute [!m]', value='Mutes the voicechat' )
     embed.add_field(name='!clear <#>', value='Clears the last number of messages (standard = 1)' )
     embed.add_field(name='!code <*\*\*\*\*\*-**>  [!cd]', value='Formats 6-digit code, NA/EU is optional' )
-    embed.add_field(name='!code', value='Resends current code' )
+    embed.add_field(name='!code', value='Resends current code, click on the emoji to mute, unmute or to remove the message' )
     embed.add_field(name='!hotel', value='Just try it!' )
-    embed.add_field(name='!crew', value='Gives someone the crew-role' )
+    embed.add_field(name='!crew <@person>', value='Gives someone the crew-role' )
     embed.add_field(name='!broederliefde', value=':)' )
     embed.add_field(name='!stemopsimon', value='**ussr intensifies**' )
     embed.add_field(name='!mock <...>', value='Mock inserted text' )
@@ -309,7 +309,7 @@ async def on_reaction_add(reaction,user):
                 if (user.voice):
                     vc = user.voice.channel
                     for member in vc.members:
-                        if member.voice.self_mute == 0 and member.id != 235088799074484224:
+                        if member.id != 235088799074484224:
                             await member.edit(mute = 1)
             if (str(reaction.emoji) == cancel_emoji and user.voice):
                 await reaction.remove(user)
