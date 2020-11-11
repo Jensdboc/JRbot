@@ -63,7 +63,6 @@ async def start(ctx, dier):
 async def mute(context):
     vc = context.message.author.voice.channel
     for member in vc.members:
-        print(member)
         if member.voice.self_mute == 0 and member.id != 235088799074484224:
             await member.edit(mute = 1)
     await context.message.delete()
@@ -78,6 +77,14 @@ async def unmute(context):
 @client.command()
 async def clear(context,*,number=1):
     messages = await context.channel.history(limit = number+1).flatten()
+    for mes in messages:
+        if(client.mute_message):
+            if (client.mute_message.id == mes.id):
+                if (context.message.author.voice):
+                    vc = context.message.author.voice.channel
+                    for member in vc.members:
+                        await member.edit(mute = 0)
+                client.mute_message = None
     await context.channel.delete_messages(messages)
 
 lobbycode = None
@@ -92,14 +99,20 @@ async def code(context,*,new_lobbycode=''):
             embed1 = discord.Embed(title='No code yet', color=0xff0000)
         await context.channel.send(embed=embed1)
     elif len(new_lobbycode) == 9 or len(new_lobbycode) == 6:
-        lobbycode = new_lobbycode.upper()
-        embed2 = discord.Embed(title=lobbycode.upper(), color=0x2ecc71)
-        if (client.mute_message):
-            await client.mute_message.delete()
-        client.mute_message = await context.channel.send(embed=embed2)
-        await client.mute_message.add_reaction('\N{Speaker with Cancellation Stroke}')
-        await client.mute_message.add_reaction('\N{Speaker with Three Sound Waves}')
-        await client.mute_message.add_reaction('\N{Cross Mark}')
+        for channel in context.guild.channels:
+            if channel.name == 'mutechannel':
+                lobbycode = new_lobbycode.upper()
+                embed2 = discord.Embed(title=lobbycode.upper(), color=0x2ecc71)
+                embed2.add_field(name='Mute', value='Press \N{Speaker with Cancellation Stroke}')
+                embed2.add_field(name='Unmute', value='Press \N{Speaker with Three Sound Waves}')
+                embed2.add_field(name='Cancel', value='Press \N{Cross Mark}')
+                if (client.mute_message):
+                    await client.mute_message.delete()
+                client.mute_message = await channel.send(embed=embed2)
+                await client.mute_message.add_reaction('\N{Speaker with Cancellation Stroke}')
+                await client.mute_message.add_reaction('\N{Speaker with Three Sound Waves}')
+                await client.mute_message.add_reaction('\N{Cross Mark}')
+                return
     else:
         embed3 = discord.Embed(title=new_lobbycode.upper()+ ' is not a valid code!', color=0xff0000)
         await context.channel.send(embed=embed3)
@@ -299,7 +312,12 @@ async def on_reaction_add(reaction,user):
                         if member.voice.self_mute == 0 and member.id != 235088799074484224:
                             await member.edit(mute = 1)
             if (str(reaction.emoji) == cancel_emoji and user.voice):
+                await reaction.remove(user)
                 await client.mute_message.delete()
-
+                client.mute_message = None
+                if (user.voice):
+                    vc = user.voice.channel
+                    for member in vc.members:
+                        await member.edit(mute = 0)
 
 client.run('NzU0MDIwODIxMzc4MjY5MzI0.X1uqnA.o9Ea3VuoJpC797mfx0jFhLEozu4')
