@@ -169,6 +169,14 @@ async def broederliefde(ctx):
     link = 'https://cdn.discordapp.com/attachments/770691436319342654/773576247254057000/unknown.png'
     embed.set_image(url=link)
     await ctx.send(embed=embed)
+    
+@client.command()
+async def perfection(ctx):
+    embed = discord.Embed(color=0x9b59b6)
+    link = 'https://media.discordapp.net/attachments/770691436319342654/781997388394528768/unknown.png?width=962&height=300'
+    embed.set_image(url=link)
+    await ctx.send(embed=embed)    
+    
 
 @client.command()
 async def crew(context, member : discord.Member):
@@ -227,6 +235,15 @@ async def dier(ctx,*, dier=None):
         embed =  discord.Embed(title='Woordenketting', description='You need to find an animal starting with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`', colour=0x11806a)
         await ctx.send(embed=embed)
         return
+    if dier.lower() in list:
+        embed =  discord.Embed(title='Woordenketting', description='`' + dier + '`' + ' already in list!', colour=0xff0000)
+        await ctx.send(embed=embed)
+        return 
+    elif dier.lower() == 'linx' or dier.lower() == 'lynx':
+        embed =  discord.Embed(title='Woordenketting', description='`' + dier + '`' + ' has NOT been added!', colour=0xff0000)
+        embed.add_field(name='Note', value='Do you really have to be that guy?')
+        await ctx.send(embed=embed)
+        return 
     with open('Last_user.txt', 'r') as user_file:
         for user in user_file.readlines():
             with open('Dieren.txt','a') as txt:
@@ -243,15 +260,6 @@ async def dier(ctx,*, dier=None):
                 else:
                     embed =  discord.Embed(title='Woordenketting', description='You need to wait for someone else to submit an animal!', colour=0xff0000)
                     await ctx.send(embed=embed)        
-    if dier.lower() in list:
-        embed =  discord.Embed(title='Woordenketting', description='`' + dier + '`' + ' already in list!', colour=0xff0000)
-        await ctx.send(embed=embed)
-        return 
-    elif dier.lower() == 'linx' or dier.lower() == 'lynx':
-        embed =  discord.Embed(title='Woordenketting', description='`' + dier + '`' + ' has NOT been added!', colour=0xff0000)
-        embed.add_field(name='Note', value='Do you really have to be that guy?')
-        await ctx.send(embed=embed)
-        return 
     
 @client.command()
 async def count(ctx):
@@ -261,7 +269,18 @@ async def count(ctx):
             number += 1
     embed = discord.Embed(title='Woordenketting', description='The list contains ' + '`' + f'{number}' + '`' + ' animals so far.', colour=0x11806a)
     await ctx.send(embed=embed)
-    
+
+import random
+
+@client.command()
+async def time_nick(ctx):
+    l = ['appelflap', 'piemelgefriemel','kaiser Hans', 'Wedidntstartthefire', 'Kaboom', 'Potverdikke', 'DA imposter', '☺', '\N{Cross Mark}', 'VOTE KICK NORICK', 'Emma', 'Floefie', 'Meesje', 'Processing...', 'Norick03', 'ComradBenji']
+    vc = ctx.message.author.voice.channel
+    for member in vc.members:
+        print(member)
+        nickname = random.choice(l)
+        await member.edit(nick=str(nickname))
+            
 #Bot events
 
 @client.event
