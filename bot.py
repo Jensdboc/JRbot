@@ -177,6 +177,22 @@ async def perfection(ctx):
     embed.set_image(url=link)
     await ctx.send(embed=embed)    
     
+import random
+@client.command()
+async def switch(ctx):
+    l1 = []
+    vc = ctx.message.author.voice.channel
+    for member in vc.members:
+        if member.id != 235088799074484224:
+            print(member)
+            l1.append(member.nick)
+            #await ctx.message.author.send('Hallookes')
+    l2 = l1.copy()
+    random.shuffle(l1)
+    embed = discord.Embed(title='Switch-game',description = 'Click on the spoiler message next to your name to reveal who you need to be!', color=0x9b59b6)
+    for i in range(len(l1)):
+        embed.add_field(name=f'{l2[i]}', value='||' + f'{l1[i]}' + '||' )
+    await ctx.send(embed=embed)  
 
 @client.command()
 async def crew(context, member : discord.Member):
@@ -185,6 +201,13 @@ async def crew(context, member : discord.Member):
             await member.add_roles(e)
             return 
         
+@client.command()
+async def hug(context):
+    embed = discord.Embed(title='You get a free hug!', color=0x1DDCF)
+    link = 'https://media.discordapp.net/attachments/774593310844387358/783437572704567296/hug.png'
+    embed.set_image(url=link)
+    await context.message.author.send(embed=embed)
+     
 import urllib.request
 @client.command(aliases = ['tm'])
 async def thumbmail(ctx, url):
@@ -219,6 +242,9 @@ async def commands(ctx):
     embed.add_field(name='!python', value='Alstublieft Benjamin' )
     embed.add_field(name='!nick <@person> <nick>', value='Changes the nickname of a certain person' )
     embed.add_field(name='!thumbmail <url> [!tm]', value='Provide a youtube link and recieve the thumbmail' )
+    embed.add_field(name='!hug', value='Feeling lonely?' )
+    embed.add_field(name='!switch', value='Starts a among-us switch game, click on the spoiler under your name' )
+    embed.add_field(name='!perfection', value='Perfection!' )
     await ctx.send(embed=embed)
 
 #User commands dierenketting
