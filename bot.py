@@ -156,13 +156,28 @@ async def vliegt_de_blauwvoet(ctx):
 async def python(ctx):
     await ctx.send('Nu blij Benjamin?')
 
+from discord.ext import commands
+from discord.utils import get
+from discord import FFmpegPCMAudio
+from youtube_dl import YoutubeDL
+
 @client.command()
 async def stemopsimon(ctx):
     embed = discord.Embed(title='Sinds wanneer heeft een SSL stemmen nodig?', color=0xff0000) 
     link = 'https://www.biography.com/.image/ar_1:1%2Cc_fill%2Ccs_srgb%2Cg_face%2Cq_auto:good%2Cw_300/MTY2NjgyOTkyNTMyNTMwMjMx/gettyimages-2637237.jpg'
     embed.set_image(url=link)
     await ctx.send(embed=embed)
-
+    channel = ctx.message.author.voice.channel
+    await channel.connect()
+    YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
+    FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+    voice = get(client.voice_clients, guild=ctx.guild)
+    with YoutubeDL(YDL_OPTIONS) as ydl:
+        info = ydl.extract_info('https://www.youtube.com/watch?v=AlJ8z86e8A8', download=False)
+        URL = info['formats'][0]['url']
+        voice.play(FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
+        voice.is_playing()
+        
 @client.command()
 async def broederliefde(ctx):
     embed = discord.Embed(color=0x9b59b6)
@@ -296,8 +311,6 @@ async def count(ctx):
     embed = discord.Embed(title='Woordenketting', description='The list contains ' + '`' + f'{number}' + '`' + ' animals so far.', colour=0x11806a)
     await ctx.send(embed=embed)
 
-import random
-
 @client.command()
 async def time_nick(ctx):
     l = ['appelflap', 'piemelgefriemel','kaiser Hans', 'Wedidntstartthefire', 'Kaboom', 'Potverdikke', 'DA imposter', '☺', '\N{Cross Mark}', 'VOTE KICK NORICK', 'Emma', 'Floefie', 'Meesje', 'Processing...', 'Norick03', 'ComradBenji']
@@ -306,7 +319,17 @@ async def time_nick(ctx):
         print(member)
         nickname = random.choice(l)
         await member.edit(nick=str(nickname))
-            
+
+@client.command(pass_context=True)
+async def join(ctx):
+    channel = ctx.message.author.voice.channel
+    await channel.connect()
+   
+@client.command(pass_context=True)
+async def leave(ctx):
+    client = ctx.message.guild.voice_client
+    await client.disconnect()
+    
 #Bot events
 
 @client.event
