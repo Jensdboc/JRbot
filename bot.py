@@ -229,17 +229,22 @@ async def thumbmail(ctx, url):
     urllib.request.urlretrieve(url, filename = 'secret.html')
     with open('secret.html', 'r', encoding = 'utf-8') as infile:
             start = '<meta property="og:image"'
+            k = 0
+            jpg = ''
             for line in infile:
                 if start in str(line):
-                    jpg = ''
                     for i in range(len(line)):
-                        if line[i] == 'j' and line[i+1] == 'p' and line[i+2] == 'g':
+                        if line[i] == 'o' and line[i+1] == 'g' and line[i+2] == ':' and line[i+3] == 'i' and line[i+4] == 'm' and line[i+5] == 'a' and k == 0:
+                            k = i
+                            start = i + 18
+                    for i in range(k, len(line)):      
+                        if line[i] == 'j' and line[i+1] == 'p' and line[i+2] == 'g' and k != 0:
                             jpg += 'jpg'
                             await ctx.send(jpg)
                             await ctx.message.delete()
-                        if i > 38:
+                            return 
+                        if i > start:
                             jpg += line[i]                       
-
 @client.command()
 async def commands(ctx):
     embed = discord.Embed(title='List of commands', color=0x7289da)
@@ -332,6 +337,25 @@ async def leave(ctx):
     
 #Bot events
 
+@client.event
+async def on_message(message):
+    verboden_woorden = ['taylor swift','taylor', 'swift', 'taylorswift', 'folklore', 'love story', 'lovestory', 'taytay', 't swizzle', 'tswizzle', 'swizzle', 'queen t']
+    aantal = 0
+    for woord in verboden_woorden:
+        if message.author.id == 249527744466124801 or message.author.id == 688070365448241247:
+            if woord in message.content.lower() and message.author.id != 754020821378269324 and aantal == 0:
+                embed = discord.Embed(title='Toch weer nie over Taylor Swift bezig???', colour=0x000000) 
+                aantal += 1 
+                await message.channel.send(embed=embed)
+        else:
+            if woord in message.content.lower() and message.author.id != 754020821378269324 and aantal == 0:
+                link2 = 'https://media.discordapp.net/attachments/764196816517464086/786677044335083570/dh5qukew5vv01.jpg?width=582&height=599'
+                embed = discord.Embed(title='Toch weer nie over Taylorreeksen bezig???', colour=0x000000) 
+                embed.set_image(url=link2)
+                aantal += 1
+                await message.channel.send(embed=embed)
+    await client.process_commands(message)
+    
 @client.event
 async def on_guild_channel_create(channel):
     embed =  discord.Embed(title='Welcome, I was expecting you...', colour=0xff0000)
