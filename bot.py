@@ -88,6 +88,7 @@ async def clear(context,*,number=1):
     await context.channel.delete_messages(messages)
 
 lobbycode = None
+dead = []
 @client.command(aliases = ['cd'])
 async def code(context,*,new_lobbycode=''):
     global lobbycode 
@@ -105,12 +106,15 @@ async def code(context,*,new_lobbycode=''):
                 embed2 = discord.Embed(title=lobbycode.upper(), color=0x2ecc71)
                 embed2.add_field(name='Mute', value='Press \N{Speaker with Cancellation Stroke}')
                 embed2.add_field(name='Unmute', value='Press \N{Speaker with Three Sound Waves}')
+                embed2.add_field(name='Dead', value='Press \N{Skull and Crossbones}')
                 embed2.add_field(name='Cancel', value='Press \N{Cross Mark}')
                 if (client.mute_message):
                     await client.mute_message.delete()
                 client.mute_message = await channel.send(embed=embed2)
                 await client.mute_message.add_reaction('\N{Speaker with Cancellation Stroke}')
                 await client.mute_message.add_reaction('\N{Speaker with Three Sound Waves}')
+                await client.mute_message.add_reaction('\N{Skull and Crossbones}')
+                await client.mute_message.add_reaction('\N{Black Universal Recycling Symbol}')
                 await client.mute_message.add_reaction('\N{Cross Mark}')
                 return
     else:
@@ -199,9 +203,7 @@ async def switch(ctx):
     vc = ctx.message.author.voice.channel
     for member in vc.members:
         if member.id != 235088799074484224:
-            print(member)
             l1.append(member.nick)
-            #await ctx.message.author.send('Hallookes')
     l2 = l1.copy()
     random.shuffle(l1)
     embed = discord.Embed(title='Switch-game',description = 'Click on the spoiler message next to your name to reveal who you need to be!', color=0x9b59b6)
@@ -267,8 +269,6 @@ async def commands(ctx):
     embed.add_field(name='!perfection', value='Perfection!' )
     await ctx.send(embed=embed)
 
-#User commands dierenketting
-
 @client.command(aliases = ['d'])
 async def dier(ctx,*, dier=None):
     list = []
@@ -301,7 +301,7 @@ async def dier(ctx,*, dier=None):
                         embed =  discord.Embed(title='Woordenketting', description='`' + dier + '`' + ' has been added!', colour=0x11806a)
                         await ctx.send(embed=embed)
                 elif str(dier[0]).lower() != letter.lower() and str(ctx.message.author.id) != user:
-                    embed =  discord.Embed(title='Animal should start with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`', colour=0xff0000)
+                    embed =  discord.Embed(title='Woordenketting', description='Animal should start with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`', colour=0xff0000)
                     await ctx.send(embed=embed)
                 else:
                     embed =  discord.Embed(title='Woordenketting', description='You need to wait for someone else to submit an animal!', colour=0xff0000)
@@ -317,11 +317,27 @@ async def count(ctx):
     await ctx.send(embed=embed)
 
 @client.command()
+async def edit(ctx, nieuw_dier):
+    dieren = []
+    with open('Dieren.txt','r') as txt: 
+        for word in txt.readlines():
+            dieren.append(str(word[:-1]))
+    vorig_dier = dieren[-1] 
+    dieren[-1] = nieuw_dier
+    if vorig_dier[0] == nieuw_dier[0]:
+        with open('Dieren.txt','w') as txt: 
+            for woord in dieren:
+                txt.write(woord.lower() + '\n') 
+        embed = discord.Embed(title='Woordenketting', description= '`' + str(vorig_dier) + '`' + ' has been replaced with ' + '`' + nieuw_dier + '`', colour=0x11806a)
+        await ctx.send(embed=embed)
+    else:
+        embed =  discord.Embed(title='Woordenketting', description='Animal should start with ' + '`' + vorig_dier[0] + '`' + ', first letter of ' + '`' + vorig_dier + '`', colour=0xff0000)
+        await ctx.send(embed=embed)
+@client.command()
 async def time_nick(ctx):
     l = ['appelflap', 'piemelgefriemel','kaiser Hans', 'Wedidntstartthefire', 'Kaboom', 'Potverdikke', 'DA imposter', '☺', '\N{Cross Mark}', 'VOTE KICK NORICK', 'Emma', 'Floefie', 'Meesje', 'Processing...', 'Norick03', 'ComradBenji']
     vc = ctx.message.author.voice.channel
     for member in vc.members:
-        print(member)
         nickname = random.choice(l)
         await member.edit(nick=str(nickname))
 
@@ -335,11 +351,16 @@ async def leave(ctx):
     client = ctx.message.guild.voice_client
     await client.disconnect()
     
+@client.command()
+async def deads(ctx):
+    global dead
+    await ctx.send(dead)
+    
 #Bot events
 
 @client.event
 async def on_message(message):
-    verboden_woorden = ['taylor swift','taylor', 'swift', 'taylorswift', 'folklore', 'love story', 'lovestory', 'taytay', 't swizzle', 'tswizzle', 'swizzle', 'queen t']
+    verboden_woorden = ['taylor swift','taylor', 'swift', 'taylorswift', 'folklore', 'love story', 'evermore', 'lovestory', 'taytay', 't swizzle', 'tswizzle', 'swizzle', 'queen t']
     aantal = 0
     for woord in verboden_woorden:
         if message.author.id == 249527744466124801 or message.author.id == 688070365448241247:
@@ -348,7 +369,7 @@ async def on_message(message):
                 aantal += 1 
                 await message.channel.send(embed=embed)
         else:
-            if woord in message.content.lower() and message.author.id != 754020821378269324 and aantal == 0:
+            if woord in message.content.lower() and message.author.id != 754020821378269324 and message.author.id != 235088799074484224 and aantal == 0:
                 link2 = 'https://media.discordapp.net/attachments/764196816517464086/786677044335083570/dh5qukew5vv01.jpg?width=582&height=599'
                 embed = discord.Embed(title='Toch weer nie over Taylorreeksen bezig???', colour=0x000000) 
                 embed.set_image(url=link2)
@@ -385,24 +406,38 @@ async def on_member_remove(member):
 
 @client.event
 async def on_reaction_add(reaction,user):
+    global dead
     if(user.id != client.user.id):
         if (reaction.message.id == client.mute_message.id):
             mute_emoji = '\N{Speaker with Cancellation Stroke}'
             unmute_emoji = '\N{Speaker with Three Sound Waves}'
             cancel_emoji = '\N{Cross Mark}'
+            dead_emoji = '\N{Skull and Crossbones}'
+            recycle_emoji = '\N{Black Universal Recycling Symbol}'
             if (str(reaction.emoji) == unmute_emoji):
                 await reaction.remove(user)
                 if (user.voice):
                     vc = user.voice.channel
-                    for member in vc.members:
-                        await member.edit(mute = 0)
+                    if user.name not in dead:
+                        for member in vc.members:
+                            if member.id != 235088799074484224:
+                                await member.edit(mute = 0, deafen = 0)
+                    else: 
+                        for member in vc.members:
+                            if member.id != 235088799074484224:
+                                await member.edit(mute = 1, deafen = 0)
             if (str(reaction.emoji) == mute_emoji):
                 await reaction.remove(user)
                 if (user.voice):
                     vc = user.voice.channel
-                    for member in vc.members:
-                        if member.id != 235088799074484224:
-                            await member.edit(mute = 1)
+                    if user.name not in dead:
+                        for member in vc.members:
+                            if member.id != 235088799074484224:
+                                await member.edit(mute = 1, deafen = 1)
+                    else: 
+                        for member in vc.members:
+                            if member.id != 235088799074484224:
+                                await member.edit(mute = 0, deafen = 0)
             if (str(reaction.emoji) == cancel_emoji and user.voice):
                 await reaction.remove(user)
                 await client.mute_message.delete()
@@ -410,6 +445,12 @@ async def on_reaction_add(reaction,user):
                 if (user.voice):
                     vc = user.voice.channel
                     for member in vc.members:
-                        await member.edit(mute = 0)
-
+                        await member.edit(mute = 0, deafen = 0)
+            if (str(reaction.emoji) == dead_emoji):
+                await reaction.remove(user)
+                dead.append(user.name)
+            if (str(reaction.emoji) == recycle_emoji):
+                await reaction.remove(user)
+                dead = []
+                
 client.run('NzU0MDIwODIxMzc4MjY5MzI0.X1uqnA.o9Ea3VuoJpC797mfx0jFhLEozu4')
