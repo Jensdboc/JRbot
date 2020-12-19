@@ -1,3 +1,4 @@
+#Imports
 with open('ID.txt', 'r') as IDfile:
     for ID in IDfile.readlines():
         if ID == 'Jens':
@@ -6,10 +7,16 @@ with open('ID.txt', 'r') as IDfile:
             
 import discord
 from discord.ext import commands 
+import random
+from discord.ext import commands
+from discord.utils import get
+from discord import FFmpegPCMAudio
+from youtube_dl import YoutubeDL
 
 client = commands.Bot(command_prefix='!')
-
 client.mute_message = None
+
+#Ready check
 
 @client.event
 async def on_ready():
@@ -57,35 +64,7 @@ async def start(ctx, dier):
     embed =  discord.Embed(title='Woordenketting', description='A new game has been started with ' + '`' + dier + '`' + ' as first word.', colour=0x11806a)
     await ctx.send(embed=embed)
     
-#User commands
-
-@client.command(aliases = ['m'], brief = "Mutes voicechannel")
-async def mute(context):
-    vc = context.message.author.voice.channel
-    for member in vc.members:
-        if member.id != 235088799074484224:
-            await member.edit(mute = 1)
-    await context.message.delete()
-
-@client.command(aliases = ['um'], brief = "Unmutes voicechannel")
-async def unmute(context):
-    vc = context.message.author.voice.channel
-    for member in vc.members:
-        await member.edit(mute = 0)
-    await context.message.delete()
-
-@client.command()
-async def clear(context,*,number=1):
-    messages = await context.channel.history(limit = number+1).flatten()
-    for mes in messages:
-        if(client.mute_message):
-            if (client.mute_message.id == mes.id):
-                if (context.message.author.voice):
-                    vc = context.message.author.voice.channel
-                    for member in vc.members:
-                        await member.edit(mute = 0)
-                client.mute_message = None
-    await context.channel.delete_messages(messages)
+#User commands among us
 
 lobbycode = None
 dead = []
@@ -120,6 +99,55 @@ async def code(context,*,new_lobbycode=''):
     else:
         embed3 = discord.Embed(title=new_lobbycode.upper()+ ' is not a valid code!', color=0xff0000)
         await context.channel.send(embed=embed3)
+
+@client.command(aliases = ['m'], brief = "Mutes voicechannel")
+async def mute(context):
+    vc = context.message.author.voice.channel
+    for member in vc.members:
+        if member.id != 235088799074484224:
+            await member.edit(mute = 1)
+    await context.message.delete()
+
+@client.command(aliases = ['um'], brief = "Unmutes voicechannel")
+async def unmute(context):
+    vc = context.message.author.voice.channel
+    for member in vc.members:
+        await member.edit(mute = 0)
+    await context.message.delete()
+    
+@client.command()
+async def clear(context,*,number=1):
+    messages = await context.channel.history(limit = number+1).flatten()
+    for mes in messages:
+        if(client.mute_message):
+            if (client.mute_message.id == mes.id):
+                if (context.message.author.voice):
+                    vc = context.message.author.voice.channel
+                    for member in vc.members:
+                        await member.edit(mute = 0)
+                client.mute_message = None
+    await context.channel.delete_messages(messages)
+
+@client.command()
+async def switch(ctx):
+    l1 = []
+    vc = ctx.message.author.voice.channel
+    for member in vc.members:
+        if member.id != 235088799074484224:
+            l1.append(member.nick)
+    l2 = l1.copy()
+    random.shuffle(l1)
+    embed = discord.Embed(title='Switch-game',description = 'Click on the spoiler message next to your name to reveal who you need to be!', color=0x9b59b6)
+    for i in range(len(l1)):
+        embed.add_field(name=f'{l2[i]}', value='||' + f'{l1[i]}' + '||' )
+    await ctx.send(embed=embed)
+    
+@client.command()
+async def deads(ctx):
+    global dead
+    await ctx.send(dead)
+    
+#User commands fun
     
 autist_id = 383952659310444544
 @client.command()
@@ -144,10 +172,6 @@ async def mock(ctx,*,to_mock):
     await ctx.send(embed=embed)
     
 @client.command()
-async def nick(ctx, member : discord.Member,*, nickname):
-    await member.edit(nick=nickname)
-    
-@client.command()
 async def hotel(ctx):
     embedVar = discord.Embed(title="Trivago!", color=0x992d22)
     await ctx.send(embed=embedVar)
@@ -159,11 +183,6 @@ async def vliegt_de_blauwvoet(ctx):
 @client.command()
 async def python(ctx):
     await ctx.send('Nu blij Benjamin?')
-
-from discord.ext import commands
-from discord.utils import get
-from discord import FFmpegPCMAudio
-from youtube_dl import YoutubeDL
 
 @client.command()
 async def stemopsimon(ctx):
@@ -194,22 +213,28 @@ async def perfection(ctx):
     embed = discord.Embed(color=0x9b59b6)
     link = 'https://media.discordapp.net/attachments/770691436319342654/781997388394528768/unknown.png?width=962&height=300'
     embed.set_image(url=link)
-    await ctx.send(embed=embed)    
+    await ctx.send(embed=embed)   
     
-import random
 @client.command()
-async def switch(ctx):
-    l1 = []
+async def hug(context):
+    embed = discord.Embed(title='You get a free hug!', color=0x1DDCF)
+    link = 'https://media.discordapp.net/attachments/774593310844387358/783437572704567296/hug.png'
+    embed.set_image(url=link)
+    await context.message.author.send(embed=embed)
+
+@client.command()
+async def time_nick(ctx):
+    l = ['appelflap', 'piemelgefriemel','kaiser Hans', 'Wedidntstartthefire', 'Kaboom', 'Potverdikke', 'DA imposter', '☺', '\N{Cross Mark}', 'VOTE KICK NORICK', 'Emma', 'Floefie', 'Meesje', 'Processing...', 'Norick03', 'ComradBenji']
     vc = ctx.message.author.voice.channel
     for member in vc.members:
-        if member.id != 235088799074484224:
-            l1.append(member.nick)
-    l2 = l1.copy()
-    random.shuffle(l1)
-    embed = discord.Embed(title='Switch-game',description = 'Click on the spoiler message next to your name to reveal who you need to be!', color=0x9b59b6)
-    for i in range(len(l1)):
-        embed.add_field(name=f'{l2[i]}', value='||' + f'{l1[i]}' + '||' )
-    await ctx.send(embed=embed)  
+        nickname = random.choice(l)
+        await member.edit(nick=str(nickname))
+        
+#User commands moderation
+    
+@client.command()
+async def nick(ctx, member : discord.Member,*, nickname):
+    await member.edit(nick=nickname)  
 
 @client.command()
 async def crew(context, member : discord.Member):
@@ -217,13 +242,6 @@ async def crew(context, member : discord.Member):
         if e.name == 'Crewmates':
             await member.add_roles(e)
             return 
-        
-@client.command()
-async def hug(context):
-    embed = discord.Embed(title='You get a free hug!', color=0x1DDCF)
-    link = 'https://media.discordapp.net/attachments/774593310844387358/783437572704567296/hug.png'
-    embed.set_image(url=link)
-    await context.message.author.send(embed=embed)
      
 import urllib.request
 @client.command(aliases = ['tm'])
@@ -246,7 +264,18 @@ async def thumbmail(ctx, url):
                             await ctx.message.delete()
                             return 
                         if i > start:
-                            jpg += line[i]                       
+                            jpg += line[i]   
+
+@client.command(pass_context=True)
+async def join(ctx):
+    channel = ctx.message.author.voice.channel
+    await channel.connect()
+   
+@client.command(pass_context=True)
+async def leave(ctx):
+    client = ctx.message.guild.voice_client
+    await client.disconnect()
+                            
 @client.command()
 async def commands(ctx):
     embed = discord.Embed(title='List of commands', color=0x7289da)
@@ -269,6 +298,8 @@ async def commands(ctx):
     embed.add_field(name='!perfection', value='Perfection!' )
     await ctx.send(embed=embed)
 
+#User commands woordenketting
+    
 @client.command(aliases = ['d'])
 async def dier(ctx,*, dier=None):
     list = []
@@ -333,28 +364,6 @@ async def edit(ctx, nieuw_dier):
     else:
         embed =  discord.Embed(title='Woordenketting', description='Animal should start with ' + '`' + vorig_dier[0] + '`' + ', first letter of ' + '`' + vorig_dier + '`', colour=0xff0000)
         await ctx.send(embed=embed)
-@client.command()
-async def time_nick(ctx):
-    l = ['appelflap', 'piemelgefriemel','kaiser Hans', 'Wedidntstartthefire', 'Kaboom', 'Potverdikke', 'DA imposter', '☺', '\N{Cross Mark}', 'VOTE KICK NORICK', 'Emma', 'Floefie', 'Meesje', 'Processing...', 'Norick03', 'ComradBenji']
-    vc = ctx.message.author.voice.channel
-    for member in vc.members:
-        nickname = random.choice(l)
-        await member.edit(nick=str(nickname))
-
-@client.command(pass_context=True)
-async def join(ctx):
-    channel = ctx.message.author.voice.channel
-    await channel.connect()
-   
-@client.command(pass_context=True)
-async def leave(ctx):
-    client = ctx.message.guild.voice_client
-    await client.disconnect()
-    
-@client.command()
-async def deads(ctx):
-    global dead
-    await ctx.send(dead)
     
 #Bot events
 
@@ -408,49 +417,50 @@ async def on_member_remove(member):
 async def on_reaction_add(reaction,user):
     global dead
     if(user.id != client.user.id):
-        if (reaction.message.id == client.mute_message.id):
-            mute_emoji = '\N{Speaker with Cancellation Stroke}'
-            unmute_emoji = '\N{Speaker with Three Sound Waves}'
-            cancel_emoji = '\N{Cross Mark}'
-            dead_emoji = '\N{Skull and Crossbones}'
-            recycle_emoji = '\N{Black Universal Recycling Symbol}'
-            if (str(reaction.emoji) == unmute_emoji):
-                await reaction.remove(user)
-                if (user.voice):
-                    vc = user.voice.channel
-                    if user.name not in dead:
+        try: 
+            if (reaction.message.id == client.mute_message.id):
+                mute_emoji = '\N{Speaker with Cancellation Stroke}'
+                unmute_emoji = '\N{Speaker with Three Sound Waves}'
+                cancel_emoji = '\N{Cross Mark}'
+                dead_emoji = '\N{Skull and Crossbones}'
+                recycle_emoji = '\N{Black Universal Recycling Symbol}'
+                if (str(reaction.emoji) == unmute_emoji):
+                    await reaction.remove(user)
+                    if (user.voice):
+                        vc = user.voice.channel
                         for member in vc.members:
-                            if member.id != 235088799074484224:
+                            if member.name not in dead: 
                                 await member.edit(mute = 0, deafen = 0)
-                    else: 
+                            else: 
+                                    await member.edit(mute = 1, deafen = 0)
+                if (str(reaction.emoji) == mute_emoji):
+                    await reaction.remove(user)
+                    if (user.voice):
+                        vc = user.voice.channel
                         for member in vc.members:
-                            if member.id != 235088799074484224:
-                                await member.edit(mute = 1, deafen = 0)
-            if (str(reaction.emoji) == mute_emoji):
-                await reaction.remove(user)
-                if (user.voice):
-                    vc = user.voice.channel
-                    if user.name not in dead:
-                        for member in vc.members:
-                            if member.id != 235088799074484224:
+                            if member.name not in dead:
                                 await member.edit(mute = 1, deafen = 1)
-                    else: 
-                        for member in vc.members:
-                            if member.id != 235088799074484224:
+                            else: 
                                 await member.edit(mute = 0, deafen = 0)
-            if (str(reaction.emoji) == cancel_emoji and user.voice):
-                await reaction.remove(user)
-                await client.mute_message.delete()
-                client.mute_message = None
-                if (user.voice):
-                    vc = user.voice.channel
-                    for member in vc.members:
-                        await member.edit(mute = 0, deafen = 0)
-            if (str(reaction.emoji) == dead_emoji):
-                await reaction.remove(user)
-                dead.append(user.name)
-            if (str(reaction.emoji) == recycle_emoji):
-                await reaction.remove(user)
-                dead = []
-                
+                if (str(reaction.emoji) == cancel_emoji and user.voice):
+                    await reaction.remove(user)
+                    await client.mute_message.delete()
+                    client.mute_message = None
+                    if (user.voice):
+                        vc = user.voice.channel
+                        for member in vc.members:
+                            await member.edit(mute = 0, deafen = 0)
+                if (str(reaction.emoji) == dead_emoji):
+                    await reaction.remove(user)
+                    dead.append(user.name)
+                if (str(reaction.emoji) == recycle_emoji):
+                    await reaction.remove(user)
+                    dead = []
+                    if (user.voice):
+                        vc = user.voice.channel
+                        for member in vc.members:
+                            await member.edit(mute = 0, deafen = 0)
+        except:
+            return
+       
 client.run('NzU0MDIwODIxMzc4MjY5MzI0.X1uqnA.o9Ea3VuoJpC797mfx0jFhLEozu4')
