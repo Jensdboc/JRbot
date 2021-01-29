@@ -8,7 +8,6 @@ with open('ID.txt', 'r') as IDfile:
 import discord
 from discord.ext import commands 
 import random
-from discord.ext import commands
 from discord.utils import get
 from discord import FFmpegPCMAudio
 from youtube_dl import YoutubeDL
@@ -229,7 +228,22 @@ async def time_nick(ctx):
     for member in vc.members:
         nickname = random.choice(l)
         await member.edit(nick=str(nickname))
-        
+      
+@client.command(aliases = ['a'])
+async def answer(ctx):
+    for user in client.users:
+        if user == client.get_user(688070365448241247  ):
+            name = str(ctx.author.name)
+            answer = ''
+            start = 0
+            for letter in ctx.message.content:
+                if start > 0:
+                    answer += str(letter)
+                if str(letter) == ' ':
+                    start += 1
+            embed = discord.Embed(title= name + ': ' + answer ,color=0x7289da)            
+            await user.send(embed=embed)
+                  
 #User commands moderation
     
 @client.command()
@@ -353,18 +367,22 @@ async def edit(ctx, nieuw_dier):
     with open('Dieren.txt','r') as txt: 
         for word in txt.readlines():
             dieren.append(str(word[:-1]))
-    vorig_dier = dieren[-1] 
-    dieren[-1] = nieuw_dier
-    if vorig_dier[0] == nieuw_dier[0]:
-        with open('Dieren.txt','w') as txt: 
-            for woord in dieren:
-                txt.write(woord.lower() + '\n') 
-        embed = discord.Embed(title='Woordenketting', description= '`' + str(vorig_dier) + '`' + ' has been replaced with ' + '`' + nieuw_dier + '`', colour=0x11806a)
+    if nieuw_dier in dieren:
+        embed = discord.Embed(title='Woordenketting', description='`' + nieuw_dier + '`' + ' already in list!', colour=0xff0000)
         await ctx.send(embed=embed)
+        return
     else:
-        embed =  discord.Embed(title='Woordenketting', description='Animal should start with ' + '`' + vorig_dier[0] + '`' + ', first letter of ' + '`' + vorig_dier + '`', colour=0xff0000)
-        await ctx.send(embed=embed)
-    
+        vorig_dier = dieren[-1] 
+        dieren[-1] = nieuw_dier
+        if vorig_dier[0] == nieuw_dier[0]:
+            with open('Dieren.txt','w') as txt: 
+                for woord in dieren:
+                    txt.write(woord.lower() + '\n') 
+            embed = discord.Embed(title='Woordenketting', description= '`' + str(vorig_dier) + '`' + ' has been replaced with ' + '`' + nieuw_dier + '`', colour=0x11806a)
+            await ctx.send(embed=embed)
+        else:
+            embed =  discord.Embed(title='Woordenketting', description='Animal should start with ' + '`' + vorig_dier[0] + '`' + ', first letter of ' + '`' + vorig_dier + '`', colour=0xff0000)
+            await ctx.send(embed=embed)
 #Bot events
 
 @client.event
