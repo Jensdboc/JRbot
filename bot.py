@@ -1,10 +1,4 @@
 #Imports
-with open('ID.txt', 'r') as IDfile:
-    for ID in IDfile.readlines():
-        if ID == 'Jens':
-            import nest_asyncio
-            nest_asyncio.apply()   
-            
 import discord
 from discord.ext import commands 
 import random
@@ -15,13 +9,17 @@ from youtube_dl import YoutubeDL
 client = commands.Bot(command_prefix='!')
 client.mute_message = None
 
-#Ready check
+#***********#
+#Ready check#
+#***********#
 
 @client.event
 async def on_ready():
     print('euh ja het werkt fz')
 
+#*************#
 #Command checks
+#*************#
 
 @client.check
 async def check_blacklist(ctx):
@@ -38,7 +36,9 @@ def admin_check(ctx):
                 return True
         return False
 
-#Admin commands
+#**************# 
+#Admin commands#
+#**************# 
 
 @client.command()
 @commands.check(admin_check)
@@ -62,8 +62,10 @@ async def start(ctx, dier):
         user_file.write('placeholder')
     embed =  discord.Embed(title='Woordenketting', description='A new game has been started with ' + '`' + dier + '`' + ' as first word.', colour=0x11806a)
     await ctx.send(embed=embed)
-    
-#User commands among us
+
+#**********************# 
+#User commands among us#
+#**********************# 
 
 lobbycode = None
 dead = []
@@ -145,9 +147,11 @@ async def switch(ctx):
 async def deads(ctx):
     global dead
     await ctx.send(dead)
-    
-#User commands fun
-    
+
+#*****************#     
+#User commands fun#
+#*****************#   
+  
 autist_id = 383952659310444544
 @client.command()
 async def mock(ctx,*,to_mock):
@@ -199,7 +203,7 @@ async def stemopsimon(ctx):
         URL = info['formats'][0]['url']
         voice.play(FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
         voice.is_playing()
-        
+  
 @client.command()
 async def broederliefde(ctx):
     embed = discord.Embed(color=0x9b59b6)
@@ -243,9 +247,11 @@ async def answer(ctx):
                     start += 1
             embed = discord.Embed(title= name + ': ' + answer ,color=0x7289da)            
             await user.send(embed=embed)
-                  
-#User commands moderation
-    
+
+#************************#               
+#User commands moderation#
+#************************#
+
 @client.command()
 async def nick(ctx, member : discord.Member,*, nickname):
     await member.edit(nick=nickname)  
@@ -312,8 +318,10 @@ async def commands(ctx):
     embed.add_field(name='!perfection', value='Perfection!' )
     await ctx.send(embed=embed)
 
-#User commands woordenketting
-    
+#****************************#
+#User commands woordenketting#
+#****************************#   
+
 @client.command(aliases = ['d'])
 async def dier(ctx,*, dier=None):
     list = []
@@ -383,7 +391,10 @@ async def edit(ctx, nieuw_dier):
         else:
             embed =  discord.Embed(title='Woordenketting', description='Animal should start with ' + '`' + vorig_dier[0] + '`' + ', first letter of ' + '`' + vorig_dier + '`', colour=0xff0000)
             await ctx.send(embed=embed)
-#Bot events
+
+#**********#
+#Bot events#
+#**********#
 
 @client.event
 async def on_message(message):
