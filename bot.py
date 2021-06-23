@@ -180,6 +180,10 @@ async def hotel(ctx):
     await ctx.send(embed=embedVar)
         
 @client.command()
+async def moses(ctx):
+    await ctx.send(file=discord.File('mosesgif.gif'))
+
+@client.command()
 async def vliegt_de_blauwvoet(ctx):
     await ctx.send('``Storm op zee!``') 
     
