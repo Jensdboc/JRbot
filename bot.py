@@ -1,4 +1,6 @@
 #Imports
+from inspect import signature
+from typing import overload
 import discord
 from discord.ext import commands 
 import random
@@ -6,7 +8,13 @@ from discord.utils import get
 from discord import FFmpegPCMAudio
 from youtube_dl import YoutubeDL
 
-client = commands.Bot(command_prefix='!')
+import typing
+
+#Intent for hug
+intents = discord.Intents.default()  # Allow the use of custom intents
+intents.members = True
+
+client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
 client.mute_message = None
 
 #***********#
@@ -221,13 +229,21 @@ async def perfection(ctx):
     link = 'https://media.discordapp.net/attachments/770691436319342654/781997388394528768/unknown.png?width=962&height=300'
     embed.set_image(url=link)
     await ctx.send(embed=embed)   
-    
+
 @client.command()
-async def hug(context):
+async def hug(ctx, target : typing.Union[discord.Member, discord.Role] = None):
     embed = discord.Embed(title='You get a free hug!', color=0x1DDCF)
     link = 'https://media.discordapp.net/attachments/774593310844387358/783437572704567296/hug.png'
     embed.set_image(url=link)
-    await context.message.author.send(embed=embed)
+    if (target):
+        if (isinstance(target, discord.Role)):
+            list = target.members  
+            for member in list:
+                await member.send(embed=embed)
+        else:
+            await target.send(embed=embed)
+    else:
+        await ctx.message.author.send(embed=embed)
 
 @client.command()
 async def time_nick(ctx):
