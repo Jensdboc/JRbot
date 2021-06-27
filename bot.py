@@ -189,8 +189,12 @@ async def hotel(ctx):
         
 @client.command()
 async def moses(ctx):
-    await ctx.send(file=discord.File('mosesgif.gif'))
+    file = discord.File("./data_pictures/mosesgif.gif")
+    embed = discord.Embed(color=0x9b59b6)
+    embed.set_image(url="attachment://mosesgif.gif")
+    await ctx.send(file=file, embed=embed) 
 
+# Werkt momenteel niet
 @client.command()
 async def stemopsimon(ctx):
     embed = discord.Embed(title='Sinds wanneer heeft een SSL stemmen nodig?', color=0xff0000) 
@@ -210,32 +214,34 @@ async def stemopsimon(ctx):
   
 @client.command()
 async def broederliefde(ctx):
-    file = discord.File("broederliefde.png")
+    file = discord.File("./data_pictures/broederliefde.png")
     embed = discord.Embed(color=0x9b59b6)
     embed.set_image(url="attachment://broederliefde.png")
     await ctx.send(file=file, embed=embed)
     
 @client.command()
 async def perfection(ctx):
+    file = discord.File("./data_pictures/floef.png")
     embed = discord.Embed(color=0x9b59b6)
-    link = 'https://media.discordapp.net/attachments/770691436319342654/781997388394528768/unknown.png?width=962&height=300'
-    embed.set_image(url=link)
-    await ctx.send(embed=embed)   
+    embed.set_image(url="attachment://floef.png")
+    await ctx.send(file=file, embed=embed)  
 
 @client.command()
 async def hug(ctx, target : typing.Union[discord.Member, discord.Role] = None):
     embed = discord.Embed(title='You get a free hug!', color=0x1DDCF)
-    link = 'https://media.discordapp.net/attachments/774593310844387358/783437572704567296/hug.png'
-    embed.set_image(url=link)
+    hugs = ["hug1.gif", "hug2.gif", "hug3.gif", "hug4.gif", "hug5.gif"]
+    picture = random.choice(hugs)
+    file = discord.File("./data_pictures/" + picture)
+    embed.set_image(url="attachment://" + picture)
     if (target):
         if (isinstance(target, discord.Role)):
             list = target.members  
             for member in list:
-                await member.send(embed=embed)
+                await member.send(file=file, embed=embed)
         else:
-            await target.send(embed=embed)
+            await target.send(file=file, embed=embed)
     else:
-        await ctx.message.author.send(embed=embed)
+        await ctx.message.author.send(file=file, embed=embed)
 
 @client.command()
 async def time_nick(ctx):
