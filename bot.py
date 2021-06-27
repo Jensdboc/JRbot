@@ -192,14 +192,6 @@ async def moses(ctx):
     await ctx.send(file=discord.File('mosesgif.gif'))
 
 @client.command()
-async def vliegt_de_blauwvoet(ctx):
-    await ctx.send('``Storm op zee!``') 
-    
-@client.command()
-async def python(ctx):
-    await ctx.send('Nu blij Benjamin?')
-
-@client.command()
 async def stemopsimon(ctx):
     embed = discord.Embed(title='Sinds wanneer heeft een SSL stemmen nodig?', color=0xff0000) 
     link = 'https://www.biography.com/.image/ar_1:1%2Cc_fill%2Ccs_srgb%2Cg_face%2Cq_auto:good%2Cw_300/MTY2NjgyOTkyNTMyNTMwMjMx/gettyimages-2637237.jpg'
@@ -218,10 +210,10 @@ async def stemopsimon(ctx):
   
 @client.command()
 async def broederliefde(ctx):
+    file = discord.File("broederliefde.png")
     embed = discord.Embed(color=0x9b59b6)
-    link = 'https://cdn.discordapp.com/attachments/770691436319342654/773576247254057000/unknown.png'
-    embed.set_image(url=link)
-    await ctx.send(embed=embed)
+    embed.set_image(url="attachment://broederliefde.png")
+    await ctx.send(file=file, embed=embed)
     
 @client.command()
 async def perfection(ctx):
