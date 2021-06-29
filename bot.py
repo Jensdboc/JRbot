@@ -23,6 +23,7 @@ client.mute_message = None
 
 @client.event
 async def on_ready():
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="you sleep"))
     print('euh ja het werkt fz')
 
 #*************#
