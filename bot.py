@@ -24,7 +24,7 @@ client.mute_message = None
 
 @client.event
 async def on_ready():
-    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="you sleep"))
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="Freddi Fish"))
     print('euh ja het werkt fz')
 
 #*************#
@@ -326,9 +326,10 @@ async def deletedate(ctx, date, *, name):
             await ctx.send("No such date has been found!")
 
 @client.command(aliases = ['cld'])
+@commands.check(admin_check)
 async def cleardates(ctx):
     with open('Examen_data.txt', 'w') as file:
-        file.truncate(0)
+        pass
     await ctx.send("All dates have been succesfully cleared!")
 
 #************************#               
