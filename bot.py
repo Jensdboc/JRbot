@@ -1,5 +1,6 @@
 #Imports
 from inspect import signature
+from io import StringIO
 from typing import overload
 import discord
 from discord.ext import commands 
@@ -266,6 +267,69 @@ async def answer(ctx):
                     start += 1
             embed = discord.Embed(title= name + ': ' + answer ,color=0x7289da)            
             await user.send(embed=embed)
+
+@client.command(aliases = ['ad'])
+async def adddate(ctx, date, *, name):
+    with open('Examen_data.txt', 'a') as file:
+        file.write(date + ' ')
+        split_name = name.split(' ')
+        for i in range(len(split_name)):
+            file.write(split_name[i])
+            if i != len(split_name) - 1:
+                file.write('-')
+            else:
+                file.write(' ')
+        file.write(ctx.message.author.name + ' ' + str(ctx.message.author.id) + '\n')
+    await ctx.send("Date added!")
+
+@client.command(aliases = ['sd'])
+async def showdate(ctx, member : discord.Member=None):
+    with open('Examen_data.txt', 'r') as file:
+        content = file.readlines()
+    count = 0
+    if len(content) == 0:
+        await ctx.send("No dates added yet!")
+        return
+    for line in content: 
+        split_line = line.split(' ')
+        split_line[3] = split_line[3][:-1]
+        if member == None:
+            count += 1
+            await ctx.send(split_line[2] + " heeft examen " + split_line[1] + " op " + split_line[0] + '.')
+        elif str(split_line[3]) == str(member.id):
+            count += 1
+            await ctx.send(split_line[2] + " heeft examen " + split_line[1] + " op " + split_line[0] + '.')
+    if count == 0:
+        await ctx.send("No such user found!")
+
+@client.command(aliases = ['dd'])
+async def deletedate(ctx, date, *, name):
+    with open('Examen_data.txt', 'r') as file:
+        content = file.readlines()
+    with open('Examen_data.txt', 'w') as newfile:
+        deleted = False
+        print("lengte: " + str(len(content)))
+        for i in range(len(content)):
+            split_line = content[i].split(' ')
+            split_line[3] = split_line[3][:-1]
+            print(i)
+            if split_line[0] == date and split_line[1] == name and split_line[2] == ctx.message.author.name:
+                deleted = True
+                await ctx.send("Date has been deleted!")
+            elif split_line[0] == date and split_line[1] == name:
+                deleted = True
+                await ctx.send("You are not allowed to deleted dates from others!")
+                newfile.write(content[i]) 
+            else:
+                newfile.write(content[i])   
+        if not deleted:
+            await ctx.send("No such date has been found!")
+
+@client.command(aliases = ['cd'])
+async def cleardates(ctx):
+    with open('Examen_data.txt', 'w') as file:
+        file.truncate(0)
+    await ctx.send("All dates have been succesfully cleared!")
 
 #************************#               
 #User commands moderation#
