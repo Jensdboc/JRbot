@@ -325,7 +325,7 @@ async def deletedate(ctx, date, *, name):
         if not deleted:
             await ctx.send("No such date has been found!")
 
-@client.command(aliases = ['cd'])
+@client.command(aliases = ['cld'])
 async def cleardates(ctx):
     with open('Examen_data.txt', 'w') as file:
         file.truncate(0)
