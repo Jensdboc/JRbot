@@ -271,15 +271,15 @@ async def answer(ctx):
 @client.command(aliases = ['ad'])
 async def adddate(ctx, date, *, name):
     with open('Examen_data.txt', 'a') as file:
-        file.write(date + ' ')
+        file.write(date + '\t')
         split_name = name.split(' ')
         for i in range(len(split_name)):
             file.write(split_name[i])
             if i != len(split_name) - 1:
-                file.write('-')
-            else:
                 file.write(' ')
-        file.write(ctx.message.author.name + ' ' + str(ctx.message.author.id) + '\n')
+            else:
+                file.write('\t')
+        file.write(ctx.message.author.name + '\t' + str(ctx.message.author.id) + '\n')
     await ctx.send("Date added!")
 
 @client.command(aliases = ['sd'])
@@ -291,7 +291,7 @@ async def showdate(ctx, member : discord.Member=None):
         await ctx.send("No dates added yet!")
         return
     for line in content: 
-        split_line = line.split(' ')
+        split_line = line.split('\t')
         split_line[3] = split_line[3][:-1]
         if member == None:
             count += 1
@@ -308,9 +308,11 @@ async def deletedate(ctx, date, *, name):
         content = file.readlines()
     with open('Examen_data.txt', 'w') as newfile:
         deleted = False
+        print("lengte: " + str(len(content)))
         for i in range(len(content)):
             split_line = content[i].split(' ')
             split_line[3] = split_line[3][:-1]
+            print(i)
             if split_line[0] == date and split_line[1] == name and split_line[2] == ctx.message.author.name:
                 deleted = True
                 await ctx.send("Date has been deleted!")
