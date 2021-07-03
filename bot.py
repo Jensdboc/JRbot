@@ -308,11 +308,9 @@ async def deletedate(ctx, date, *, name):
         content = file.readlines()
     with open('Examen_data.txt', 'w') as newfile:
         deleted = False
-        print("lengte: " + str(len(content)))
         for i in range(len(content)):
-            split_line = content[i].split(' ')
+            split_line = content[i].split('\t')
             split_line[3] = split_line[3][:-1]
-            print(i)
             if split_line[0] == date and split_line[1] == name and split_line[2] == ctx.message.author.name:
                 deleted = True
                 await ctx.send("Date has been deleted!")
