@@ -1,3 +1,5 @@
+from io import DEFAULT_BUFFER_SIZE
+from typing import Text
 import discord
 from discord.ext import commands
 
@@ -5,7 +7,27 @@ class Date(commands.Cog):
     
     def __init__(self, client):
         self.client = client
-
+    
+    def sort():
+        with open('Examen_data.txt', 'r') as file:
+            content = file.readlines()
+        text = []
+        dates = []
+        index = 0
+        for line in content:
+            split_line = line.split('\t')
+            date = split_line[0].split('/')
+            date.append(index)
+            text.append(line)
+            dates.append(date)
+            index += 1
+        dates.sort(key=lambda x:x[0])
+        dates.sort(key=lambda x:x[1])
+        dates.sort(key=lambda x:x[2])
+        with open('Examen_data.txt', 'w') as newfile:
+            for index in dates:
+                newfile.write(text[index[3]])
+        
     @commands.command(aliases = ['ad'])
     async def adddate(self, ctx, date, *, name):
         with open('Examen_data.txt', 'a') as file:
@@ -18,6 +40,7 @@ class Date(commands.Cog):
                 else:
                     file.write('\t')
             file.write(ctx.message.author.name + '\t' + str(ctx.message.author.id) + '\n')
+        Date.sort()
         await ctx.send("Date added!")
 
     @commands.command(aliases = ['sd'])
@@ -25,6 +48,7 @@ class Date(commands.Cog):
         with open('Examen_data.txt', 'r') as file:
             content = file.readlines()
         count = 0
+        Date.sort()
         if len(content) == 0:
             await ctx.send("No dates added yet!")
             return
