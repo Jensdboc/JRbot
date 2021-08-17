@@ -55,7 +55,7 @@ for filename in os.listdir('./cogs'):
 
 @client.event
 async def on_ready():
-    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="stack of lime wool speedrun"))
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="youtube"))
     print('Bot = ready')
 
 #**************#
@@ -117,6 +117,7 @@ async def cleardates(ctx):
 
 @client.event
 async def on_message(message):
+    
     verboden_woorden = ['taylor swift','taylor', 'swift', 'taylorswift', 'folklore', 'love story', 'evermore', 'lovestory', 'taytay', 't swizzle', 'tswizzle', 'swizzle', 'queen t']
     aantal = 0
     for woord in verboden_woorden:

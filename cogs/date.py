@@ -48,6 +48,7 @@ class Date(commands.Cog):
         with open('Examen_data.txt', 'r') as file:
             content = file.readlines()
         count = 0
+        message = ''
         Date.sort()
         if len(content) == 0:
             await ctx.send("No dates added yet!")
@@ -57,12 +58,20 @@ class Date(commands.Cog):
             split_line[3] = split_line[3][:-1]
             if member == None:
                 count += 1
-                await ctx.send(split_line[2] + " heeft examen " + split_line[1] + " op " + split_line[0] + '.')
+                line = split_line[2] + " heeft examen " + split_line[1] + " op " + split_line[0] + '.'
+                message += line
+                message += '\n'
+                #await ctx.send(split_line[2] + " heeft examen " + split_line[1] + " op " + split_line[0] + '.')
             elif str(split_line[3]) == str(member.id):
                 count += 1
-                await ctx.send(split_line[2] + " heeft examen " + split_line[1] + " op " + split_line[0] + '.')
+                line = split_line[2] + " heeft examen " + split_line[1] + " op " + split_line[0] + '.'
+                message += line
+                message += '\n'
+                #await ctx.send(split_line[2] + " heeft examen " + split_line[1] + " op " + split_line[0] + '.')
         if count == 0:
             await ctx.send("No such user found!")
+        else:
+            await ctx.send(message)
 
     @commands.command(aliases = ['dd'])
     async def deletedate(self, ctx, date, *, name):
