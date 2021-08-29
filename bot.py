@@ -111,6 +111,80 @@ async def cleardates(ctx):
         pass
     await ctx.send("All dates have been succesfully cleared!")
 
+#************#
+#Help command#
+#************#
+
+client.remove_command("help")
+
+@client.group(invoke_without_command=True)
+async def help(ctx):
+    embed = discord.Embed(title = "Help", description = "Use !help <category> for more information", color = ctx.author.color)
+    embed.add_field(name = "Administration", value = "Crew, join, leave, nick, thumbmail, clear")
+    embed.add_field(name = "Amongus", value = "Code, deads, mute, switch, unmute")
+    embed.add_field(name = "Date", value = "Adddate, deletedate, showdate")
+    embed.add_field(name = "Fun", value = "Answer, broederliefde, hotel, hug, mock, moses, perfection, stemopsimon, time_nick")
+    embed.add_field(name = "Woordenketting", value = "Count, dier, edit")
+    embed.add_field(name = "Others", value = "Admin, blacklist, cleardates, help, load, reload, start, unload")
+    await ctx.send(embed = embed)
+
+@help.command(aliases = ['Administration'])
+async def administration(ctx):
+    embed = discord.Embed(title = "Help administration", description = "Use !help <command> for more information", color = ctx.author.color)
+    embed.add_field(name = "!crew <member>", value = "Give member 🌳-role")
+    embed.add_field(name = "!join (broken)", value = "Bot joins voice channel")
+    embed.add_field(name = "!leave (broken)", value = "Bot leaves voice channel")
+    embed.add_field(name = "!nick <member> <nickname>", value = "Give member a nickname")
+    embed.add_field(name = "!thumbmail <url>, [!tm] (broken)", value = "Return thumbmail from youtube video")
+    embed.add_field(name = "!clear <number>", value = "Clear the last number of messages (default = 1)")
+    await ctx.send(embed = embed)
+
+@help.command(aliases = ['Amongus'])
+async def amongus(ctx):
+    embed = discord.Embed(title = "Help amongus", description = "Use !help <command> for more information", color = ctx.author.color)
+    embed.add_field(name = "!code <code>", value = "Start among us game in mutechannel")
+    embed.add_field(name = "!deads", value = "Send list of deads")
+    embed.add_field(name = "!mute", value = "Mute voicechannel")
+    embed.add_field(name = "!switch", value = "Start switch game")
+    embed.add_field(name = "!unmute", value = "Unmute voicechannel")
+    await ctx.send(embed = embed)
+
+@help.command(aliases = ['Date'])
+async def date(ctx):
+    embed = discord.Embed(title = "Help date", description = "Use !help <command> for more information", color = ctx.author.color)
+    embed.add_field(name = "!adddate <date> <name>, [!ad]", value = "Add date to list of dates")
+    embed.add_field(name = "!deletedate <date> <name>, [!dd]", value = "Delete date from list of dates")
+    embed.add_field(name = "!showdate, [!sd]", value = "Shows all dates")
+    await ctx.send(embed = embed)
+
+@help.command(aliases = ['Woordenketting'])
+async def woordenketting(ctx):
+    embed = discord.Embed(title = "Help woordenketting", description = "Use !help <command> for more information", color = ctx.author.color)
+    embed.add_field(name = "!count", value = "Show number of words")
+    embed.add_field(name = "!dier <dier>, [!d]", value = "Add new word")
+    embed.add_field(name = "!edit <dier>", value = "Replace last word with new word")
+    await ctx.send(embed = embed)
+
+@help.command(aliases = ['Fun'])
+async def fun(ctx):
+    embed = discord.Embed(title = "Help fun", description = "Use !help <command> for more information", color = ctx.author.color)
+    embed.add_field(name = "!answer, [!a]", value = "Show number of words")
+    embed.add_field(name = "!broederliefde", value = ":)")
+    embed.add_field(name = "!hotel", value = "Trivago!")
+    embed.add_field(name = "!hug", value = "Give someone a hug!")
+    embed.add_field(name = "!mock <sentence>", value = "Return 'mocked' sentence")
+    embed.add_field(name = "!moses", value = "Moses I guess?")
+    embed.add_field(name = "!perfection", value = ":^)")
+    embed.add_field(name = "!stemopsimon (broken)", value = "Show true communism")
+    embed.add_field(name = "!time_nick", value = "Changes nicknames over time in a voice channel")
+    await ctx.send(embed = embed)
+
+@help.command(aliases = ['Others'])
+async def others(ctx):
+    embed = discord.Embed(title = "Help others", description = "Use !help <command> for more information", color = ctx.author.color)
+    embed.add_field(name = "Admin commands", value = "Don't bother about these")
+    await ctx.send(embed = embed)
+
 #**********#
 #Bot events#
 #**********#

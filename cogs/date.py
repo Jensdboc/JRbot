@@ -61,13 +61,11 @@ class Date(commands.Cog):
                 line = split_line[2] + " heeft examen " + split_line[1] + " op " + split_line[0] + '.'
                 message += line
                 message += '\n'
-                #await ctx.send(split_line[2] + " heeft examen " + split_line[1] + " op " + split_line[0] + '.')
             elif str(split_line[3]) == str(member.id):
                 count += 1
                 line = split_line[2] + " heeft examen " + split_line[1] + " op " + split_line[0] + '.'
                 message += line
                 message += '\n'
-                #await ctx.send(split_line[2] + " heeft examen " + split_line[1] + " op " + split_line[0] + '.')
         if count == 0:
             await ctx.send("No such user found!")
         else:

@@ -19,9 +19,22 @@ class Administration(commands.Cog):
     @commands.command()
     async def crew(context, member : discord.Member):
         for e in context.guild.roles:
-            if e.name == 'Crewmates':
+            if e.name == '🌳':
                 await member.add_roles(e)
                 return 
+
+    @commands.command()
+    async def clear(self, ctx,*,number=1):
+        messages = await ctx.channel.history(limit = number+1).flatten()
+        for mes in messages:
+            if(self.client.mute_message):
+                if (self.client.mute_message.id == mes.id):
+                    if (ctx.message.author.voice):
+                        vc = ctx.message.author.voice.channel
+                        for member in vc.members:
+                            await member.edit(mute = 0)
+                    self.client.mute_message = None
+        await ctx.channel.delete_messages(messages)
 
     @commands.command(aliases = ['tm'])
     async def thumbmail(ctx, url):
