@@ -11,6 +11,9 @@ from youtube_dl import YoutubeDL
 
 import typing
 
+#Extra for othello
+import numpy as np
+
 #import for cogs
 import os
 
