@@ -6,6 +6,8 @@ import os
 import sys
 
 from discord.flags import MessageFlags
+fpath = os.path.join(os.path.dirname(__file__), 'othello_board')
+sys.path.append(fpath)
 from othello_board import Board
 fpath = os.path.join(os.path.dirname(__file__), 'othello_main')
 sys.path.append(fpath)
@@ -19,9 +21,6 @@ from othello_mcts_agent import *
 fpath = os.path.join(os.path.dirname(__file__), 'othello_static_eval_agent')
 sys.path.append(fpath)
 from othello_static_eval_agent import *
-fpath = os.path.join(os.path.dirname(__file__), 'othello_board')
-sys.path.append(fpath)
-from othello_board import *
 #fpath = os.path.join(os.path.dirname(__file__), 'othello_random_agent')
 #sys.path.append(fpath)
 #from othello_random_agent import *
