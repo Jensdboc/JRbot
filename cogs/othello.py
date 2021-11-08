@@ -2,10 +2,11 @@ from re import A
 import discord
 from discord.ext import commands
 
-import os
-import sys
+#import os
+#import sys
 
 from discord.flags import MessageFlags
+"""
 fpath = os.path.join(os.path.dirname(__file__), 'othello_board')
 sys.path.append(fpath)
 from othello_board import Board
@@ -24,7 +25,12 @@ from othello_static_eval_agent import *
 #fpath = os.path.join(os.path.dirname(__file__), 'othello_random_agent')
 #sys.path.append(fpath)
 #from othello_random_agent import *
-
+"""
+from othello_board import *
+from othello_human_agent import *
+#from othello_main import *
+from othello_mcts_agent import *
+from othello_static_eval_agent import *
 
 class Othello(commands.Cog):
 
@@ -49,9 +55,9 @@ class Othello(commands.Cog):
 
     @commands.command(aliases = ['oi']) 
     async def othello_input(self, ctx, x, y):
-        for i in games:
-            print(i.author)
-            print(i.message)
+        #for i in games:
+            #print(i.author)
+            #print(i.message)
         await ctx.message.delete() 
         for index, board in enumerate(games):
             if board.author == ctx.author:
@@ -67,11 +73,11 @@ class Othello(commands.Cog):
 
                     embed =  discord.Embed(title='Othello', description= games[index].display(), color = ctx.author.color)       
                     await games[index].message.edit(embed = embed) 
-                    print('Players turn ended')
+                    #print('Players turn ended')
 
                     # What if player turns is right but doesn't have moves anymore
                     if new_board.game_finished():
-                        print('Game finished 1')
+                        #print('Game finished 1')
                         embed =  discord.Embed(title='Othello', description= games[index].display(), color = ctx.author.color)       
                         await games[index].message.edit(embed = embed) 
 
@@ -96,18 +102,18 @@ class Othello(commands.Cog):
                         await ctx.send(newer_board)  
                         return
 
-                    print('Bots turn ended')
+                    #print('Bots turn ended')
                     embed =  discord.Embed(title='Othello', description= games[index].display(), color = ctx.author.color)       
                     await games[index].message.edit(embed = embed) 
 
                     i = 0
-                    print(games[index])
+                    #print(games[index])
                     while len(games[index].legal_moves()) == 0:
                         games[index].turn = 'white'
                         newer_board = simulate(MCTSAgent('white', max_depth=2, rollouts=100, base_agent=StaticEvalAgent('white'), uct_const=1 / np.sqrt(2)), HumanAgent('black'), games[index], coords)
-                        print(newer_board)
+                        #print(newer_board)
                         if isinstance(newer_board, Board):
-                            print('Bots turn ended: ' + str(i))
+                            #print('Bots turn ended: ' + str(i))
                             games[index] = newer_board
                             newer_board.turn = 'black'
                             embed =  discord.Embed(title='Othello', description= games[index].display(), color = ctx.author.color)       
@@ -115,7 +121,7 @@ class Othello(commands.Cog):
                         else:
                             # Bot kan niet zetten, spel is gedaan
                             if games[index].game_finished():
-                                print('Game finished 2')
+                                #print('Game finished 2')
                                 embed =  discord.Embed(title='Othello', description= games[index].display(), color = ctx.author.color)       
                                 await games[index].message.edit(embed = embed) 
 
@@ -130,7 +136,7 @@ class Othello(commands.Cog):
                                 await ctx.send(res)
                                 return
                             else:
-                                print('Player can move now')
+                                #print('Player can move now')
                                 await ctx.send(newer_board)
                                 return
                     return
@@ -151,7 +157,40 @@ class Othello(commands.Cog):
     async def othello_clear(self, ctx):
         games = []
         await ctx.send("All games have been succesfully cleared!")
-        
+
+def simulate(white, black, board, coords):
+
+    player = white if board.turn == 'white' else black
+    move = player.move(board, coords)
+    #print(move)
+    
+    if isinstance(move, str):
+        return move
+
+    #if len(move) == 0:
+    #    return "Bot didn't find a place to put his stuff! Your turn now :)"
+
+    if len(move) == 0:
+        board.turn = 'black' if board.turn == 'white' else 'white'
+        if player == white:
+            return "Bot didn't find a place to put his stuff! Your turn now :)"
+        else:
+            return "Player didn't find a place to put his stuff!"
+    else:
+        if board.turn == 'white':
+            board.board[move[0]][move[1]] = '⬜'
+            board.turn_token(move, '⬜', '⬛')
+            board.white_played.append(move[0] * 8 + move[1])
+            board.turn = 'black'
+        else:
+            board.board[move[0]][move[1]] = '⬛'
+            board.turn_token(move, '⬛', '⬜')
+            board.black_played.append(move[0] * 8 + move[1])
+            board.turn = 'white'
+    
+    return board
+
+
 #Allows to connect cog to bot    
 def setup(client):
     client.add_cog(Othello(client))
