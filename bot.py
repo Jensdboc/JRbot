@@ -125,6 +125,7 @@ async def help(ctx):
     embed.add_field(name = "Date", value = "Adddate, deletedate, showdate")
     embed.add_field(name = "Fun", value = "Answer, broederliefde, hotel, hug, mock, moses, perfection, stemopsimon, time_nick")
     embed.add_field(name = "Woordenketting", value = "Count, dier, edit")
+    embed.add_field(name = "Othello", value = "Othello_start, othello_input")
     embed.add_field(name = "Others", value = "Admin, blacklist, cleardates, help, load, reload, start, unload")
     await ctx.send(embed = embed)
 
@@ -179,10 +180,22 @@ async def fun(ctx):
     embed.add_field(name = "!time_nick", value = "Changes nicknames over time in a voice channel")
     await ctx.send(embed = embed)
 
+@help.command(aliases = ['Othello'])
+async def othello(ctx):
+    embed = discord.Embed(title = "Help othello", description = "Use !help <command> for more information\nUse !help othello_rules for game rules", color = ctx.author.color)
+    embed.add_field(name = "!othello_start, [!a]", value = "Start othello game")
+    embed.add_field(name = "!othello_input <x> <y>, [!oi]", value = "Give coordinates for next input")
+    await ctx.send(embed = embed)
+
 @help.command(aliases = ['Others'])
 async def others(ctx):
     embed = discord.Embed(title = "Help others", description = "Use !help <command> for more information", color = ctx.author.color)
     embed.add_field(name = "Admin commands", value = "Don't bother about these")
+    await ctx.send(embed = embed)
+
+@help.command()
+async def othello_rules(ctx):
+    embed = discord.Embed(title = "Othello rules", description = "WIP", color = ctx.author.color)
     await ctx.send(embed = embed)
 
 #**********#
@@ -208,7 +221,7 @@ async def on_message(message):
                 aantal += 1
                 await message.channel.send(embed=embed)
     await client.process_commands(message)
-    
+ 
 @client.event
 async def on_guild_channel_create(channel):
     embed =  discord.Embed(title='Welcome, I was expecting you...', colour=0xff0000)
