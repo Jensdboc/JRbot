@@ -136,10 +136,10 @@ async def help(ctx):
 async def administration(ctx):
     embed = discord.Embed(title = "Help administration", description = "Use !help <command> for more information", color = ctx.author.color)
     embed.add_field(name = "!crew <member>", value = "Give member 🌳-role")
-    embed.add_field(name = "!join (broken)", value = "Bot joins voice channel")
-    embed.add_field(name = "!leave (broken)", value = "Bot leaves voice channel")
+    embed.add_field(name = "!join", value = "Bot joins voice channel")
+    embed.add_field(name = "!leave", value = "Bot leaves voice channel")
     embed.add_field(name = "!nick <member> <nickname>", value = "Give member a nickname")
-    embed.add_field(name = "!thumbmail <url>, [!tm] (broken)", value = "Return thumbmail from youtube video")
+    embed.add_field(name = "!thumbmail <url>, [!tm]", value = "Return thumbmail from youtube video")
     embed.add_field(name = "!clear <number>", value = "Clear the last number of messages (default = 1)")
     await ctx.send(embed = embed)
 
@@ -186,7 +186,7 @@ async def fun(ctx):
 @help.command(aliases = ['Othello'])
 async def othello(ctx):
     embed = discord.Embed(title = "Help othello", description = "Use !help <command> for more information\nUse !help othello_rules for game rules", color = ctx.author.color)
-    embed.add_field(name = "!othello_start, [!a]", value = "Start othello game")
+    embed.add_field(name = "!othello_start, [!os]", value = "Start othello game")
     embed.add_field(name = "!othello_input <x> <y>, [!oi]", value = "Give coordinates for next input")
     await ctx.send(embed = embed)
 
@@ -198,7 +198,7 @@ async def others(ctx):
 
 @help.command()
 async def othello_rules(ctx):
-    embed = discord.Embed(title = "Othello rules", description = "WIP", color = ctx.author.color)
+    embed = discord.Embed(title = "Othello rules", description = "WIP: Google for now :^)", color = ctx.author.color)
     await ctx.send(embed = embed)
 
 #**********#

@@ -2,33 +2,9 @@ from re import A
 import discord
 from discord.ext import commands
 
-#import os
-#import sys
-
 from discord.flags import MessageFlags
-"""
-fpath = os.path.join(os.path.dirname(__file__), 'othello_board')
-sys.path.append(fpath)
-from othello_board import Board
-fpath = os.path.join(os.path.dirname(__file__), 'othello_main')
-sys.path.append(fpath)
-from othello_main import simulate
-fpath = os.path.join(os.path.dirname(__file__), 'othello_human_agent')
-sys.path.append(fpath)
-from othello_human_agent import *
-fpath = os.path.join(os.path.dirname(__file__), 'othello_mcts_agent')
-sys.path.append(fpath)
-from othello_mcts_agent import *
-fpath = os.path.join(os.path.dirname(__file__), 'othello_static_eval_agent')
-sys.path.append(fpath)
-from othello_static_eval_agent import *
-#fpath = os.path.join(os.path.dirname(__file__), 'othello_random_agent')
-#sys.path.append(fpath)
-#from othello_random_agent import *
-"""
 from othello_board import *
 from othello_human_agent import *
-#from othello_main import *
 from othello_mcts_agent import *
 from othello_static_eval_agent import *
 
@@ -55,9 +31,6 @@ class Othello(commands.Cog):
 
     @commands.command(aliases = ['oi']) 
     async def othello_input(self, ctx, x, y):
-        #for i in games:
-            #print(i.author)
-            #print(i.message)
         await ctx.message.delete() 
         for index, board in enumerate(games):
             if board.author == ctx.author:
