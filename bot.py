@@ -17,9 +17,10 @@ import numpy as np
 #import for cogs
 import os
 
-#Intent for hug
+#Intents
 intents = discord.Intents.default()  # Allow the use of custom intents
-intents.members = True
+intents.members = True #intent for hug
+intents.presences = True  #intent for activity
 
 client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
 client.mute_message = None

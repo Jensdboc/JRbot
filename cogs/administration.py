@@ -1,7 +1,9 @@
 import discord
+from discord.activity import Spotify
 from discord.ext import commands
 
 import urllib.request
+from discord.ext.commands.core import command
 
 from numpy.lib.type_check import imag
 
@@ -42,6 +44,14 @@ class Administration(commands.Cog):
     async def thumbmail(self, ctx, url):
         await ctx.send('https://i.ytimg.com/vi/' + str(url)[32:] + '/maxresdefault.jpg')
         await ctx.message.delete()
+
+    @commands.command(aliases = ['sa'])
+    async def show_activity(self, ctx, user=0):
+        if user == 0:
+            for member in ctx.guild.members:
+                for activity in member.activities:
+                    if isinstance(activity, Spotify) :
+                        await ctx.send(member.name + ' is listening to ' + activity.title + ' from ' + activity.album + ' by ' + activity.artist)
 
     @commands.command(pass_context=True)
     async def join(self, ctx):
