@@ -69,7 +69,41 @@ class Date(commands.Cog):
         if count == 0:
             await ctx.send("No such user found!")
         else:
-            await ctx.send(message)
+            embed = discord.Embed(title = "Examen Data", description = message)
+            await ctx.send(embed = embed)
+
+    @commands.command(aliases = ['sdd'])
+    async def showdatedate(self, ctx, member : discord.Member=None):
+        with open('Examen_data.txt', 'r') as file:
+            content = file.readlines()
+        count = 0
+        message = ''
+        current_date = ''
+        Date.sort()
+        if len(content) == 0:
+            await ctx.send("No dates added yet!")
+            return
+        for line in content: 
+            split_line = line.split('\t')
+            split_line[3] = split_line[3][:-1]
+            if current_date != split_line[0]:
+                current_date = split_line[0]
+                message += current_date + ":\n"
+            if member == None:
+                count += 1
+                line = split_line[2] + " heeft examen " + split_line[1] + '.'
+                message += line
+                message += '\n'
+            elif str(split_line[3]) == str(member.id):
+                count += 1
+                line = split_line[2] + " heeft examen " + split_line[1] + '.'
+                message += line
+                message += '\n'
+        if count == 0:
+            await ctx.send("No such user found!")
+        else:
+            embed = discord.Embed(title = "Examen Data", description = message)
+            await ctx.send(embed = embed)
 
     @commands.command(aliases = ['dd'])
     async def deletedate(self, ctx, date, *, name):
