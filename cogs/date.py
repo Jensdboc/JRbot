@@ -47,6 +47,7 @@ class Date(commands.Cog):
     async def showdate(self, ctx, member : discord.Member=None):
         with open('Examen_data.txt', 'r') as file:
             content = file.readlines()
+        page = 1
         count = 0
         message = ''
         Date.sort()
@@ -54,6 +55,11 @@ class Date(commands.Cog):
             await ctx.send("No dates added yet!")
             return
         for line in content: 
+            if len(message) > 2000:
+                embed = discord.Embed(title = "Examen Data " + str(page), description = message)
+                await ctx.send(embed = embed)
+                message = ''
+                page += 1
             split_line = line.split('\t')
             split_line[3] = split_line[3][:-1]
             if member == None:
@@ -69,13 +75,14 @@ class Date(commands.Cog):
         if count == 0:
             await ctx.send("No such user found!")
         else:
-            embed = discord.Embed(title = "Examen Data", description = message)
+            embed = discord.Embed(title = "Examen Data " + str(page), description = message)
             await ctx.send(embed = embed)
 
     @commands.command(aliases = ['sdd'])
     async def showdatedate(self, ctx, member : discord.Member=None):
         with open('Examen_data.txt', 'r') as file:
             content = file.readlines()
+        page = 1
         count = 0
         message = ''
         current_date = ''
@@ -88,6 +95,11 @@ class Date(commands.Cog):
             split_line[3] = split_line[3][:-1]
             if current_date != split_line[0]:
                 current_date = split_line[0]
+                if len(message) > 2000:
+                    embed = discord.Embed(title = "Examen Data " + str(page), description = message)
+                    await ctx.send(embed = embed)
+                    message = ''
+                    page += 1
                 message += current_date + ":\n"
             if member == None:
                 count += 1
@@ -102,7 +114,7 @@ class Date(commands.Cog):
         if count == 0:
             await ctx.send("No such user found!")
         else:
-            embed = discord.Embed(title = "Examen Data", description = message)
+            embed = discord.Embed(title = "Examen Data " + str(page), description = message)
             await ctx.send(embed = embed)
 
     @commands.command(aliases = ['dd'])
