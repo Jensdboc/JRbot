@@ -3,6 +3,8 @@ from typing import Text
 import discord
 from discord.ext import commands
 
+import re
+
 class Date(commands.Cog):
     
     def __init__(self, client):
@@ -30,6 +32,9 @@ class Date(commands.Cog):
         
     @commands.command(aliases = ['ad'])
     async def adddate(self, ctx, date, *, name):
+        if not re.match("[0-3][0-9]/[0-1][0-9]/[0-9]{4}", date):
+            await ctx.send("Date has to be DD/MM/YYYY, try again.")
+            return
         with open('Examen_data.txt', 'a') as file:
             file.write(date + '\t')
             split_name = name.split(' ')
@@ -50,41 +55,6 @@ class Date(commands.Cog):
         page = 1
         count = 0
         message = ''
-        Date.sort()
-        if len(content) == 0:
-            await ctx.send("No dates added yet!")
-            return
-        for line in content: 
-            if len(message) > 2000:
-                embed = discord.Embed(title = "Examen Data " + str(page), description = message)
-                await ctx.send(embed = embed)
-                message = ''
-                page += 1
-            split_line = line.split('\t')
-            split_line[3] = split_line[3][:-1]
-            if member == None:
-                count += 1
-                line = split_line[2] + " heeft examen " + split_line[1] + " op " + split_line[0] + '.'
-                message += line
-                message += '\n'
-            elif str(split_line[3]) == str(member.id):
-                count += 1
-                line = split_line[2] + " heeft examen " + split_line[1] + " op " + split_line[0] + '.'
-                message += line
-                message += '\n'
-        if count == 0:
-            await ctx.send("No such user found!")
-        else:
-            embed = discord.Embed(title = "Examen Data " + str(page), description = message)
-            await ctx.send(embed = embed)
-
-    @commands.command(aliases = ['sdd'])
-    async def showdatedate(self, ctx, member : discord.Member=None):
-        with open('Examen_data.txt', 'r') as file:
-            content = file.readlines()
-        page = 1
-        count = 0
-        message = ''
         current_date = ''
         Date.sort()
         if len(content) == 0:
@@ -100,7 +70,7 @@ class Date(commands.Cog):
                     await ctx.send(embed = embed)
                     message = ''
                     page += 1
-                message += current_date + ":\n"
+                message += "**__" + current_date + ":__**\n"
             if member == None:
                 count += 1
                 line = split_line[2] + " heeft examen " + split_line[1] + '.'
