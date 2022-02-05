@@ -1,3 +1,4 @@
+from dis import disco
 from inspect import signature
 from io import StringIO
 from typing import overload
@@ -123,9 +124,15 @@ class Fun(commands.Cog):
                         answer += str(letter)
                     if str(letter) == ' ':
                         start += 1
-                embed = discord.Embed(title= name + ': ' + answer ,color=0x7289da)            
+                embed = discord.Embed(title=name + ': ' + answer, color=0x7289da)            
                 await user.send(embed=embed)
 
-#Allows to connect cog to bot    
+    @commands.command()
+    async def secret(self, ctx):
+        channel = self.client.get_channel(935507669580652544)
+        embed = discord.Embed(title=ctx.message.content[8:], color=discord.Color(random.randint(0, 16777215))) 
+        await channel.send(embed=embed)
+
+#Allows to connect cog to bot   
 def setup(client):
     client.add_cog(Fun(client))
