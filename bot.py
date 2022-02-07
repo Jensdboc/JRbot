@@ -98,15 +98,20 @@ async def admin(ctx):
 
 @client.command()
 @commands.check(admin_check)
-async def start(ctx, dier):
-    with open('Dieren.txt','a') as txt: 
-        txt.truncate(0)
-        txt.write(dier + '\n')
-    with open('Last_user.txt', 'a') as user_file:
-        user_file.truncate(0)
-        user_file.write('placeholder')
-    embed =  discord.Embed(title='Woordenketting', description='A new game has been started with ' + '`' + dier + '`' + ' as first word.', colour=0x11806a)
-    await ctx.send(embed=embed)
+async def start(ctx, thema=None, woord=None):
+    if thema is None or woord is None:
+        embed =  discord.Embed(title='Woordenketting', description='Something went wrong with starting a game. Use !start <theme> <word>', colour=0xFF0000)
+        await ctx.send(embed=embed)
+        return
+    else:
+        with open('Woordenketting.txt','a') as txt: 
+            txt.truncate(0)
+            txt.write(thema + '\n' + woord + '\n')
+        with open('Last_user.txt', 'a') as user_file:
+            user_file.truncate(0)
+            user_file.write('placeholder')
+        embed =  discord.Embed(title='Woordenketting', description='A new game has been started with ' + '`' + thema + '`' + ' as theme and ' + '`' + woord + '`' + ' as first word.', colour=0x11806a)
+        await ctx.send(embed=embed)
 
 @client.command(aliases = ['cld'])
 @commands.check(admin_check)
