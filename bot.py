@@ -106,10 +106,10 @@ async def start(ctx, thema=None, woord=None):
     else:
         with open('Woordenketting.txt','a') as txt: 
             txt.truncate(0)
-            txt.write(thema + '\n' + woord + '\n')
-        with open('Last_user.txt', 'a') as user_file:
+            txt.write(thema + '\n' + woord + '\t' + str(ctx.message.author.id) + '\n')
+        with open('Woordenketting_users.txt', 'a') as user_file:
             user_file.truncate(0)
-            user_file.write('placeholder')
+            user_file.write(str(ctx.message.author.id) + '\n')
         embed =  discord.Embed(title='Woordenketting', description='A new game has been started with ' + '`' + thema + '`' + ' as theme and ' + '`' + woord + '`' + ' as first word.', colour=0x11806a)
         await ctx.send(embed=embed)
 
