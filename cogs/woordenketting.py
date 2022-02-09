@@ -10,7 +10,7 @@ import unicodedata
 
 def lower_strip_accents(word):
     return (''.join(c for c in unicodedata.normalize('NFD', word)
-                  if unicodedata.category(c) != 'Mn')).lower()
+                 if unicodedata.category(c) != 'Mn')).lower()
 
 class Woordenketting(commands.Cog):
     
@@ -20,6 +20,8 @@ class Woordenketting(commands.Cog):
     @commands.command(aliases = ['aw'])
     async def add_word(self, ctx, *, entry=None):
         list = []
+        if (entry is not None):
+            await ctx.send(lower_strip_accents(entry))
         # Eerste lijn is nu het thema
         with open('Woordenketting.txt','r') as txt: 
             thema = str(txt.readline()[:-1]).upper() 
@@ -38,7 +40,7 @@ class Woordenketting(commands.Cog):
         with open('Woordenketting_users.txt', 'r') as user_file:
             with open('Woordenketting.txt','a') as txt:
                 # Nieuwe user + juiste letter
-                if str(ctx.message.author.id) != last_user and str(entry[0]).lower() == letter.lower():
+                if str(ctx.message.author.id) != last_user and lower_strip_accents(str(entry[0])) == lower_strip_accents(letter):
                     # Check of entry niet in de lijst
                     if entry.lower() in list:
                         embed =  discord.Embed(title='Woordenketting: ' + thema, description='`' + entry + '`' + ' already in list!', colour=0xff0000)
@@ -57,6 +59,7 @@ class Woordenketting(commands.Cog):
                         if str(ctx.message.author.id) not in users:
                             with open('Woordenketting_users.txt', 'a') as user_file:
                                 user_file.write(str(ctx.message.author.id) + '\n') 
+                    await ctx.send("Geschreven woord: " + entry.lower() + '\t' + str(ctx.message.author.id) + '\n')
                     txt.write(entry.lower() + '\t' + str(ctx.message.author.id) + '\n')
                     embed =  discord.Embed(title='Woordenketting: ' + thema, description='`' + entry + '`' + ' has been added!', colour=0x11806a)
                     await ctx.send(embed=embed)
@@ -66,7 +69,7 @@ class Woordenketting(commands.Cog):
                     await ctx.send(embed=embed)   
                 # Nieuwe user + verkeerde letter
                 elif lower_strip_accents(str(entry[0])) != lower_strip_accents(letter) and str(ctx.message.author.id) != last_user:
-                    embed =  discord.Embed(title='Woordenketting: ' + thema, description='Word should start with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`', colour=0xff0000)
+                    embed =  discord.Embed(title='Woordenketting: ' + thema, description='Word should start with ' + '`' + lower_strip_accents(letter) + '`' + ', final letter of ' + '`' + woord + '`', colour=0xff0000)
                     await ctx.send(embed=embed) 
 
     @commands.command(aliases = ['dw'])
