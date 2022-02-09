@@ -20,8 +20,6 @@ class Woordenketting(commands.Cog):
     @commands.command(aliases = ['aw'])
     async def add_word(self, ctx, *, entry=None):
         list = []
-        if (entry is not None):
-            await ctx.send(lower_strip_accents(entry))
         # Eerste lijn is nu het thema
         with open('Woordenketting.txt','r') as txt: 
             thema = str(txt.readline()[:-1]).upper() 
@@ -59,7 +57,6 @@ class Woordenketting(commands.Cog):
                         if str(ctx.message.author.id) not in users:
                             with open('Woordenketting_users.txt', 'a') as user_file:
                                 user_file.write(str(ctx.message.author.id) + '\n') 
-                    await ctx.send("Geschreven woord: " + entry.lower() + '\t' + str(ctx.message.author.id) + '\n')
                     txt.write(entry.lower() + '\t' + str(ctx.message.author.id) + '\n')
                     embed =  discord.Embed(title='Woordenketting: ' + thema, description='`' + entry + '`' + ' has been added!', colour=0x11806a)
                     await ctx.send(embed=embed)
