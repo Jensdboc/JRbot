@@ -31,7 +31,7 @@ class Administration(commands.Cog):
     async def clear(self, ctx,*,number=1):
         messages = await ctx.channel.history(limit = number+1).flatten()
         for mes in messages:
-            if(self.client.mute_message):
+            if (self.client.mute_message):
                 if (self.client.mute_message.id == mes.id):
                     if (ctx.message.author.voice):
                         vc = ctx.message.author.voice.channel

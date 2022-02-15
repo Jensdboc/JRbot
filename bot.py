@@ -133,7 +133,7 @@ async def help(ctx):
     embed.add_field(name = "Amongus", value = "Code, deads, mute, switch, unmute")
     embed.add_field(name = "Date", value = "Adddate, deletedate, showdate")
     embed.add_field(name = "Fun", value = "Answer, broederliefde, hotel, hug, mock, moses, perfection, stemopsimon, time_nick")
-    embed.add_field(name = "Woordenketting", value = "Count, dier, edit")
+    embed.add_field(name = "Woordenketting", value = "add_word, delete_word, edit, show, stats")
     embed.add_field(name = "Othello", value = "Othello_start, othello_input")
     embed.add_field(name = "Others", value = "Admin, blacklist, cleardates, help, load, reload, start, unload")
     await ctx.send(embed = embed)
@@ -170,9 +170,11 @@ async def date(ctx):
 @help.command(aliases = ['Woordenketting'])
 async def woordenketting(ctx):
     embed = discord.Embed(title = "Help woordenketting", description = "Use !help <command> for more information", color = ctx.author.color)
-    embed.add_field(name = "!count", value = "Show number of words")
-    embed.add_field(name = "!dier <dier>, [!d]", value = "Add new word")
-    embed.add_field(name = "!edit <dier>", value = "Replace last word with new word")
+    embed.add_field(name = "!add_word <word>, [!aw]", value = "Add a word")
+    embed.add_field(name = "!delete_word, [!dw]", value = "Deletes last word if you submitted the last word")
+    embed.add_field(name = "!edit <word>", value = "Replace last word with new word")
+    embed.add_field(name = "!show <letter>", value = "Show all used words or filtered on a certain letter")
+    embed.add_field(name = "!stats <member>", value = "Show general stats or stats for a member")
     await ctx.send(embed = embed)
 
 @help.command(aliases = ['Fun'])
@@ -213,7 +215,6 @@ async def othello_rules(ctx):
 
 @client.event
 async def on_message(message):
-    
     verboden_woorden = ['taylor swift','taylor', 'swift', 'taylorswift', 'folklore', 'love story', 'evermore', 'lovestory', 'taytay', 't swizzle', 'tswizzle', 'swizzle', 'queen t']
     aantal = 0
     for woord in verboden_woorden:
@@ -244,7 +245,7 @@ async def on_member_join(member):
             embed = discord.Embed(title=f'Heyhey {member.display_name}!', colour=0xff0000)
             await ch.send(embed=embed)
             for e in member.guild.roles:
-                if e.name == 'Crewmates':
+                if e.name == '🌳' or e.name == '------------[ General Roles  ]------------' or e.name == '------------[ Reward Roles ]------------':
                     await member.add_roles(e,reason=None)
                     return 
         
