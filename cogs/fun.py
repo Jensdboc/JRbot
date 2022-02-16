@@ -21,7 +21,9 @@ class Fun(commands.Cog):
         self.client = client  
     
     autist_id = 383952659310444544
-    @commands.command()
+    @commands.command(usage="!mock <sentence>", 
+                      description="Randomly capitalize the sentence", 
+                      help="The sentence can contain **spaces**")
     async def mock(self, ctx, *, to_mock):
         mocked_text = ''
         if(ctx.message.author.id == 383952659310444544):
@@ -42,12 +44,16 @@ class Fun(commands.Cog):
         embed = discord.Embed(title=mocked_text,color=0xe67e22)
         await ctx.send(embed=embed)
         
-    @commands.command()
+    @commands.command(usage="!hotel", 
+                      description="Trivago!", 
+                      help="")
     async def hotel(self, ctx):
         embedVar = discord.Embed(title="Trivago!", color=0x992d22)
         await ctx.send(embed=embedVar)
             
-    @commands.command()
+    @commands.command(usage="!moses", 
+                      description="Moses I guess?", 
+                      help="")
     async def moses(self, ctx):
         file = discord.File("./data_pictures/mosesgif.gif")
         embed = discord.Embed(color=0x9b59b6)
@@ -55,7 +61,9 @@ class Fun(commands.Cog):
         await ctx.send(file=file, embed=embed) 
 
     # Werkt momenteel niet
-    @commands.command()
+    @commands.command(usage="!stemopsimon", 
+                      description="Show true communism", 
+                      help="Currently broken")
     async def stemopsimon(self, ctx):
         embed = discord.Embed(title='Sinds wanneer heeft een SSL stemmen nodig?', color=0xff0000) 
         link = 'https://www.biography.com/.image/ar_1:1%2Cc_fill%2Ccs_srgb%2Cg_face%2Cq_auto:good%2Cw_300/MTY2NjgyOTkyNTMyNTMwMjMx/gettyimages-2637237.jpg'
@@ -72,21 +80,27 @@ class Fun(commands.Cog):
             voice.play(FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
             voice.is_playing()
     
-    @commands.command()
+    @commands.command(usage="!broederliefde", 
+                      description=":)", 
+                      help="")
     async def broederliefde(self, ctx):
         file = discord.File("./data_pictures/broederliefde.png")
         embed = discord.Embed(color=0x9b59b6)
         embed.set_image(url="attachment://broederliefde.png")
         await ctx.send(file=file, embed=embed)
         
-    @commands.command()
+    @commands.command(usage="!perfection", 
+                      description=":^)", 
+                      help="")
     async def perfection(self, ctx):
         file = discord.File("./data_pictures/floef.png")
         embed = discord.Embed(color=0x9b59b6)
         embed.set_image(url="attachment://floef.png")
         await ctx.send(file=file, embed=embed)  
 
-    @commands.command()
+    @commands.command(usage="!hug <member/role>", 
+                      description="Give someone a hug!", 
+                      help="!hug @member: Send a random hug to the member\n!hug @role: Send a random hug to everyone with this role")
     async def hug(self, ctx, target : typing.Union[discord.Member, discord.Role] = None):
         embed = discord.Embed(title='You get a free hug!', color=0x1DDCF)
         hugs = ["hug1.gif", "hug2.gif", "hug3.gif", "hug4.gif", "hug5.gif"]
@@ -103,7 +117,9 @@ class Fun(commands.Cog):
         else:
             await ctx.message.author.send(file=file, embed=embed)
 
-    @commands.command()
+    @commands.command(usage="!hug <member/role>", 
+                      description="Changes nicknames over time in a voice channel", 
+                      help="")
     async def time_nick(self, ctx):
         l = ['appelflap', 'piemelgefriemel','kaiser Hans', 'Wedidntstartthefire', 'Kaboom', 'Potverdikke', 'DA imposter', '☺', '\N{Cross Mark}', 'VOTE KICK NORICK', 'Emma', 'Floefie', 'Meesje', 'Processing...', 'Norick03', 'ComradBenji']
         vc = ctx.message.author.voice.channel
@@ -111,7 +127,10 @@ class Fun(commands.Cog):
             nickname = random.choice(l)
             await member.edit(nick=str(nickname))
         
-    @commands.command(aliases = ['a'])
+    @commands.command(usage="!answer <sentence>", 
+                      description="Send a message to Britt for quizzes", 
+                      help="Sentence can contain **spaces**",
+                      aliases = ['a'])
     async def answer(self, ctx):
         for user in self.client.users:
             #Id van Britt
@@ -127,7 +146,9 @@ class Fun(commands.Cog):
                 embed = discord.Embed(title=name + ': ' + answer, color=0x7289da)            
                 await user.send(embed=embed)
 
-    @commands.command()
+    @commands.command(usage="!secret <sentence>", 
+                      description="Send a secret message", 
+                      help="This message will be posted in the secretchannel with a randomised color :). Sentence can contain **spaces**")
     async def secret(self, ctx):
         channel = self.client.get_channel(935507669580652544)
         embed = discord.Embed(title=ctx.message.content[8:], color=discord.Color(random.randint(0, 16777215))) 
