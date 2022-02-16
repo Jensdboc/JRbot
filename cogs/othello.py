@@ -16,7 +16,10 @@ class Othello(commands.Cog):
     global games
     games = []
 
-    @commands.command(aliases = ['os'])
+    @commands.command(usage="!othello_start", 
+                      description="Start othello game", 
+                      help="https://nl.wikipedia.org/wiki/Reversi for more information",
+                      aliases = ['os'])
     async def othello_start(self, ctx): #Show start screen, ask for input
         embed =  discord.Embed(title='Othello', description= "Calculating board...", color = ctx.author.color)
         message = await ctx.send(embed=embed)
@@ -29,7 +32,10 @@ class Othello(commands.Cog):
         embed =  discord.Embed(title='Othello', description= new_board.display(), color = ctx.author.color)
         await message.edit(embed=embed) 
 
-    @commands.command(aliases = ['oi']) 
+    @commands.command(usage="!othello_input <x> <y>", 
+                      description="Give coordinates for next input", 
+                      help="https://nl.wikipedia.org/wiki/Reversi for more information",
+                      aliases = ['oi']) 
     async def othello_input(self, ctx, x, y):
         await ctx.message.delete() 
         for index, board in enumerate(games):
@@ -126,7 +132,10 @@ class Othello(commands.Cog):
                     return
         await ctx.send("No board found!")         
     
-    @commands.command(aliases = ['oc']) 
+    @commands.command(usage="!othello_clear", 
+                      description="Remove all current games", 
+                      help="https://nl.wikipedia.org/wiki/Reversi for more information",
+                      aliases = ['oc']) 
     async def othello_clear(self, ctx):
         games = []
         await ctx.send("All games have been succesfully cleared!")
