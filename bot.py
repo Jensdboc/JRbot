@@ -3,7 +3,8 @@ from inspect import signature
 from io import StringIO
 from typing import overload
 import discord
-from discord.ext import commands 
+from discord.ext import commands, tasks 
+from itertools import cycle
 import random
 from discord.utils import get
 from discord import FFmpegPCMAudio
@@ -11,23 +12,64 @@ from youtube_dl import YoutubeDL
 
 import typing
 
-#Extra for othello
+# Extra for othello   
 import numpy as np
 
-#import for cogs
+# Import for cogs
 import os
 
-#Intents
-intents = discord.Intents.default()  # Allow the use of custom intents
-intents.members = True #intent for hug
-intents.presences = True  #intent for activity
+# Intents
 
-client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
+# intents = discord.Intents.default()  # Allow the use of custom intents
+# intents.members = True #intent for hug
+# intents.presences = True  #intent for activity
+
+intents = discord.Intents.all()
+
+from Help import CustomHelpCommand
+
+client = commands.Bot(command_prefix="!", help_command=CustomHelpCommand(), case_insensitive=True, intents=intents)
+#client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
 client.mute_message = None
+status = cycle(["Goat Simulator and the grass is extra good today 🐐",
+                "Monopoly and rent is due",
+                "Monopoly",
+                "still Monopoly",
+                "Monopoly, this is taking too long",
+                "Uno and I need new friends",
+                "Patience but I'm running out of it 😤",
+                "the Sims and the house burned down again",
+                "Wii Sports and Matt showed up 😔",
+                "Mario Cart and rainbow roads should be banned 🌈",
+                "Tetris and the square is objectively the worst",
+                "Just Dance and my knees hurt from Rasputin",
+                "Roblox and got scammed on robux",
+                "Fortnite and still can't build",
+                "Rock Paper Scissors and in what world does paper win from rock",
+                "Minecraft on peaceful 😌",
+                "the long game",
+                "the waiting game",
+                "hard to get",
+                "Russian Roulette and I'm the last one...",
+                "waiting to claim my daily",
+                "clicking the damned circles"])
 
-#***********#
+#*******#
+#Startup#
+#*******#
+
+@client.event
+async def on_ready():
+    change_status.start()
+    print('Bot = ready')
+
+@tasks.loop(seconds=180)
+async def change_status():
+    await client.change_presence(activity=discord.Game(next(status)))
+
+#*************#
 #Cogs commands#
-#***********#
+#*************#
 
 #Loads extension
 @client.command()
@@ -47,20 +89,11 @@ async def reload(ctx, extension):
     client.unload_extension(f'cogs.{extension}')
     client.load_extension(f'cogs.{extension}')
     await ctx.send("Succesfully reloaded `" + extension + '`')
-    
+
 #Loads every extensions in cogs
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
         client.load_extension(f'cogs.{filename[:-3]}')
-
-#***********#
-#Ready check#
-#***********#
-
-@client.event
-async def on_ready():
-    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Arcane!"))
-    print('Bot = ready')
 
 #**************#
 #Command checks#
@@ -119,95 +152,6 @@ async def cleardates(ctx):
     with open('Examen_data.txt', 'w') as file:
         pass
     await ctx.send("All dates have been succesfully cleared!")
-
-#************#
-#Help command#
-#************#
-
-client.remove_command("help")
-
-@client.group(invoke_without_command=True)
-async def help(ctx):
-    embed = discord.Embed(title = "Help", description = "Use !help <category> for more information", color = ctx.author.color)
-    embed.add_field(name = "Administration", value = "Crew, join, leave, nick, thumbmail, clear")
-    embed.add_field(name = "Amongus", value = "Code, deads, mute, switch, unmute")
-    embed.add_field(name = "Date", value = "Adddate, deletedate, showdate")
-    embed.add_field(name = "Fun", value = "Answer, broederliefde, hotel, hug, mock, moses, perfection, stemopsimon, time_nick")
-    embed.add_field(name = "Woordenketting", value = "add_word, delete_word, edit, show, stats")
-    embed.add_field(name = "Othello", value = "Othello_start, othello_input")
-    embed.add_field(name = "Others", value = "Admin, blacklist, cleardates, help, load, reload, start, unload")
-    await ctx.send(embed = embed)
-
-@help.command(aliases = ['Administration'])
-async def administration(ctx):
-    embed = discord.Embed(title = "Help administration", description = "Use !help <command> for more information", color = ctx.author.color)
-    embed.add_field(name = "!crew <member>", value = "Give member 🌳-role")
-    embed.add_field(name = "!join", value = "Bot joins voice channel")
-    embed.add_field(name = "!leave", value = "Bot leaves voice channel")
-    embed.add_field(name = "!nick <member> <nickname>", value = "Give member a nickname")
-    embed.add_field(name = "!thumbmail <url>, [!tm]", value = "Return thumbmail from youtube video")
-    embed.add_field(name = "!clear <number>", value = "Clear the last number of messages (default = 1)")
-    await ctx.send(embed = embed)
-
-@help.command(aliases = ['Amongus'])
-async def amongus(ctx):
-    embed = discord.Embed(title = "Help amongus", description = "Use !help <command> for more information", color = ctx.author.color)
-    embed.add_field(name = "!code <code>", value = "Start among us game in mutechannel")
-    embed.add_field(name = "!deads", value = "Send list of deads")
-    embed.add_field(name = "!mute", value = "Mute voicechannel")
-    embed.add_field(name = "!switch", value = "Start switch game")
-    embed.add_field(name = "!unmute", value = "Unmute voicechannel")
-    await ctx.send(embed = embed)
-
-@help.command(aliases = ['Date'])
-async def date(ctx):
-    embed = discord.Embed(title = "Help date", description = "Use !help <command> for more information", color = ctx.author.color)
-    embed.add_field(name = "!adddate <date> <name>, [!ad]", value = "Add date to list of dates")
-    embed.add_field(name = "!deletedate <date> <name>, [!dd]", value = "Delete date from list of dates")
-    embed.add_field(name = "!showdate, [!sd]", value = "Shows all dates")
-    await ctx.send(embed = embed)
-
-@help.command(aliases = ['Woordenketting'])
-async def woordenketting(ctx):
-    embed = discord.Embed(title = "Help woordenketting", description = "Use !help <command> for more information", color = ctx.author.color)
-    embed.add_field(name = "!add_word <word>, [!aw]", value = "Add a word")
-    embed.add_field(name = "!delete_word, [!dw]", value = "Deletes last word if you submitted the last word")
-    embed.add_field(name = "!edit <word>", value = "Replace last word with new word")
-    embed.add_field(name = "!show <letter>", value = "Show all used words or filtered on a certain letter")
-    embed.add_field(name = "!stats <member>", value = "Show general stats or stats for a member")
-    await ctx.send(embed = embed)
-
-@help.command(aliases = ['Fun'])
-async def fun(ctx):
-    embed = discord.Embed(title = "Help fun", description = "Use !help <command> for more information", color = ctx.author.color)
-    embed.add_field(name = "!answer, [!a]", value = "Show number of words")
-    embed.add_field(name = "!broederliefde", value = ":)")
-    embed.add_field(name = "!hotel", value = "Trivago!")
-    embed.add_field(name = "!hug", value = "Give someone a hug!")
-    embed.add_field(name = "!mock <sentence>", value = "Return 'mocked' sentence")
-    embed.add_field(name = "!moses", value = "Moses I guess?")
-    embed.add_field(name = "!perfection", value = ":^)")
-    embed.add_field(name = "!stemopsimon (broken)", value = "Show true communism")
-    embed.add_field(name = "!time_nick", value = "Changes nicknames over time in a voice channel")
-    await ctx.send(embed = embed)
-
-@help.command(aliases = ['Othello'])
-async def othello(ctx):
-    embed = discord.Embed(title = "Help othello", description = "Use !help <command> for more information\nUse !help othello_rules for game rules", color = ctx.author.color)
-    embed.add_field(name = "!othello_start, [!os]", value = "Start othello game")
-    embed.add_field(name = "!othello_input <x> <y>, [!oi]", value = "Give coordinates for next input")
-    await ctx.send(embed = embed)
-
-@help.command(aliases = ['Others'])
-async def others(ctx):
-    embed = discord.Embed(title = "Help others", description = "Use !help <command> for more information", color = ctx.author.color)
-    embed.add_field(name = "Admin commands", value = "Don't bother about these")
-    await ctx.send(embed = embed)
-
-@help.command()
-async def othello_rules(ctx):
-    embed = discord.Embed(title = "Othello rules", description = "WIP: Google for now :^)", color = ctx.author.color)
-    await ctx.send(embed = embed)
 
 #**********#
 #Bot events#

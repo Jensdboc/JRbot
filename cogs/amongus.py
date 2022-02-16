@@ -14,7 +14,10 @@ class Amongus(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.command(aliases = ['cd'])
+    @commands.command(usage="!code <code>", 
+                      description="Start among us game in mutechannel", 
+                      help="The code has to be a valid 6-digit number. The following message will be posted in mutechannel",
+                      aliases = ['cd'])
     async def code(self, ctx,*,new_lobbycode=''):
         global lobbycode 
         await ctx.message.delete()
@@ -46,7 +49,10 @@ class Amongus(commands.Cog):
             embed3 = discord.Embed(title=new_lobbycode.upper()+ ' is not a valid code!', color=0xff0000)
             await ctx.channel.send(embed=embed3)
 
-    @commands.command(aliases = ['m'], brief = "Mutes voicechannel")
+    @commands.command(usage="!mute", 
+                      description="Mute all members", 
+                      help="This will mute the members from the channel where you are currently in.", 
+                      aliases = ['m'])
     async def mute(self, ctx):
         vc = ctx.message.author.voice.channel
         for member in vc.members:
@@ -54,14 +60,19 @@ class Amongus(commands.Cog):
                 await member.edit(mute = 1)
         await ctx.message.delete()
 
-    @commands.command(aliases = ['um'], brief = "Unmutes voicechannel")
+    @commands.command(usage="!unmute", 
+                      description="Unmute all members", 
+                      help="This will unmute the members from the channel where you are currently in.", 
+                      aliases = ['um'])
     async def unmute(self, ctx):
         vc = ctx.message.author.voice.channel
         for member in vc.members:
             await member.edit(mute = 0)
         await ctx.message.delete()       
 
-    @commands.command()
+    @commands.command(usage="!switch", 
+                      description="Start a switch-game", 
+                      help="People in the voice channel will get assigned a name to pretend they are this person in the next game")
     async def switch(self, ctx):
         l1 = []
         vc = ctx.message.author.voice.channel
@@ -75,7 +86,9 @@ class Amongus(commands.Cog):
             embed.add_field(name=f'{l2[i]}', value='||' + f'{l1[i]}' + '||' )
         await ctx.send(embed=embed)
         
-    @commands.command()
+    @commands.command(usage="!deads", 
+                      description="Show the list of dead people", 
+                      help="")
     async def deads(self, ctx):
         global dead
         await ctx.send(dead)

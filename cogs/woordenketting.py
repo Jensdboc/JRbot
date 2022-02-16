@@ -17,7 +17,10 @@ class Woordenketting(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.command(aliases = ['aw'])
+    @commands.command(usage="!addword <word>", 
+                      description="Add a word", 
+                      help="The word has to start with the last letter from the last word",
+                      aliases = ['aw'])
     async def add_word(self, ctx, *, entry=None):
         list = []
         # Eerste lijn is nu het thema
@@ -69,7 +72,10 @@ class Woordenketting(commands.Cog):
                     embed =  discord.Embed(title='Woordenketting: ' + thema, description='Word should start with ' + '`' + lower_strip_accents(letter) + '`' + ', final letter of ' + '`' + woord + '`', colour=0xff0000)
                     await ctx.send(embed=embed) 
 
-    @commands.command(aliases = ['dw'])
+    @commands.command(usage="!delete_word", 
+                      description="Delete the last word", 
+                      help="This command will only execute when you are the last user",
+                      aliases = ['dw'])
     async def delete_word(self, ctx):
         ketting = []
         with open('Woordenketting.txt','r') as txt:
@@ -92,7 +98,9 @@ class Woordenketting(commands.Cog):
             embed = discord.Embed(title='Woordenketting: ' + thema, description='You do not have permission to delete this word!', colour=0xff0000)
             await ctx.send(embed=embed)  
 
-    @commands.command()
+    @commands.command(usage="!edit <word>", 
+                      description="Replace the last word", 
+                      help="!edit België: This will replace the last entry to België if the first letter is still the same.\nThe word will still count towards the wordcount of the user who submitted the original word",)
     async def edit(self, ctx, nieuwe_entry=None):
         list = []
         ketting = []
@@ -135,7 +143,9 @@ class Woordenketting(commands.Cog):
                 embed = discord.Embed(title='Woordenketting: ' + thema, description='Word should start with ' + '`' + last_word[0] + '`' + ', first letter of ' + '`' + last_word + '`', colour=0xff0000)
                 await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(usage="!show <letter>", 
+                      description="Show words in current list", 
+                      help="!show: Shows all words alphabetical\n!show a: Show all words starting with an a")
     async def show(self, ctx, first_letter=None):
         ketting = []
         message = ''
@@ -171,7 +181,9 @@ class Woordenketting(commands.Cog):
             embed = discord.Embed(title='Woordenketting: ' + thema + ' ' + str(page), description=message, colour=0x11806a)
             await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(usage="!stats <member>", 
+                      description="Show stats of current list", 
+                      help="!stats: Shows general stats\n!stats @member: Show stats for certain member")
     async def stats(self, ctx, member : discord.Member=None):
         number = 0
         number_user = 0
