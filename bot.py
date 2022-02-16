@@ -3,7 +3,8 @@ from inspect import signature
 from io import StringIO
 from typing import overload
 import discord
-from discord.ext import commands 
+from discord.ext import commands, tasks 
+from itertools import cycle
 import random
 from discord.utils import get
 from discord import FFmpegPCMAudio
@@ -11,23 +12,43 @@ from youtube_dl import YoutubeDL
 
 import typing
 
-#Extra for othello
+# Extra for othello   
 import numpy as np
 
-#import for cogs
+# Import for cogs
 import os
 
-#Intents
-intents = discord.Intents.default()  # Allow the use of custom intents
-intents.members = True #intent for hug
-intents.presences = True  #intent for activity
+# Intents
 
-client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
+# intents = discord.Intents.default()  # Allow the use of custom intents
+# intents.members = True #intent for hug
+# intents.presences = True  #intent for activity
+
+intents = discord.Intents.all()
+
+from Help import CustomHelpCommand
+
+client = commands.Bot(command_prefix="!", help_command=CustomHelpCommand(), case_insensitive=True, intents=intents)
+#client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
 client.mute_message = None
+status = cycle(['10','9','8','7','6','5','4','3','2','1','Happy New Year?'])
 
-#***********#
+#*******#
+#Startup#
+#*******#
+
+@client.event
+async def on_ready():
+    change_status.start()
+    print('Bot = ready')
+
+@tasks.loop(seconds=10)
+async def change_status():
+    await client.change_presence(activity=discord.Game(next(status)))
+
+#*************#
 #Cogs commands#
-#***********#
+#*************#
 
 #Loads extension
 @client.command()
@@ -47,20 +68,11 @@ async def reload(ctx, extension):
     client.unload_extension(f'cogs.{extension}')
     client.load_extension(f'cogs.{extension}')
     await ctx.send("Succesfully reloaded `" + extension + '`')
-    
+
 #Loads every extensions in cogs
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
         client.load_extension(f'cogs.{filename[:-3]}')
-
-#***********#
-#Ready check#
-#***********#
-
-@client.event
-async def on_ready():
-    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Arcane!"))
-    print('Bot = ready')
 
 #**************#
 #Command checks#
@@ -123,7 +135,7 @@ async def cleardates(ctx):
 #************#
 #Help command#
 #************#
-
+"""
 client.remove_command("help")
 
 @client.group(invoke_without_command=True)
@@ -164,14 +176,14 @@ async def date(ctx):
     embed = discord.Embed(title = "Help date", description = "Use !help <command> for more information", color = ctx.author.color)
     embed.add_field(name = "!adddate <date> <name>, [!ad]", value = "Add date to list of dates")
     embed.add_field(name = "!deletedate <date> <name>, [!dd]", value = "Delete date from list of dates")
-    embed.add_field(name = "!showdate, [!sd]", value = "Shows all dates")
+    embed.add_field(name = "!showdate, [!sd]", value = "Show all dates")
     await ctx.send(embed = embed)
 
 @help.command(aliases = ['Woordenketting'])
 async def woordenketting(ctx):
     embed = discord.Embed(title = "Help woordenketting", description = "Use !help <command> for more information", color = ctx.author.color)
     embed.add_field(name = "!add_word <word>, [!aw]", value = "Add a word")
-    embed.add_field(name = "!delete_word, [!dw]", value = "Deletes last word if you submitted the last word")
+    embed.add_field(name = "!delete_word, [!dw]", value = "Deletes last word")
     embed.add_field(name = "!edit <word>", value = "Replace last word with new word")
     embed.add_field(name = "!show <letter>", value = "Show all used words or filtered on a certain letter")
     embed.add_field(name = "!stats <member>", value = "Show general stats or stats for a member")
@@ -208,7 +220,7 @@ async def others(ctx):
 async def othello_rules(ctx):
     embed = discord.Embed(title = "Othello rules", description = "WIP: Google for now :^)", color = ctx.author.color)
     await ctx.send(embed = embed)
-
+"""
 #**********#
 #Bot events#
 #**********#
