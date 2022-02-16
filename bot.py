@@ -31,7 +31,28 @@ from Help import CustomHelpCommand
 client = commands.Bot(command_prefix="!", help_command=CustomHelpCommand(), case_insensitive=True, intents=intents)
 #client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
 client.mute_message = None
-status = cycle(['10','9','8','7','6','5','4','3','2','1','Happy New Year?'])
+status = cycle(["Goat Simulator and the grass is extra good today 🐐",
+                "Monopoly and rent is due",
+                "Monopoly",
+                "still Monopoly",
+                "Monopoly, this is taking too long",
+                "Uno and I need new friends",
+                "Patience but I'm running out of it 😤",
+                "the Sims and the house burned down again",
+                "Wii Sports and Matt showed up 😔",
+                "Mario Cart and rainbow roads should be banned 🌈",
+                "Tetris and the square is objectively the worst",
+                "Just Dance and my knees hurt from Rasputin",
+                "Roblox and got scammed on robux",
+                "Fortnite and still can't build",
+                "Rock Paper Scissors and in what world does paper win from rock",
+                "Minecraft on peaceful 😌",
+                "the long game",
+                "the waiting game",
+                "hard to get",
+                "Russian Roulette and I'm the last one...",
+                "waiting to claim my daily",
+                "clicking the damned circles"])
 
 #*******#
 #Startup#
@@ -42,7 +63,7 @@ async def on_ready():
     change_status.start()
     print('Bot = ready')
 
-@tasks.loop(seconds=10)
+@tasks.loop(seconds=45)
 async def change_status():
     await client.change_presence(activity=discord.Game(next(status)))
 
