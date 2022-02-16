@@ -30,6 +30,6 @@ class CustomHelpCommand(commands.HelpCommand):
             title += ', [!' + alias + ']'
         embed = discord.Embed(title=title, description=command.description)
         embed.add_field(name="Syntax:", value=command.usage, inline=False)
-        if help != '':
+        if command.help != '':
             embed.add_field(name="Example:", value=command.help, inline=False)
         await self.get_destination().send(embed=embed)
