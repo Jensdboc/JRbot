@@ -9,12 +9,13 @@ class CustomHelpCommand(commands.HelpCommand):
         super().__init__()
 
     async def send_bot_help(self, mapping):
+        await self.get_destination().send('This is not implemented yet but you can use !help <command>')
+        return
         for cog in mapping:
             if cog:
                 # get_destination: Calls destination a.k.a. where you want to send the command
-                #await self.get_destination().send(f'{cog.qualified_name}: {[command.name for command in mapping[cog]]}') 
-                await self.get_destination().send('This is not implemented yet but you can use !help <command>')
-
+                await self.get_destination().send(f'{cog.qualified_name}: {[command.name for command in mapping[cog]]}') 
+                
     async def send_cog_help(self, cog):
         #await self.get_destination().send(f'{cog.qualified_name}: {[command.name for command in cog.get_commands()]}')
         await self.get_destination().send('This is not implemented yet but you can use !help <command>')
