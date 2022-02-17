@@ -202,4 +202,6 @@ async def on_member_remove(member):
             await ch.send(embed=embed)
             return 
 
-client.run('NzU0MDIwODIxMzc4MjY5MzI0.X1uqnA.o9Ea3VuoJpC797mfx0jFhLEozu4')
+with open('token.txt', 'r') as file:
+    token = file.readline()
+    client.run(token)
