@@ -29,7 +29,6 @@ class Administration(commands.Cog):
         for e in context.guild.roles:
             if e.name == '🌳' or e.name == '------------[ General Roles  ]------------' or e.name == '------------[ Reward Roles ]------------':
                 await member.add_roles(e)
-        return
 
     @commands.command(usage="!clear <number>", 
                       description="Clear the last number of messages", 
@@ -79,7 +78,33 @@ class Administration(commands.Cog):
                       pass_context=True)
     async def leave(self, ctx):
         client = ctx.message.guild.voice_client
-        await client.disconnect()                               
+        await client.disconnect()              
+
+    @commands.Cog.listener()
+    async def on_guild_channel_create(self, channel):
+        embed =  discord.Embed(title='Welcome, I was expecting you...', colour=0xff0000)
+        await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        for i in member.guild.channels:
+            if i.name == 'general':
+                ch = i
+                embed = discord.Embed(title=f'Heyhey {member.display_name}!', colour=0xff0000)
+                await ch.send(embed=embed)
+                for e in member.guild.roles:
+                    if e.name == '🌳' or e.name == '------------[ General Roles  ]------------' or e.name == '------------[ Reward Roles ]------------':
+                        await member.add_roles(e,reason=None)
+                        return 
+            
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        for i in member.guild.channels:
+            if i.name == 'general':
+                ch = i
+                embed = discord.Embed(title=f'Byebye {member.display_name}!', colour=0xff0000)
+                await ch.send(embed=embed)
+                return 
 
 #Allows to connect cog to bot    
 def setup(client):
