@@ -154,8 +154,8 @@ class Fun(commands.Cog):
         embed = discord.Embed(title=ctx.message.content[8:], color=discord.Color(random.randint(0, 16777215))) 
         await channel.send(embed=embed)
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
+    @commands.Cog.listener("on_message")
+    async def taylor(self, message):
         verboden_woorden = ['taylor swift','taylor', 'swift', 'taylorswift', 'folklore', 'love story', 'evermore', 'lovestory', 'taytay', 't swizzle', 'tswizzle', 'swizzle', 'queen t']
         aantal = 0
         for woord in verboden_woorden:
@@ -171,8 +171,6 @@ class Fun(commands.Cog):
                     embed.set_image(url=link2)
                     aantal += 1
                     await message.channel.send(embed=embed)
-        await self.client.process_commands(message)
-
 
 #Allows to connect cog to bot   
 def setup(client):
