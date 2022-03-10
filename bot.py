@@ -109,6 +109,7 @@ async def check_blacklist(ctx):
         return True
 
 def admin_check(ctx):
+    file_exist('Admin.txt')
     with open('Admin.txt', 'r') as admin_file:
         for admin in admin_file.readlines():
             if str(ctx.message.author.id) == str(admin)[:-1]:
@@ -156,4 +157,5 @@ async def cleardates(ctx):
 
 with open('token.txt', 'r') as file:
     token = file.readline()
+    print("Reading token...")
     client.run(token)
