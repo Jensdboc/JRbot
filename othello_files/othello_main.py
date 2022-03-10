@@ -1,11 +1,11 @@
 #from asyncio.windows_events import NULL
 import time
 import numpy as np
-from othello_board import Board
-from othello_random_agent import RandomAgent
-from othello_human_agent import HumanAgent
-from othello_static_eval_agent import StaticEvalAgent
-from othello_mcts_agent import MCTSAgent
+from othello_files.othello_board import Board
+from othello_files.othello_random_agent import RandomAgent
+from othello_files.othello_human_agent import HumanAgent
+from othello_files.othello_static_eval_agent import StaticEvalAgent
+from othello_files.othello_mcts_agent import MCTSAgent
 
 def simulate(white, black, board, coords):
 

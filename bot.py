@@ -9,27 +9,24 @@ import random
 from discord.utils import get
 from discord import FFmpegPCMAudio
 from youtube_dl import YoutubeDL
+import typing 
+import numpy as np # Extra for othello   
+import os # Import for cogs
 
-import typing
+# Create files
+from pathlib import Path
 
-# Extra for othello   
-import numpy as np
-
-# Import for cogs
-import os
-
-# Intents
-
-# intents = discord.Intents.default()  # Allow the use of custom intents
-# intents.members = True #intent for hug
-# intents.presences = True  #intent for activity
-
-intents = discord.Intents.all()
-
+# Import from files
 from Help import CustomHelpCommand
 
+# Intents
+intents = discord.Intents.all()
+
+#*******#
+#Startup#
+#*******#
+
 client = commands.Bot(command_prefix="!", help_command=CustomHelpCommand(), case_insensitive=True, intents=intents)
-#client = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
 client.mute_message = None
 status = cycle(["Goat Simulator and the grass is extra good today 🐐",
                 "Monopoly and rent is due",
@@ -52,11 +49,8 @@ status = cycle(["Goat Simulator and the grass is extra good today 🐐",
                 "hard to get",
                 "Russian Roulette and I'm the last one...",
                 "waiting to claim my daily",
-                "clicking the damned circles"])
-
-#*******#
-#Startup#
-#*******#
+                "clicking the damned circles",
+                "Valorant with a mousepad"])
 
 @client.event
 async def on_ready():
@@ -66,6 +60,12 @@ async def on_ready():
 @tasks.loop(seconds=180)
 async def change_status():
     await client.change_presence(activity=discord.Game(next(status)))
+
+
+# Create file if it doesn't exist
+def file_exist(name):
+    file = Path(name)
+    file.touch(exist_ok=True)
 
 #*************#
 #Cogs commands#
@@ -101,6 +101,7 @@ for filename in os.listdir('./cogs'):
 
 @client.check
 async def check_blacklist(ctx):
+    file_exist('Blacklist.txt')
     with open('Blacklist.txt', 'r') as blacklist_file:
         for blacklisted_user in blacklist_file.readlines():
             if str(ctx.message.author.id) == str(blacklisted_user)[:-1]:
@@ -152,55 +153,6 @@ async def cleardates(ctx):
     with open('Examen_data.txt', 'w') as file:
         pass
     await ctx.send("All dates have been succesfully cleared!")
-
-#**********#
-#Bot events#
-#**********#
-
-@client.event
-async def on_message(message):
-    verboden_woorden = ['taylor swift','taylor', 'swift', 'taylorswift', 'folklore', 'love story', 'evermore', 'lovestory', 'taytay', 't swizzle', 'tswizzle', 'swizzle', 'queen t']
-    aantal = 0
-    for woord in verboden_woorden:
-        if message.author.id == 249527744466124801 or message.author.id == 688070365448241247:
-            if woord in message.content.lower() and message.author.id != 754020821378269324 and aantal == 0:
-                embed = discord.Embed(title='Toch weer nie over Taylor Swift bezig???', colour=0x000000) 
-                aantal += 1 
-                await message.channel.send(embed=embed)
-        else:
-            if woord in message.content.lower() and message.author.id != 754020821378269324 and message.author.id != 235088799074484224 and aantal == 0:
-                link2 = 'https://media.discordapp.net/attachments/764196816517464086/786677044335083570/dh5qukew5vv01.jpg?width=582&height=599'
-                embed = discord.Embed(title='Toch weer nie over Taylorreeksen bezig???', colour=0x000000) 
-                embed.set_image(url=link2)
-                aantal += 1
-                await message.channel.send(embed=embed)
-    await client.process_commands(message)
- 
-@client.event
-async def on_guild_channel_create(channel):
-    embed =  discord.Embed(title='Welcome, I was expecting you...', colour=0xff0000)
-    await channel.send(embed=embed)
-
-@client.event
-async def on_member_join(member):
-    for i in member.guild.channels:
-        if i.name == 'general':
-            ch = i
-            embed = discord.Embed(title=f'Heyhey {member.display_name}!', colour=0xff0000)
-            await ch.send(embed=embed)
-            for e in member.guild.roles:
-                if e.name == '🌳' or e.name == '------------[ General Roles  ]------------' or e.name == '------------[ Reward Roles ]------------':
-                    await member.add_roles(e,reason=None)
-                    return 
-        
-@client.event
-async def on_member_remove(member):
-    for i in member.guild.channels:
-        if i.name == 'general':
-            ch = i
-            embed = discord.Embed(title=f'Byebye {member.display_name}!', colour=0xff0000)
-            await ch.send(embed=embed)
-            return 
 
 with open('token.txt', 'r') as file:
     token = file.readline()

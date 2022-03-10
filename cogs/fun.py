@@ -154,6 +154,26 @@ class Fun(commands.Cog):
         embed = discord.Embed(title=ctx.message.content[8:], color=discord.Color(random.randint(0, 16777215))) 
         await channel.send(embed=embed)
 
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        verboden_woorden = ['taylor swift','taylor', 'swift', 'taylorswift', 'folklore', 'love story', 'evermore', 'lovestory', 'taytay', 't swizzle', 'tswizzle', 'swizzle', 'queen t']
+        aantal = 0
+        for woord in verboden_woorden:
+            if message.author.id == 249527744466124801 or message.author.id == 688070365448241247:
+                if woord in message.content.lower() and message.author.id != 754020821378269324 and aantal == 0:
+                    embed = discord.Embed(title='Toch weer nie over Taylor Swift bezig???', colour=0x000000) 
+                    aantal += 1 
+                    await message.channel.send(embed=embed)
+            else:
+                if woord in message.content.lower() and message.author.id != 754020821378269324 and message.author.id != 235088799074484224 and aantal == 0:
+                    link2 = 'https://media.discordapp.net/attachments/764196816517464086/786677044335083570/dh5qukew5vv01.jpg?width=582&height=599'
+                    embed = discord.Embed(title='Toch weer nie over Taylorreeksen bezig???', colour=0x000000) 
+                    embed.set_image(url=link2)
+                    aantal += 1
+                    await message.channel.send(embed=embed)
+        await self.client.process_commands(message)
+
+
 #Allows to connect cog to bot   
 def setup(client):
     client.add_cog(Fun(client))

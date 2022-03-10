@@ -1,5 +1,5 @@
 import copy
-from othello_board import Board
+from othello_files.othello_board import Board
 
 class StaticEvalAgent:
     def __init__(self, player):

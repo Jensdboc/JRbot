@@ -1,7 +1,7 @@
 import random
 import numpy as np
 import copy
-from othello_board import Board
+from othello_files.othello_board import Board
 
 class Node:
     """Een top in de MCTS spelboom"""
