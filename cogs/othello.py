@@ -3,10 +3,10 @@ import discord
 from discord.ext import commands
 
 from discord.flags import MessageFlags
-from othello_board import *
-from othello_human_agent import *
-from othello_mcts_agent import *
-from othello_static_eval_agent import *
+from othello_files.othello_board import *
+from othello_files.othello_human_agent import *
+from othello_files.othello_mcts_agent import *
+from othello_files.othello_static_eval_agent import *
 
 class Othello(commands.Cog):
 
