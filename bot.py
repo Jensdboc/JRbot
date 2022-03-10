@@ -13,6 +13,9 @@ import typing
 import numpy as np # Extra for othello   
 import os # Import for cogs
 
+# Create files
+from pathlib import Path
+
 # Import from files
 from Help import CustomHelpCommand
 
@@ -46,7 +49,8 @@ status = cycle(["Goat Simulator and the grass is extra good today 🐐",
                 "hard to get",
                 "Russian Roulette and I'm the last one...",
                 "waiting to claim my daily",
-                "clicking the damned circles"])
+                "clicking the damned circles",
+                "Valorant with a mousepad"])
 
 @client.event
 async def on_ready():
@@ -56,6 +60,12 @@ async def on_ready():
 @tasks.loop(seconds=180)
 async def change_status():
     await client.change_presence(activity=discord.Game(next(status)))
+
+
+# Create file if it doesn't exist
+def file_exist(name):
+    file = Path(name)
+    file.touch(exist_ok=True)
 
 #*************#
 #Cogs commands#
@@ -91,6 +101,7 @@ for filename in os.listdir('./cogs'):
 
 @client.check
 async def check_blacklist(ctx):
+    file_exist('Blacklist.txt')
     with open('Blacklist.txt', 'r') as blacklist_file:
         for blacklisted_user in blacklist_file.readlines():
             if str(ctx.message.author.id) == str(blacklisted_user)[:-1]:
