@@ -10,6 +10,7 @@ from discord import FFmpegPCMAudio
 from youtube_dl import YoutubeDL
 
 import typing
+import asyncio
 
 #*****************#     
 #User commands fun#
@@ -153,6 +154,17 @@ class Fun(commands.Cog):
         channel = self.client.get_channel(935507669580652544)
         embed = discord.Embed(title=ctx.message.content[8:], color=discord.Color(random.randint(0, 16777215))) 
         await channel.send(embed=embed)
+
+    @commands.command(usage="!pewpew <user>", 
+                      description="Pewpew somebody ", 
+                      help="This person won't be able to see the normal channels anymore because he/she is dead")
+    async def pewpew(self, ctx, member : discord.Member):
+        pewpew_role = ctx.guild.get_role(943050771228917812) # Boomhut
+        await member.add_roles(pewpew_role)
+        await ctx.send("Oh no, "+ member.name + " has been shot!")
+        await asyncio.sleep(60)
+        await member.remove_roles(pewpew_role)
+        await ctx.send(member.name + " has been revived!")
 
     @commands.Cog.listener("on_message")
     async def taylor(self, message):
