@@ -162,7 +162,7 @@ class Fun(commands.Cog):
         pewpew_role = ctx.guild.get_role(943050771228917812) # Boomhut
         await member.add_roles(pewpew_role)
         await ctx.send("Oh no, "+ member.name + " has been shot!")
-        await asyncio.sleep(60)
+        await asyncio.sleep(180)
         await member.remove_roles(pewpew_role)
         await ctx.send(member.name + " has been revived!")
 
