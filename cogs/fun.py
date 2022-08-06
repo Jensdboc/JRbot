@@ -160,6 +160,10 @@ class Fun(commands.Cog):
                       help="This person won't be able to see the normal channels anymore because he/she is dead")
     async def pewpew(self, ctx, member : discord.Member):
         pewpew_role = ctx.guild.get_role(943050771228917812) # Boomhut
+        # Check if person doesn't have pewpewrole
+        if pewpew_role in ctx.author.roles:
+            embed = discord.Embed(title="Whoops...", description="Dead people are not supposed to kill people.", color=0xDC143C) 
+            await ctx.send(embed=embed)
         # Decide if person is going to get shot
         chance = random.randint(0, 10)
         if chance < 8:
