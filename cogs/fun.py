@@ -164,6 +164,7 @@ class Fun(commands.Cog):
         if pewpew_role in ctx.author.roles:
             embed = discord.Embed(title="Whoops...", description="Dead people are not supposed to kill people.", color=0xDC143C) 
             await ctx.send(embed=embed)
+            return
         # Decide if person is going to get shot
         chance = random.randint(0, 10)
         if chance < 8:
