@@ -177,7 +177,7 @@ class Fun(commands.Cog):
             await ctx.send("The shot missed "+ member.name + "!")
         elif chance == 10:
             await ctx.author.add_roles(pewpew_role)
-            await ctx.send("Oh no, "+ ctx.author.name + " shot her/himself! Now laugh!")
+            await ctx.send("Oh no, "+ ctx.author.name + " shot themself! Now laugh!")
             await asyncio.sleep(100) # Wait time
             await ctx.author.remove_roles(pewpew_role)
             await ctx.send(member.name + " has been revived!")
