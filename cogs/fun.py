@@ -44,14 +44,14 @@ class Fun(commands.Cog):
                     mocked_text += to_mock[i].lower()
         embed = discord.Embed(title=mocked_text,color=0xe67e22)
         await ctx.send(embed=embed)
-        
+
     @commands.command(usage="!hotel", 
                       description="Trivago!", 
                       help="")
     async def hotel(self, ctx):
         embedVar = discord.Embed(title="Trivago!", color=0x992d22)
         await ctx.send(embed=embedVar)
-            
+
     @commands.command(usage="!moses", 
                       description="Moses I guess?", 
                       help="")
@@ -80,7 +80,7 @@ class Fun(commands.Cog):
             URL = info['formats'][0]['url']
             voice.play(FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
             voice.is_playing()
-    
+
     @commands.command(usage="!broederliefde", 
                       description=":)", 
                       help="")
@@ -89,7 +89,7 @@ class Fun(commands.Cog):
         embed = discord.Embed(color=0x9b59b6)
         embed.set_image(url="attachment://broederliefde.png")
         await ctx.send(file=file, embed=embed)
-        
+  
     @commands.command(usage="!perfection", 
                       description=":^)", 
                       help="")
@@ -127,7 +127,7 @@ class Fun(commands.Cog):
         for member in vc.members:
             nickname = random.choice(l)
             await member.edit(nick=str(nickname))
-        
+    
     @commands.command(usage="!answer <sentence>", 
                       description="Send a message to Britt for quizzes", 
                       help="Sentence can contain **spaces**",
@@ -180,7 +180,7 @@ class Fun(commands.Cog):
             await ctx.send("Oh no, "+ ctx.author.name + " shot themself! Now laugh!")
             await asyncio.sleep(100) # Wait time
             await ctx.author.remove_roles(pewpew_role)
-            await ctx.send(member.name + " has been revived!")
+            await ctx.send(ctx.author.name + " has been revived!")
 
     @commands.Cog.listener("on_message")
     async def taylor(self, message):
