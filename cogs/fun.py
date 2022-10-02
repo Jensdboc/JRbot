@@ -5,6 +5,7 @@ from typing import overload
 import discord
 from discord.ext import commands
 import random
+import re
 from discord.utils import get
 from discord import FFmpegPCMAudio
 from youtube_dl import YoutubeDL
@@ -44,14 +45,14 @@ class Fun(commands.Cog):
                     mocked_text += to_mock[i].lower()
         embed = discord.Embed(title=mocked_text,color=0xe67e22)
         await ctx.send(embed=embed)
-        
+
     @commands.command(usage="!hotel", 
                       description="Trivago!", 
                       help="")
     async def hotel(self, ctx):
         embedVar = discord.Embed(title="Trivago!", color=0x992d22)
         await ctx.send(embed=embedVar)
-            
+
     @commands.command(usage="!moses", 
                       description="Moses I guess?", 
                       help="")
@@ -80,7 +81,7 @@ class Fun(commands.Cog):
             URL = info['formats'][0]['url']
             voice.play(FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
             voice.is_playing()
-    
+
     @commands.command(usage="!broederliefde", 
                       description=":)", 
                       help="")
@@ -89,7 +90,7 @@ class Fun(commands.Cog):
         embed = discord.Embed(color=0x9b59b6)
         embed.set_image(url="attachment://broederliefde.png")
         await ctx.send(file=file, embed=embed)
-        
+  
     @commands.command(usage="!perfection", 
                       description=":^)", 
                       help="")
@@ -127,7 +128,7 @@ class Fun(commands.Cog):
         for member in vc.members:
             nickname = random.choice(l)
             await member.edit(nick=str(nickname))
-        
+    
     @commands.command(usage="!answer <sentence>", 
                       description="Send a message to Britt for quizzes", 
                       help="Sentence can contain **spaces**",
@@ -177,10 +178,10 @@ class Fun(commands.Cog):
             await ctx.send("The shot missed "+ member.name + "!")
         elif chance == 10:
             await ctx.author.add_roles(pewpew_role)
-            await ctx.send("Oh no, "+ ctx.author.name + " shot her/himself! Now laugh!")
+            await ctx.send("Oh no, "+ ctx.author.name + " shot themself! Now laugh!")
             await asyncio.sleep(100) # Wait time
             await ctx.author.remove_roles(pewpew_role)
-            await ctx.send(member.name + " has been revived!")
+            await ctx.send(ctx.author.name + " has been revived!")
 
     @commands.Cog.listener("on_message")
     async def taylor(self, message):
@@ -199,6 +200,15 @@ class Fun(commands.Cog):
                     embed.set_image(url=link2)
                     aantal += 1
                     await message.channel.send(embed=embed)
+    
+    @commands.Cog.listener("on_message")
+    async def loser(self, message):
+        if message.author.id == 589027434611867668: # Pingo id
+            pattern_match = re.compile(r"You need to wait (\d+ day(s)?, )?\d+ hour(s)? and \d+ minute(s)? before you can collect your next credits")
+            present = pattern_match.match(message.content)
+            emoji = "\U0001F1F1" # regional_indicator_l
+            if present:
+                await message.add_reaction(emoji)
 
 #Allows to connect cog to bot   
 def setup(client):
