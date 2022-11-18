@@ -84,7 +84,6 @@ class Fun(commands.Cog):
             voice.play(FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
             voice.is_playing()
     """
-    
     @commands.command(usage="!broederliefde", 
                       description=":)", 
                       help="")
@@ -121,8 +120,8 @@ class Fun(commands.Cog):
                 await target.send(file=file, embed=embed)
         else:
             await ctx.message.author.send(file=file, embed=embed)
-
-    @commands.command(usage="!hug <member/role>", 
+    """
+    @commands.command(usage="!time_nick", 
                       description="Changes nicknames over time in a voice channel", 
                       help="")
     async def time_nick(self, ctx):
@@ -131,7 +130,7 @@ class Fun(commands.Cog):
         for member in vc.members:
             nickname = random.choice(l)
             await member.edit(nick=str(nickname))
-    
+    """
     @commands.command(usage="!answer <sentence>", 
                       description="Send a message to Britt for quizzes", 
                       help="Sentence can contain **spaces**",
