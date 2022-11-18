@@ -20,7 +20,7 @@ class Administration(commands.Cog):
                       description="Change nickname of member", 
                       help="!nick @member a very cool nickname\nName is allowed to contain **spaces**")
     async def nick(self, ctx, member : discord.Member,*, nickname):
-        await member.edit(nick=nickname)  
+        await member.edit(nick=nickname)
 
     @commands.command(usage="!welcome <member>", 
                       description="Give member all required roles", 

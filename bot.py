@@ -61,7 +61,6 @@ async def on_ready():
 async def change_status():
     await client.change_presence(activity=discord.Game(next(status)))
 
-
 # Create file if it doesn't exist
 def file_exist(name):
     file = Path(name)

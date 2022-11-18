@@ -52,6 +52,7 @@ class Fun(commands.Cog):
         embedVar = discord.Embed(title="Trivago!", color=0x992d22)
         await ctx.send(embed=embedVar)
 
+    """
     @commands.command(usage="!moses", 
                       description="Moses I guess?", 
                       help="")
@@ -60,7 +61,8 @@ class Fun(commands.Cog):
         embed = discord.Embed(color=0x9b59b6)
         embed.set_image(url="attachment://mosesgif.gif")
         await ctx.send(file=file, embed=embed) 
-
+    """
+    """
     # Werkt momenteel niet
     @commands.command(usage="!stemopsimon", 
                       description="Show true communism", 
@@ -80,7 +82,8 @@ class Fun(commands.Cog):
             URL = info['formats'][0]['url']
             voice.play(FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
             voice.is_playing()
-
+    """
+    
     @commands.command(usage="!broederliefde", 
                       description=":)", 
                       help="")
