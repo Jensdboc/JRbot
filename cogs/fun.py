@@ -5,6 +5,7 @@ from typing import overload
 import discord
 from discord.ext import commands
 import random
+import re
 from discord.utils import get
 from discord import FFmpegPCMAudio
 from youtube_dl import YoutubeDL
@@ -202,6 +203,15 @@ class Fun(commands.Cog):
                     embed.set_image(url=link2)
                     aantal += 1
                     await message.channel.send(embed=embed)
+    
+    @commands.Cog.listener("on_message")
+    async def loser(self, message):
+        if message.author.id == 589027434611867668: # Pingo id
+            pattern_match = re.compile(r"You need to wait (\d+ day(s)?, )?\d+ hour(s)? and \d+ minute(s)? before you can collect your next credits")
+            present = pattern_match.match(message.content)
+            emoji = "\U0001F1F1" # regional_indicator_l
+            if present:
+                await message.add_reaction(emoji)
 
 #Allows to connect cog to bot   
 def setup(client):
