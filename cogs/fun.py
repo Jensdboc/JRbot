@@ -213,5 +213,5 @@ class Fun(commands.Cog):
                 await message.add_reaction(emoji)
 
 #Allows to connect cog to bot   
-def setup(client):
-    client.add_cog(Fun(client))
+async def setup(client):
+    await client.add_cog(Fun(client))

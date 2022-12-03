@@ -1,12 +1,12 @@
-from re import A
-import discord
-from discord.ext import commands
-
 from discord.flags import MessageFlags
 from othello_files.othello_board import *
 from othello_files.othello_human_agent import *
 from othello_files.othello_mcts_agent import *
 from othello_files.othello_static_eval_agent import *
+
+from re import A
+import discord
+from discord.ext import commands
 
 class Othello(commands.Cog):
 
@@ -174,5 +174,5 @@ def simulate(white, black, board, coords):
 
 
 #Allows to connect cog to bot    
-def setup(client):
-    client.add_cog(Othello(client))
+async def setup(client):
+    await client.add_cog(Othello(client))
