@@ -207,5 +207,5 @@ class Woordenketting(commands.Cog):
             await ctx.send(embed=embed)
 
 #Allows to connect cog to bot    
-def setup(client):
-    client.add_cog(Woordenketting(client))
+async def setup(client):
+    await client.add_cog(Woordenketting(client))
