@@ -144,5 +144,5 @@ class Amongus(commands.Cog):
                 return
 
 #Allows to connect cog to bot    
-def setup(client):
-    client.add_cog(Amongus(client))
+async def setup(client):
+    await client.add_cog(Amongus(client))

@@ -118,5 +118,5 @@ class Date(commands.Cog):
                 await ctx.send("No such date has been found!")
 
 #Allows to connect cog to bot    
-def setup(client):
-    client.add_cog(Date(client))
+async def setup(client):
+    await client.add_cog(Date(client))

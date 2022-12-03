@@ -12,6 +12,7 @@ from youtube_dl import YoutubeDL
 import typing 
 import numpy as np # Extra for othello   
 import os # Import for cogs
+import asyncio # Import for starting bot
 
 # Create files
 from pathlib import Path
@@ -61,7 +62,6 @@ async def on_ready():
 async def change_status():
     await client.change_presence(activity=discord.Game(next(status)))
 
-
 # Create file if it doesn't exist
 def file_exist(name):
     file = Path(name)
@@ -91,9 +91,11 @@ async def reload(ctx, extension):
     await ctx.send("Succesfully reloaded `" + extension + '`')
 
 #Loads every extensions in cogs
-for filename in os.listdir('./cogs'):
-    if filename.endswith('.py'):
-        client.load_extension(f'cogs.{filename[:-3]}')
+async def load_extensions():
+    for filename in os.listdir('./cogs'):
+        if filename.endswith('.py'):
+            #if filename != "othello.py":
+            await client.load_extension(f'cogs.{filename[:-3]}')
 
 #**************#
 #Command checks#
@@ -155,7 +157,12 @@ async def cleardates(ctx):
         pass
     await ctx.send("All dates have been succesfully cleared!")
 
-with open('token.txt', 'r') as file:
-    token = file.readline()
-    print("Reading token...")
-    client.run(token)
+async def main():
+    async with client:
+        await load_extensions()
+        with open('token.txt', 'r') as file:
+            token = file.readline()
+            print("Reading token...")
+            await client.start(token)
+        
+asyncio.run(main())

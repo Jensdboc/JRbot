@@ -53,6 +53,7 @@ class Fun(commands.Cog):
         embedVar = discord.Embed(title="Trivago!", color=0x992d22)
         await ctx.send(embed=embedVar)
 
+    """
     @commands.command(usage="!moses", 
                       description="Moses I guess?", 
                       help="")
@@ -61,7 +62,8 @@ class Fun(commands.Cog):
         embed = discord.Embed(color=0x9b59b6)
         embed.set_image(url="attachment://mosesgif.gif")
         await ctx.send(file=file, embed=embed) 
-
+    """
+    """
     # Werkt momenteel niet
     @commands.command(usage="!stemopsimon", 
                       description="Show true communism", 
@@ -81,7 +83,7 @@ class Fun(commands.Cog):
             URL = info['formats'][0]['url']
             voice.play(FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
             voice.is_playing()
-
+    """
     @commands.command(usage="!broederliefde", 
                       description=":)", 
                       help="")
@@ -118,8 +120,8 @@ class Fun(commands.Cog):
                 await target.send(file=file, embed=embed)
         else:
             await ctx.message.author.send(file=file, embed=embed)
-
-    @commands.command(usage="!hug <member/role>", 
+    """
+    @commands.command(usage="!time_nick", 
                       description="Changes nicknames over time in a voice channel", 
                       help="")
     async def time_nick(self, ctx):
@@ -128,7 +130,7 @@ class Fun(commands.Cog):
         for member in vc.members:
             nickname = random.choice(l)
             await member.edit(nick=str(nickname))
-    
+    """
     @commands.command(usage="!answer <sentence>", 
                       description="Send a message to Britt for quizzes", 
                       help="Sentence can contain **spaces**",
@@ -211,5 +213,5 @@ class Fun(commands.Cog):
                 await message.add_reaction(emoji)
 
 #Allows to connect cog to bot   
-def setup(client):
-    client.add_cog(Fun(client))
+async def setup(client):
+    await client.add_cog(Fun(client))
