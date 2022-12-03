@@ -57,6 +57,8 @@ status = cycle(["Goat Simulator and the grass is extra good today 🐐",
 async def on_ready():
     change_status.start()
     print('Bot = ready')
+    await load_extensions()
+
 
 @tasks.loop(seconds=180)
 async def change_status():
@@ -94,7 +96,6 @@ async def reload(ctx, extension):
 async def load_extensions():
     for filename in os.listdir('./cogs'):
         if filename.endswith('.py'):
-            #if filename != "othello.py":
             await client.load_extension(f'cogs.{filename[:-3]}')
 
 #**************#
@@ -159,7 +160,7 @@ async def cleardates(ctx):
 
 async def main():
     async with client:
-        await load_extensions()
+        #await load_extensions()
         with open('token.txt', 'r') as file:
             token = file.readline()
             print("Reading token...")
