@@ -9,7 +9,6 @@ import datetime
 #*****************# 
 
 utc = datetime.timezone.utc
-time = datetime.time(hour=0, minute=0, tzinfo=utc),
 
 class Personal(commands.Cog):
 
@@ -17,10 +16,15 @@ class Personal(commands.Cog):
         self.client = client  
         self.loop.start()
 
-    @tasks.loop(time = time)
+    @tasks.loop(time = datetime.time(hour=0, minute=0, tzinfo=utc))
     async def loop(self): 
-        channel = self.client.get_channel(765211470744518658)
-        embed = discord.Embed(title="Ignore this please", description="This is an automated message! Please do not try to respond!", color=0x7289da) 
+        with open('bank1.txt', 'r') as file:
+            number = file.readlines()[0]
+        with open('bank1.txt', 'w') as newfile:
+            newnumber = int(number) + 2
+            newfile.write(str(newnumber))
+        channel = self.client.get_channel(1007689563440951326) #the-bank
+        embed = discord.Embed(title="The bank", description="Your current balance is "+newnumber", use it wisely!", color=0x7289da) 
         await channel.send(embed=embed)
 
 #Allows to connect cog to bot   
