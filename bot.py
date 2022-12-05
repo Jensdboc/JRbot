@@ -1,18 +1,20 @@
 # Imports 
+import asyncio
+import discord
+import random
+import typing
+import os
+
 from inspect import signature
 from io import StringIO
-from typing import overload
-import discord
-from discord.ext import commands, tasks 
 from itertools import cycle
-import random
-from discord.utils import get
-from discord import FFmpegPCMAudio
+from typing import overload
 from youtube_dl import YoutubeDL
-import typing 
-import numpy as np # Extra for othello   
-import os # Import for cogs
-import asyncio # Import for starting bot
+from discord import FFmpegPCMAudio
+from discord.ext import commands, tasks 
+from discord.utils import get
+
+import numpy as np # Extra for othello
 
 # Create files
 from pathlib import Path
@@ -57,8 +59,6 @@ status = cycle(["Goat Simulator and the grass is extra good today 🐐",
 async def on_ready():
     change_status.start()
     print('Bot = ready')
-    await load_extensions()
-
 
 @tasks.loop(seconds=180)
 async def change_status():
@@ -76,20 +76,20 @@ def file_exist(name):
 #Loads extension
 @client.command()
 async def load(ctx, extension):
-    client.load_extension(f'cogs.{extension}')
+    await client.load_extension(f'cogs.{extension}')
     await ctx.send("Succesfully loaded `" + extension + '`')
 
 #Unloads extension
 @client.command()
 async def unload(ctx, extension):
-    client.unload_extension(f'cogs.{extension}')
+    await client.unload_extension(f'cogs.{extension}')
     await ctx.send("Succesfully unloaded `" + extension + '`')
 
 #Reloads extension
 @client.command()
 async def reload(ctx, extension):
-    client.unload_extension(f'cogs.{extension}')
-    client.load_extension(f'cogs.{extension}')
+    await client.unload_extension(f'cogs.{extension}')
+    await client.load_extension(f'cogs.{extension}')
     await ctx.send("Succesfully reloaded `" + extension + '`')
 
 #Loads every extensions in cogs
@@ -159,11 +159,10 @@ async def cleardates(ctx):
     await ctx.send("All dates have been succesfully cleared!")
 
 async def main():
-    async with client:
-        #await load_extensions()
-        with open('token.txt', 'r') as file:
-            token = file.readline()
-            print("Reading token...")
-            await client.start(token)
+    with open('token.txt', 'r') as file:
+        token = file.readline()
+        print("Reading token...")
+    await load_extensions()
+    await client.start(token)
         
 asyncio.run(main())
