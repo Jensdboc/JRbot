@@ -16,7 +16,7 @@ class Personal(commands.Cog):
         self.client = client  
         self.loop.start()
 
-    @tasks.loop(time = datetime.time(hour=0, minute=0, tzinfo=utc))
+    @tasks.loop(time = datetime.time(hour=23, minute=0, tzinfo=utc))
     async def loop(self): 
         with open('bank1.txt', 'r') as file:
             number = file.readlines()[0]
