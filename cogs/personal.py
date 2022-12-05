@@ -24,8 +24,13 @@ class Personal(commands.Cog):
             newnumber = int(number) + 2
             newfile.write(str(newnumber))
         channel = self.client.get_channel(1007689563440951326) #the-bank
-        embed = discord.Embed(title="The bank", description="Your current balance is "+newnumber", use it wisely!", color=0x7289da) 
+        embed = discord.Embed(title="The bank", description="Your current balance is "+str(newnumber)+", use it wisely!", color=0x7289da) 
         await channel.send(embed=embed)
+
+    @loop.before_loop
+    async def before_printer(self):
+        print('waiting...')
+        await self.client.wait_until_ready()
 
 #Allows to connect cog to bot   
 async def setup(client):
