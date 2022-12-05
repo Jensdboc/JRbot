@@ -1,15 +1,39 @@
+import discord
+import datetime
+import re
+
 from io import DEFAULT_BUFFER_SIZE
 from typing import Text
-import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
-import re
+utc = datetime.timezone.utc
 
 class Date(commands.Cog):
     
     def __init__(self, client):
         self.client = client
-    
+        self.check_loop.start()
+
+    #@tasks.loop(time = datetime.time(hour=23, minute=0, tzinfo=utc))
+    @tasks.loop(seconds=5)
+    async def check_loop(self): 
+        print("In the loop")
+        with open('Examen_data.txt', 'r') as file:
+            content = file.readlines()
+        with open('Examen_data.txt', 'w') as newfile:
+            for i in range(len(content)):
+                split_line = content[i].split('\t')
+                split_line[3] = split_line[3][:-1]
+                date = split_line[0]
+                date_time = datetime.datetime.strftime(date, "%d/%m/%Y")
+                if date_time >= datetime.datetime.now().strftime("%d/%m/%Y"):
+                    newfile.write(content[i])   
+
+    @check_loop.before_loop
+    async def before_printer(self):
+        print('waiting...')
+        await self.client.wait_until_ready()
+
     def sort():
         with open('Examen_data.txt', 'r') as file:
             content = file.readlines()
