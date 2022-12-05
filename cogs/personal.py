@@ -16,12 +16,7 @@ class Personal(commands.Cog):
         self.client = client  
         self.loop.start()
 
-<<<<<<< HEAD
-    @tasks.loop(time = datetime.time(hour=23, minute=0, tzinfo=utc))
-    async def loop(self): 
-=======
     def open_file_and_adapt(amount):
->>>>>>> a44d1ba63872c1e605d3d8c84e6dbde1a1af63bd
         with open('bank1.txt', 'r') as file:
             number = file.readlines()[0]
         with open('bank1.txt', 'w') as newfile:
