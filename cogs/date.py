@@ -14,10 +14,8 @@ class Date(commands.Cog):
         self.client = client
         self.check_loop.start()
 
-    #@tasks.loop(time = datetime.time(hour=23, minute=0, tzinfo=utc))
-    @tasks.loop(seconds=5)
+    @tasks.loop(time = datetime.time(hour=23, minute=0, tzinfo=utc))
     async def check_loop(self): 
-        print("In the loop")
         with open('Examen_data.txt', 'r') as file:
             content = file.readlines()
         with open('Examen_data.txt', 'w') as newfile:
