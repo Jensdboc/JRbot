@@ -23,8 +23,8 @@ class Date(commands.Cog):
                 split_line = content[i].split('\t')
                 split_line[3] = split_line[3][:-1]
                 date = split_line[0]
-                date_time = datetime.datetime.strftime(date, "%d/%m/%Y")
-                if date_time >= datetime.datetime.now().strftime("%d/%m/%Y"):
+                date_time = datetime.datetime.strptime(date, "%d/%m/%Y")
+                if date_time >= datetime.datetime.now() - datetime.timedelta(days=1):
                     newfile.write(content[i])   
 
     @check_loop.before_loop
