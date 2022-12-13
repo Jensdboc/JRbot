@@ -98,13 +98,14 @@ class Date(commands.Cog):
                     await ctx.send(embed = embed)
                     message = ''
                     page += 1
-                message += "**__" + current_date + ":__**\n"
             if member == None:
+                message += "**__" + current_date + ":__**\n"
                 count += 1
                 line = split_line[2] + " heeft examen " + split_line[1] + '.'
                 message += line
                 message += '\n'
             elif str(split_line[3]) == str(member.id):
+                message += "**__" + current_date + ":__**\n"
                 count += 1
                 line = split_line[2] + " heeft examen " + split_line[1] + '.'
                 message += line
