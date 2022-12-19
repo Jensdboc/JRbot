@@ -89,7 +89,6 @@ class Fun(commands.Cog):
                 await target.send(file=file, embed=embed)
         else:
             await ctx.message.author.send(file=file, embed=embed)
-
     @commands.command(usage="!answer <sentence>", 
                       description="Send a message to Britt for quizzes", 
                       help="Sentence can contain **spaces**",
@@ -117,10 +116,10 @@ class Fun(commands.Cog):
         embed = discord.Embed(title=ctx.message.content[8:], color=discord.Color(random.randint(0, 16777215))) 
         await channel.send(embed=embed)
 
-    @commands.command(usage="!snowball <user>", 
-                      description="Snowball somebody ", 
+    @commands.command(usage="!pewpew <user>", 
+                      description="Pewpew somebody ", 
                       help="This person won't be able to see the normal channels anymore because he/she is dead")
-    async def snowball(self, ctx, member : discord.Member):
+    async def pewpew(self, ctx, member : discord.Member):
         pewpew_role = ctx.guild.get_role(943050771228917812) # Boomhut
         # Check if person doesn't have pewpewrole
         if pewpew_role in ctx.author.roles:
@@ -131,7 +130,7 @@ class Fun(commands.Cog):
         chance = random.randint(0, 10)
         if chance < 8:
             await member.add_roles(pewpew_role)
-            await ctx.send("Oh no, "+ member.name + " has been snowballed!")
+            await ctx.send("Oh no, "+ member.name + " has been shot!")
             await asyncio.sleep(180) # Wait time
             await member.remove_roles(pewpew_role)
             await ctx.send(member.name + " has been revived!")
