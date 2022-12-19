@@ -53,37 +53,6 @@ class Fun(commands.Cog):
         embedVar = discord.Embed(title="Trivago!", color=0x992d22)
         await ctx.send(embed=embedVar)
 
-    """
-    @commands.command(usage="!moses", 
-                      description="Moses I guess?", 
-                      help="")
-    async def moses(self, ctx):
-        file = discord.File("./data_pictures/mosesgif.gif")
-        embed = discord.Embed(color=0x9b59b6)
-        embed.set_image(url="attachment://mosesgif.gif")
-        await ctx.send(file=file, embed=embed) 
-    """
-    """
-    # Werkt momenteel niet
-    @commands.command(usage="!stemopsimon", 
-                      description="Show true communism", 
-                      help="Currently broken")
-    async def stemopsimon(self, ctx):
-        embed = discord.Embed(title='Sinds wanneer heeft een SSL stemmen nodig?', color=0xff0000) 
-        link = 'https://www.biography.com/.image/ar_1:1%2Cc_fill%2Ccs_srgb%2Cg_face%2Cq_auto:good%2Cw_300/MTY2NjgyOTkyNTMyNTMwMjMx/gettyimages-2637237.jpg'
-        embed.set_image(url=link)
-        await ctx.send(embed=embed)
-        channel = ctx.message.author.voice.channel
-        await channel.connect()
-        YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist':'True'}
-        FFMPEG_OPTIONS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-        voice = get(self.client.voice_clients, guild=ctx.guild)
-        with YoutubeDL(YDL_OPTIONS) as ydl:
-            info = ydl.extract_info('https://www.youtube.com/watch?v=AlJ8z86e8A8', download=False)
-            URL = info['formats'][0]['url']
-            voice.play(FFmpegPCMAudio(URL, **FFMPEG_OPTIONS))
-            voice.is_playing()
-    """
     @commands.command(usage="!broederliefde", 
                       description=":)", 
                       help="")
@@ -120,17 +89,7 @@ class Fun(commands.Cog):
                 await target.send(file=file, embed=embed)
         else:
             await ctx.message.author.send(file=file, embed=embed)
-    """
-    @commands.command(usage="!time_nick", 
-                      description="Changes nicknames over time in a voice channel", 
-                      help="")
-    async def time_nick(self, ctx):
-        l = ['appelflap', 'piemelgefriemel','kaiser Hans', 'Wedidntstartthefire', 'Kaboom', 'Potverdikke', 'DA imposter', '☺', '\N{Cross Mark}', 'VOTE KICK NORICK', 'Emma', 'Floefie', 'Meesje', 'Processing...', 'Norick03', 'ComradBenji']
-        vc = ctx.message.author.voice.channel
-        for member in vc.members:
-            nickname = random.choice(l)
-            await member.edit(nick=str(nickname))
-    """
+
     @commands.command(usage="!answer <sentence>", 
                       description="Send a message to Britt for quizzes", 
                       help="Sentence can contain **spaces**",
