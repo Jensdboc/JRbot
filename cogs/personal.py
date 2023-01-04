@@ -3,6 +3,7 @@ from discord.ext import commands, tasks
 import typing
 import asyncio
 import datetime
+import calendar
 
 #*****************#     
 #User commands fun#
@@ -24,12 +25,16 @@ class Personal(commands.Cog):
             newfile.write(str(newnumber))
         return newnumber
 
-    @tasks.loop(time = datetime.time(hour=23, minute=0, tzinfo=utc))
+    @tasks.loop(time = datetime.time(hour=23, minute=00, tzinfo=utc))
     async def loop(self): 
         newnumber = Personal.open_file_and_adapt(2)
         channel = self.client.get_channel(1007689563440951326) #the-bank
         embed = discord.Embed(title="The bank", description="Your current balance is "+str(newnumber)+", use it wisely!", color=0x7289da) 
         await channel.send(embed=embed)
+        if datetime.date.today().weekday() == 5:
+            channel = self.client.get_channel(1002950360811438111)
+            embed = discord.Embed(title="WEEKLY JAR", description="Make sure to write down something nice that happened this week! :D", color=0x7289da) 
+            await channel.send(embed=embed)
 
     @loop.before_loop
     async def before_printer(self):
