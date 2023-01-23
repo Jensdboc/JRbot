@@ -69,35 +69,6 @@ def file_exist(name):
     file = Path(name)
     file.touch(exist_ok=True)
 
-#*************#
-#Cogs commands#
-#*************#
-
-#Loads extension
-@client.command()
-async def load(ctx, extension):
-    await client.load_extension(f'cogs.{extension}')
-    await ctx.send("Succesfully loaded `" + extension + '`')
-
-#Unloads extension
-@client.command()
-async def unload(ctx, extension):
-    await client.unload_extension(f'cogs.{extension}')
-    await ctx.send("Succesfully unloaded `" + extension + '`')
-
-#Reloads extension
-@client.command()
-async def reload(ctx, extension):
-    await client.unload_extension(f'cogs.{extension}')
-    await client.load_extension(f'cogs.{extension}')
-    await ctx.send("Succesfully reloaded `" + extension + '`')
-
-#Loads every extensions in cogs
-async def load_extensions():
-    for filename in os.listdir('./cogs'):
-        if filename.endswith('.py'):
-            await client.load_extension(f'cogs.{filename[:-3]}')
-
 #**************#
 #Command checks#
 #**************#
@@ -118,6 +89,38 @@ def admin_check(ctx):
             if str(ctx.message.author.id) == str(admin)[:-1]:
                 return True
         return False
+
+#*************#
+#Cogs commands#
+#*************#
+
+#Loads extension
+@client.command()
+@commands.check(admin_check)
+async def load(ctx, extension):
+    await client.load_extension(f'cogs.{extension}')
+    await ctx.send("Succesfully loaded `" + extension + '`')
+
+#Unloads extension
+@client.command()
+@commands.check(admin_check)
+async def unload(ctx, extension):
+    await client.unload_extension(f'cogs.{extension}')
+    await ctx.send("Succesfully unloaded `" + extension + '`')
+
+#Reloads extension
+@client.command()
+@commands.check(admin_check)
+async def reload(ctx, extension):
+    await client.unload_extension(f'cogs.{extension}')
+    await client.load_extension(f'cogs.{extension}')
+    await ctx.send("Succesfully reloaded `" + extension + '`')
+
+#Loads every extensions in cogs
+async def load_extensions():
+    for filename in os.listdir('./cogs'):
+        if filename.endswith('.py'):
+            await client.load_extension(f'cogs.{filename[:-3]}')
 
 #**************# 
 #Admin commands#
