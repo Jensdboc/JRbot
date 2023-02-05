@@ -1,7 +1,5 @@
 import discord
 from discord.ext import commands
-from sqlalchemy import true
-from tables import Description
 
 class CustomHelpCommand(commands.HelpCommand):
 

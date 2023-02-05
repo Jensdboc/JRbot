@@ -11,7 +11,7 @@ from admincheck import admin_check
 # Intents
 intents = discord.Intents.all()
 
-client = commands.Bot(command_prefix="!!", help_command=CustomHelpCommand(), case_insensitive=True, intents=intents)
+client = commands.Bot(command_prefix="!", help_command=CustomHelpCommand(), case_insensitive=True, intents=intents)
 client.mute_message = None
 status = cycle(["Goat Simulator and the grass is extra good today 🐐",
                 "Monopoly and rent is due",

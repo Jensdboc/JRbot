@@ -1,17 +1,9 @@
-from dis import disco
-from inspect import signature
-from io import StringIO
-from typing import overload
-import discord
-from discord.ext import commands
 import random
 import re
-from discord.utils import get
-from discord import FFmpegPCMAudio
-from youtube_dl import YoutubeDL
-
 import typing
 import asyncio
+import discord
+from discord.ext import commands
 
 #*****************#     
 #User commands fun#

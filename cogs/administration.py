@@ -1,9 +1,6 @@
-import urllib.request
 import discord
 from discord.activity import Spotify
 from discord.ext import commands
-from discord.ext.commands.core import command
-from numpy.lib.type_check import imag
 
 from admincheck import admin_check
 

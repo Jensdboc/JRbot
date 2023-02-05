@@ -1,9 +1,6 @@
-import discord
 import datetime
 import re
-
-from io import DEFAULT_BUFFER_SIZE
-from typing import Text
+import discord
 from discord.ext import commands, tasks
 
 from admincheck import admin_check
@@ -38,7 +35,6 @@ class Date(commands.Cog):
 
     @check_loop.before_loop
     async def before_printer(self):
-        print('waiting...')
         await self.client.wait_until_ready()
 
     def sort():
