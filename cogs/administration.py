@@ -1,11 +1,11 @@
+import urllib.request
 import discord
 from discord.activity import Spotify
 from discord.ext import commands
-
-import urllib.request
 from discord.ext.commands.core import command
-
 from numpy.lib.type_check import imag
+
+from admincheck import admin_check
 
 #****************************#
 #User commands administration#
@@ -15,6 +15,11 @@ class Administration(commands.Cog):
     
     def __init__(self, client):
         self.client = client
+
+    @commands.command()
+    @commands.check(admin_check)
+    async def admin(self, ctx):
+        await ctx.channel.send('Yup')
 
     @commands.command(usage="!nick <member> <name>", 
                       description="Change nickname of member", 

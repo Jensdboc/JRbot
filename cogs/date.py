@@ -6,6 +6,8 @@ from io import DEFAULT_BUFFER_SIZE
 from typing import Text
 from discord.ext import commands, tasks
 
+from admincheck import admin_check
+
 utc = datetime.timezone.utc
 
 class Date(commands.Cog):
@@ -13,6 +15,13 @@ class Date(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.check_loop.start()
+
+    @commands.command(aliases = ['cld'])
+    @commands.check(admin_check)
+    async def cleardates(self, ctx):
+        with open('Examen_data.txt', 'w') as file:
+            pass
+        await ctx.send("All dates have been succesfully cleared!")
 
     @tasks.loop(time = datetime.time(hour=23, minute=0, tzinfo=utc))
     async def check_loop(self): 

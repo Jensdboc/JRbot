@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 
+from admincheck import admin_check
+
 # Used for accents
 import unicodedata
 
@@ -16,6 +18,23 @@ class Woordenketting(commands.Cog):
     
     def __init__(self, client):
         self.client = client
+
+    @commands.command()
+    @commands.check(admin_check)
+    async def start(self, ctx, thema=None, woord=None):
+        if thema is None or woord is None:
+            embed =  discord.Embed(title='Woordenketting', description='Something went wrong with starting a game. Use !start <theme> <word>', colour=0xFF0000)
+            await ctx.send(embed=embed)
+            return
+        else:
+            with open('Woordenketting.txt','a') as txt: 
+                txt.truncate(0)
+                txt.write(thema + '\n' + woord + '\t' + str(ctx.message.author.id) + '\n')
+            with open('Woordenketting_users.txt', 'a') as user_file:
+                user_file.truncate(0)
+                user_file.write(str(ctx.message.author.id) + '\n')
+            embed =  discord.Embed(title='Woordenketting', description='A new game has been started with ' + '`' + thema + '`' + ' as theme and ' + '`' + woord + '`' + ' as first word.', colour=0x11806a)
+            await ctx.send(embed=embed)
 
     @commands.command(usage="!addword <word>", 
                       description="Add a word", 
