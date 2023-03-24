@@ -96,23 +96,15 @@ class Date(commands.Cog):
         for line in content: 
             split_line = line.split('\t')
             split_line[3] = split_line[3][:-1]
-            if current_date != split_line[0] and (member == None or str(split_line[3]) == str(member.id)):
-                current_date = split_line[0]
+            if member == None or str(split_line[3]) == str(member.id):
                 if len(message) > 2000:
                     embed = discord.Embed(title = "Examen Data " + str(page), description = message)
                     await ctx.send(embed = embed)
                     message = ''
                     page += 1
-                if member == None or str(split_line[3]) == str(member.id):
+                if current_date != split_line[0]:
+                    current_date = split_line[0]
                     message += "**__" + current_date + ":__**\n"
-            if member == None:
-                # message += "**__" + current_date + ":__**\n"
-                count += 1
-                line = split_line[2] + " heeft examen " + split_line[1] + '.'
-                message += line
-                message += '\n'
-            elif str(split_line[3]) == str(member.id):
-                # message += "**__" + current_date + ":__**\n"
                 count += 1
                 line = split_line[2] + " heeft examen " + split_line[1] + '.'
                 message += line
