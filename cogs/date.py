@@ -96,7 +96,7 @@ class Date(commands.Cog):
         for line in content: 
             split_line = line.split('\t')
             split_line[3] = split_line[3][:-1]
-            if current_date != split_line[0]:
+            if current_date != split_line[0] and (member == None or str(split_line[3]) == str(member.id)):
                 current_date = split_line[0]
                 if len(message) > 2000:
                     embed = discord.Embed(title = "Examen Data " + str(page), description = message)
