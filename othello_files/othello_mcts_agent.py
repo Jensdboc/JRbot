@@ -34,8 +34,6 @@ class MCTSAgent:
         root = Node(None, None)
         for _ in range(self.rollouts):
             # start iteratie
-
-            # iter_board = copy.deepcopy(board)
             iter_board = Board(board.author, board.message)
             iter_board.board = copy.deepcopy(board.board)
             iter_board.turn = copy.deepcopy(board.turn)
