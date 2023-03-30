@@ -7,6 +7,7 @@ from discord.ext import commands, tasks
 from pathlib import Path
 
 from Help import CustomHelpCommand
+from admincheck import admin_check
 
 # Intents
 intents = discord.Intents.all()
@@ -58,6 +59,7 @@ def file_exist(name):
 
 # Loads extension
 @client.command()
+@commands.check(admin_check)
 async def load(ctx, extension):
     await client.load_extension(f'cogs.{extension}')
     await ctx.send("Succesfully loaded `" + extension + '`')
@@ -65,6 +67,7 @@ async def load(ctx, extension):
 
 # Unloads extension
 @client.command()
+@commands.check(admin_check)
 async def unload(ctx, extension):
     await client.unload_extension(f'cogs.{extension}')
     await ctx.send("Succesfully unloaded `" + extension + '`')
@@ -72,6 +75,7 @@ async def unload(ctx, extension):
 
 # Reloads extension
 @client.command()
+@commands.check(admin_check)
 async def reload(ctx, extension):
     await client.unload_extension(f'cogs.{extension}')
     await client.load_extension(f'cogs.{extension}')

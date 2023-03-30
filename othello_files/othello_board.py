@@ -10,16 +10,13 @@ def get_neighbors(row, column):
                                (0 <= x2 <= 7) and
                                (0 <= y2 <= 7))]
 
-
 def no_wall_hit(position):
     return -1 < position[0] < 8 and -1 < position[1] < 8
-
 
 def map_neutral_to_space(token):
     if len(token) == 0:
         return '🟩'
     return token
-
 
 class Board:
     def __init__(self, author, message):

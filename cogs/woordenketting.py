@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 
+from admincheck import admin_check
+
 # Used for accents
 import unicodedata
 

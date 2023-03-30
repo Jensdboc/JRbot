@@ -1,3 +1,4 @@
+import datetime
 import discord
 from discord.ext import commands, tasks
 import datetime
@@ -32,7 +33,6 @@ class Personal(commands.Cog):
 
     @loop.before_loop
     async def before_printer(self):
-        print('waiting...')
         await self.client.wait_until_ready()
 
     @commands.command(usage="!add <amount>",

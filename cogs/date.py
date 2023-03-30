@@ -1,6 +1,6 @@
-import discord
 import datetime
 import re
+import discord
 from discord.ext import commands, tasks
 
 utc = datetime.timezone.utc
@@ -27,7 +27,6 @@ class Date(commands.Cog):
 
     @check_loop.before_loop
     async def before_printer(self):
-        print('waiting...')
         await self.client.wait_until_ready()
 
     def sort():
@@ -89,21 +88,15 @@ class Date(commands.Cog):
         for line in content:
             split_line = line.split('\t')
             split_line[3] = split_line[3][:-1]
-            if current_date != split_line[0]:
-                current_date = split_line[0]
+            if member is None or str(split_line[3]) == str(member.id):
                 if len(message) > 2000:
                     embed = discord.Embed(title="Examen Data " + str(page), description=message)
                     await ctx.send(embed=embed)
                     message = ''
                     page += 1
-                if member is None or str(split_line[3]) == str(member.id):
+                if current_date != split_line[0]:
+                    current_date = split_line[0]
                     message += "**__" + current_date + ":__**\n"
-            if member is None:
-                count += 1
-                line = split_line[2] + " heeft examen " + split_line[1] + '.'
-                message += line
-                message += '\n'
-            elif str(split_line[3]) == str(member.id):
                 count += 1
                 line = split_line[2] + " heeft examen " + split_line[1] + '.'
                 message += line
