@@ -154,5 +154,6 @@ async def main():
     await load_extensions()
     await client.start(token)
 
+
 if __name__ == "__main__":
     asyncio.run(main())
