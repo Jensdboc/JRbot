@@ -137,6 +137,8 @@ class Amongus(commands.Cog):
                             vc = user.voice.channel
                             for member in vc.members:
                                 await member.edit(mute=0, deafen=0)
+            finally:
+                return
 
 
 # Allows to connect cog to bot

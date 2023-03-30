@@ -6,8 +6,7 @@ import unicodedata
 
 
 def lower_strip_accents(word):
-    return (''.join(c for c in unicodedata.normalize('NFD', word)
-                 if unicodedata.category(c) != 'Mn')).lower()
+    return (''.join(c for c in unicodedata.normalize('NFD', word) if unicodedata.category(c) != 'Mn')).lower()
 
 
 class Woordenketting(commands.Cog):
@@ -135,7 +134,7 @@ class Woordenketting(commands.Cog):
                     for woord in ketting[:-1]:
                         txt.write(woord.lower())
                     txt.write(nieuwe_entry + '\t' + last_user + '\n')
-                embed = discord.Embed(title='Woordenketting: ' + thema, description= '`' + str(last_word) + '`' + ' has been replaced with ' + '`' + nieuwe_entry + '`', colour=0x11806a)
+                embed = discord.Embed(title='Woordenketting: ' + thema, description='`' + str(last_word) + '`' + ' has been replaced with ' + '`' + nieuwe_entry + '`', colour=0x11806a)
                 await ctx.send(embed=embed)
             else:
                 embed = discord.Embed(title='Woordenketting: ' + thema, description='Word should start with ' + '`' + last_word[0] + '`' + ', first letter of ' + '`' + last_word + '`', colour=0xff0000)

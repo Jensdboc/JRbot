@@ -7,7 +7,7 @@ utc = datetime.timezone.utc
 
 
 class Date(commands.Cog):
-    
+
     def __init__(self, client):
         self.client = client
         self.check_loop.start()
@@ -86,7 +86,7 @@ class Date(commands.Cog):
         if len(content) == 0:
             await ctx.send("No dates added yet!")
             return
-        for line in content: 
+        for line in content:
             split_line = line.split('\t')
             split_line[3] = split_line[3][:-1]
             if current_date != split_line[0]:
