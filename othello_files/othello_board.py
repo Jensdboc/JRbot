@@ -1,5 +1,6 @@
 import itertools
 
+
 def get_neighbors(row, column):
     return [[x2, y2] for x2 in range(row - 1, row + 2)
                      for y2 in range(column - 1, column + 2)
@@ -44,9 +45,7 @@ class Board:
             copy_board[index] = list(map(map_neutral_to_space, row))
         te_printen = '🟦0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣\n'
         for index, row in enumerate(copy_board):
-            #te_printen += ('    ' + ' '.join(['-'] * 8) + '\n')
             te_printen += (numbers[index] + ''.join(row) + '\n')
-        #te_printen += ('    ' + ' '.join(['-'] * 8))
         return te_printen
 
     def turn_token(self, position, player, other_player):
@@ -108,7 +107,7 @@ class Board:
                             self.possible_moves_with_direction[neighbor[0] * 8 + neighbor[1]] = [direction]
 
         actions.sort()
-        actions = list(actions for actions,_ in itertools.groupby(actions))
+        actions = list(actions for actions, _ in itertools.groupby(actions))
         return actions
 
     def game_finished(self):

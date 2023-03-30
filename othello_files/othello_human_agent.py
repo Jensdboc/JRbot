@@ -17,10 +17,10 @@ class HumanAgent:
         if len(actions) == 0:
             return []
 
-        #x = (input('Row and column of your move: ')).split(' ')
-        #x = [int(x[0]), int(x[1])]
+        # x = (input('Row and column of your move: ')).split(' ')
+        # x = [int(x[0]), int(x[1])]
         if coords in board.legal_moves():
             return coords
-        #print('Give a valid position\n')
-        #return self.move(board, coords)
+        # print('Give a valid position\n')
+        # return self.move(board, coords)
         return 'Give a valid position!'

@@ -1,27 +1,26 @@
-from discord.flags import MessageFlags
 from othello_files.othello_board import *
 from othello_files.othello_human_agent import *
 from othello_files.othello_mcts_agent import *
 from othello_files.othello_static_eval_agent import *
 
-from re import A
 import discord
 from discord.ext import commands
+
 
 class Othello(commands.Cog):
 
     def __init__(self, client):
         self.client = client
-    
+
     global games
     games = []
 
-    @commands.command(usage="!othello_start", 
-                      description="Start othello game", 
+    @commands.command(usage="!othello_start",
+                      description="Start othello game",
                       help="https://nl.wikipedia.org/wiki/Reversi for more information",
-                      aliases = ['os'])
-    async def othello_start(self, ctx): #Show start screen, ask for input
-        embed =  discord.Embed(title='Othello', description= "Calculating board...", color = ctx.author.color)
+                      aliases=['os'])
+    async def othello_start(self, ctx):  # Show start screen, ask for input
+        embed = discord.Embed(title='Othello', description="Calculating board...", color=ctx.author.color)
         message = await ctx.send(embed=embed)
         new_board = Board(ctx.author, message)
         for i in range(len(games)):
@@ -29,7 +28,7 @@ class Othello(commands.Cog):
                 games[i] = new_board
         if new_board not in games:
             games.append(new_board)
-        embed =  discord.Embed(title='Othello', description= new_board.display(), color = ctx.author.color)
+        embed =  discord.Embed(title='Othello', description=new_board.display(), color=ctx.author.color)
         await message.edit(embed=embed) 
 
     @commands.command(usage="!othello_input <x> <y>", 

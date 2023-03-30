@@ -1,20 +1,14 @@
 import discord
 from discord.ext import commands, tasks
-import typing
-import asyncio
 import datetime
-import calendar
-
-#*****************#     
-#User commands fun#
-#*****************# 
 
 utc = datetime.timezone.utc
+
 
 class Personal(commands.Cog):
 
     def __init__(self, client):
-        self.client = client  
+        self.client = client
         self.loop.start()
 
     def open_file_and_adapt(amount):
@@ -25,15 +19,15 @@ class Personal(commands.Cog):
             newfile.write(str(newnumber))
         return newnumber
 
-    @tasks.loop(time = datetime.time(hour=23, minute=00, tzinfo=utc))
-    async def loop(self): 
+    @tasks.loop(time=datetime.time(hour=23, minute=00, tzinfo=utc))
+    async def loop(self):
         newnumber = Personal.open_file_and_adapt(2)
-        channel = self.client.get_channel(1007689563440951326) #the-bank
-        embed = discord.Embed(title="The bank", description="Your current balance is "+str(newnumber)+", use it wisely!", color=0x7289da) 
+        channel = self.client.get_channel(1007689563440951326)  # the-bank
+        embed = discord.Embed(title="The bank", description="Your current balance is "+str(newnumber)+", use it wisely!", color=0x7289da)
         await channel.send(embed=embed)
         if datetime.date.today().weekday() == 5:
             channel = self.client.get_channel(1002950360811438111)
-            embed = discord.Embed(title="WEEKLY JAR", description="Make sure to write down something nice that happened this week! :D", color=0x7289da) 
+            embed = discord.Embed(title="WEEKLY JAR", description="Make sure to write down something nice that happened this week! :D", color=0x7289da)
             await channel.send(embed=embed)
 
     @loop.before_loop
@@ -41,26 +35,27 @@ class Personal(commands.Cog):
         print('waiting...')
         await self.client.wait_until_ready()
 
-    @commands.command(usage="!add <amount>", 
-                      description="Add points to the bank", 
+    @commands.command(usage="!add <amount>",
+                      description="Add points to the bank",
                       help="!add 5\nStandard amount is 1.")
     async def add(self, ctx, amount=1):
         if (ctx.author.id == 656916865364525067 or ctx.author.id == 960445370062766121):
             newnumber = Personal.open_file_and_adapt(amount)
-            channel = self.client.get_channel(1007689563440951326) #the-bank
-            embed = discord.Embed(title="The bank", description="Your current balance is "+str(newnumber)+", use it wisely!", color=0x7289da) 
+            channel = self.client.get_channel(1007689563440951326)  # the-bank
+            embed = discord.Embed(title="The bank", description="Your current balance is "+str(newnumber)+", use it wisely!", color=0x7289da)
             await channel.send(embed=embed)
-        
-    @commands.command(usage="!minus <amount>", 
-                      description="Minus points to the bank", 
+
+    @commands.command(usage="!minus <amount>",
+                      description="Minus points to the bank",
                       help="!minus 5\nStandard amount is 1.")
     async def minus(self, ctx, amount=1):
         if (ctx.author.id == 656916865364525067 or ctx.author.id == 960445370062766121):
             newnumber = Personal.open_file_and_adapt(-amount)
-            channel = self.client.get_channel(1007689563440951326) #the-bank
-            embed = discord.Embed(title="The bank", description="Your current balance is "+str(newnumber)+", use it wisely!", color=0x7289da) 
+            channel = self.client.get_channel(1007689563440951326)  # the-bank
+            embed = discord.Embed(title="The bank", description="Your current balance is "+str(newnumber)+", use it wisely!", color=0x7289da)
             await channel.send(embed=embed)
 
-#Allows to connect cog to bot   
+
+# Allows to connect cog to bot
 async def setup(client):
     await client.add_cog(Personal(client))

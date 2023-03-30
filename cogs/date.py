@@ -1,12 +1,10 @@
 import discord
 import datetime
 import re
-
-from io import DEFAULT_BUFFER_SIZE
-from typing import Text
 from discord.ext import commands, tasks
 
 utc = datetime.timezone.utc
+
 
 class Date(commands.Cog):
     
@@ -14,8 +12,8 @@ class Date(commands.Cog):
         self.client = client
         self.check_loop.start()
 
-    @tasks.loop(time = datetime.time(hour=23, minute=0, tzinfo=utc))
-    async def check_loop(self): 
+    @tasks.loop(time=datetime.time(hour=23, minute=0, tzinfo=utc))
+    async def check_loop(self):
         with open('Examen_data.txt', 'r') as file:
             content = file.readlines()
         with open('Examen_data.txt', 'w') as newfile:
@@ -25,7 +23,7 @@ class Date(commands.Cog):
                 date = split_line[0]
                 date_time = datetime.datetime.strptime(date, "%d/%m/%Y")
                 if date_time >= datetime.datetime.now() - datetime.timedelta(days=1):
-                    newfile.write(content[i])   
+                    newfile.write(content[i])
 
     @check_loop.before_loop
     async def before_printer(self):
@@ -45,17 +43,17 @@ class Date(commands.Cog):
             text.append(line)
             dates.append(date)
             index += 1
-        dates.sort(key=lambda x:x[0])
-        dates.sort(key=lambda x:x[1])
-        dates.sort(key=lambda x:x[2])
+        dates.sort(key=lambda x: x[0])
+        dates.sort(key=lambda x: x[1])
+        dates.sort(key=lambda x: x[2])
         with open('Examen_data.txt', 'w') as newfile:
             for index in dates:
                 newfile.write(text[index[3]])
 
-    @commands.command(usage="!adddate <date> <name>", 
-                      description="Add date to list of exams", 
-                      help="!adddate 15/02/2022 a very hard exam\nDate should follow the format **DD/MM/YYYY**\nExam is allowed to contain **spaces**", 
-                      aliases = ['ad'])
+    @commands.command(usage="!adddate <date> <name>",
+                      description="Add date to list of exams",
+                      help="!adddate 15/02/2022 a very hard exam\nDate should follow the format **DD/MM/YYYY**\nExam is allowed to contain **spaces**",
+                      aliases=['ad'])
     async def adddate(self, ctx, date, *, name):
         if not re.match("[0-3][0-9]/[0-1][0-9]/[0-9]{4}", date):
             await ctx.send("Date has to be DD/MM/YYYY, try again.")
@@ -73,11 +71,11 @@ class Date(commands.Cog):
         Date.sort()
         await ctx.send("Date added!")
 
-    @commands.command(usage="!showdate <member>", 
-                      description="Show current examdates", 
-                      help="!showdate: Show all dates\n!showdate @member: Show all dates from certain member", 
-                      aliases = ['sd'])
-    async def showdate(self, ctx, member : discord.Member=None):
+    @commands.command(usage="!showdate <member>",
+                      description="Show current examdates",
+                      help="!showdate: Show all dates\n!showdate @member: Show all dates from certain member",
+                      aliases=['sd'])
+    async def showdate(self, ctx, member: discord.Member = None):
         with open('Examen_data.txt', 'r') as file:
             content = file.readlines()
         page = 1
@@ -94,20 +92,18 @@ class Date(commands.Cog):
             if current_date != split_line[0]:
                 current_date = split_line[0]
                 if len(message) > 2000:
-                    embed = discord.Embed(title = "Examen Data " + str(page), description = message)
-                    await ctx.send(embed = embed)
+                    embed = discord.Embed(title="Examen Data " + str(page), description=message)
+                    await ctx.send(embed=embed)
                     message = ''
                     page += 1
-                if member == None or str(split_line[3]) == str(member.id):
+                if member is None or str(split_line[3]) == str(member.id):
                     message += "**__" + current_date + ":__**\n"
-            if member == None:
-                # message += "**__" + current_date + ":__**\n"
+            if member is None:
                 count += 1
                 line = split_line[2] + " heeft examen " + split_line[1] + '.'
                 message += line
                 message += '\n'
             elif str(split_line[3]) == str(member.id):
-                # message += "**__" + current_date + ":__**\n"
                 count += 1
                 line = split_line[2] + " heeft examen " + split_line[1] + '.'
                 message += line
@@ -115,13 +111,13 @@ class Date(commands.Cog):
         if count == 0:
             await ctx.send("No such user found!")
         else:
-            embed = discord.Embed(title = "Examen Data " + str(page), description = message)
-            await ctx.send(embed = embed)
+            embed = discord.Embed(title="Examen Data " + str(page), description=message)
+            await ctx.send(embed=embed)
 
-    @commands.command(usage="!deletedate <date> <name>", 
-                      description="Delete date from list of exams", 
-                      help="!deletedate 15/02/2022 a very hard exam\nThe arguments have to be **the same arguments** as the ones in !adddate", 
-                      aliases = ['dd'])
+    @commands.command(usage="!deletedate <date> <name>",
+                      description="Delete date from list of exams",
+                      help="!deletedate 15/02/2022 a very hard exam\nThe arguments have to be **the same arguments** as the ones in !adddate",
+                      aliases=['dd'])
     async def deletedate(self, ctx, date, *, name):
         with open('Examen_data.txt', 'r') as file:
             content = file.readlines()
@@ -136,12 +132,13 @@ class Date(commands.Cog):
                 elif split_line[0] == date and split_line[1] == name:
                     deleted = True
                     await ctx.send("You are not allowed to deleted dates from others!")
-                    newfile.write(content[i]) 
+                    newfile.write(content[i])
                 else:
-                    newfile.write(content[i])   
+                    newfile.write(content[i])
             if not deleted:
                 await ctx.send("No such date has been found!")
 
-#Allows to connect cog to bot    
+
+# Allows to connect cog to bot
 async def setup(client):
     await client.add_cog(Date(client))
