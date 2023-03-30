@@ -3,6 +3,7 @@ import numpy as np
 import copy
 from othello_files.othello_board import Board
 
+
 class Node:
     """Een top in de MCTS spelboom"""
     def __init__(self, parent, action):
@@ -33,15 +34,13 @@ class MCTSAgent:
         root = Node(None, None)
         for _ in range(self.rollouts):
             # start iteratie
-            
-            #iter_board = copy.deepcopy(board)
             iter_board = Board(board.author, board.message)
             iter_board.board = copy.deepcopy(board.board)
-            iter_board.turn = copy.deepcopy(board.turn) 
-            iter_board.number_of_moves = copy.deepcopy(board.number_of_moves) 
-            iter_board.black_played = copy.deepcopy(board.black_played) 
-            iter_board.white_played = copy.deepcopy(board.white_played) 
-            iter_board.possible_moves_with_direction = copy.deepcopy(board.possible_moves_with_direction) 
+            iter_board.turn = copy.deepcopy(board.turn)
+            iter_board.number_of_moves = copy.deepcopy(board.number_of_moves)
+            iter_board.black_played = copy.deepcopy(board.black_played)
+            iter_board.white_played = copy.deepcopy(board.white_played)
+            iter_board.possible_moves_with_direction = copy.deepcopy(board.possible_moves_with_direction)
 
             node = root
 

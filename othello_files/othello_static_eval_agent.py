@@ -1,6 +1,7 @@
 import copy
 from othello_files.othello_board import Board
 
+
 class StaticEvalAgent:
     def __init__(self, player):
         self.player = player
@@ -30,16 +31,14 @@ class StaticEvalAgent:
         return score
 
     def move(self, board, coords):
-        #board_copy = copy.deepcopy(board)
-
         board_copy = Board(board.author, board.message)
         board_copy.board = copy.deepcopy(board.board)
-        board_copy.turn = copy.deepcopy(board.turn) 
-        board_copy.number_of_moves = copy.deepcopy(board.number_of_moves) 
-        board_copy.black_played = copy.deepcopy(board.black_played) 
-        board_copy.white_played = copy.deepcopy(board.white_played) 
+        board_copy.turn = copy.deepcopy(board.turn)
+        board_copy.number_of_moves = copy.deepcopy(board.number_of_moves)
+        board_copy.black_played = copy.deepcopy(board.black_played)
+        board_copy.white_played = copy.deepcopy(board.white_played)
         board_copy.possible_moves_with_direction = copy.deepcopy(board.possible_moves_with_direction)
-        
+
         actions = board.legal_moves()
         scores = {}
         if len(actions) == 0:
@@ -57,16 +56,13 @@ class StaticEvalAgent:
 
             scores[str(a[0]) + ' ' + str(a[1])] = self.score(board_copy)
 
-            #board_copy = copy.deepcopy(board)
             board_copy = Board(board.author, board.message)
             board_copy.board = copy.deepcopy(board.board)
-            board_copy.turn = copy.deepcopy(board.turn) 
-            board_copy.number_of_moves = copy.deepcopy(board.number_of_moves) 
-            board_copy.black_played = copy.deepcopy(board.black_played) 
-            board_copy.white_played = copy.deepcopy(board.white_played) 
+            board_copy.turn = copy.deepcopy(board.turn)
+            board_copy.number_of_moves = copy.deepcopy(board.number_of_moves)
+            board_copy.black_played = copy.deepcopy(board.black_played)
+            board_copy.white_played = copy.deepcopy(board.white_played)
             board_copy.possible_moves_with_direction = copy.deepcopy(board.possible_moves_with_direction)
 
-
         m = max(scores, key=scores.get).split(' ')
-
         return [int(m[0]), int(m[1])]
