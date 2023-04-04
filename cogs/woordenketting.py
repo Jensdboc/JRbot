@@ -1,8 +1,6 @@
 import discord
 from discord.ext import commands
 
-from admincheck import admin_check
-
 # Used for accents
 import unicodedata
 
@@ -33,7 +31,7 @@ class Woordenketting(commands.Cog):
             last_user = split_word[1][:-1]
         # Vragen om laatste woord
         if entry is None:
-            embed = discord.Embed(title='Woordenketting: ' + thema, description='You need to find a word starting with ' + '`' + letter + '`' + ', final letter of ' + '`' + woord + '`', colour=0x11806a)
+            embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'You need to find a word starting with `{letter}`, final letter of `{woord}`', colour=0x11806a)
             await ctx.send(embed=embed)
             return
         # Woord toevoegen
@@ -43,11 +41,11 @@ class Woordenketting(commands.Cog):
                 if str(ctx.message.author.id) != last_user and lower_strip_accents(str(entry[0])) == lower_strip_accents(letter):
                     # Check of entry niet in de lijst
                     if entry.lower() in list:
-                        embed = discord.Embed(title='Woordenketting: ' + thema, description='`' + entry + '`' + ' already in list!', colour=0xff0000)
+                        embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'`{entry}` already in list!', colour=0xff0000)
                         await ctx.send(embed=embed)
                         return
                     elif lower_strip_accents(entry) == 'linx' or lower_strip_accents(entry) == 'lynx':
-                        embed = discord.Embed(title='Woordenketting: ' + thema, description='`' + entry + '`' + ' has NOT been added!', colour=0xff0000)
+                        embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'`{entry}` has NOT been added!', colour=0xff0000)
                         embed.add_field(name='Note', value='Do you really have to be that guy?')
                         await ctx.send(embed=embed)
                         return
@@ -60,15 +58,15 @@ class Woordenketting(commands.Cog):
                             with open('Woordenketting_users.txt', 'a') as user_file:
                                 user_file.write(str(ctx.message.author.id) + '\n')
                     txt.write(entry.lower() + '\t' + str(ctx.message.author.id) + '\n')
-                    embed = discord.Embed(title='Woordenketting: ' + thema, description='`' + entry + '`' + ' has been added!', colour=0x11806a)
+                    embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'`{entry}` has been added!', colour=0x11806a)
                     await ctx.send(embed=embed)
                 # Geen nieuwe user
                 elif str(ctx.message.author.id) == last_user:
-                    embed = discord.Embed(title='Woordenketting: ' + thema, description='You need to wait for someone else to submit a word!\n The last word was ' + '`' + woord + '`', colour=0xff0000)
+                    embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'You need to wait for someone else to submit a word!\n The last word was `{woord}`', colour=0xff0000)
                     await ctx.send(embed=embed)
                 # Nieuwe user + verkeerde letter
                 elif lower_strip_accents(str(entry[0])) != lower_strip_accents(letter) and str(ctx.message.author.id) != last_user:
-                    embed = discord.Embed(title='Woordenketting: ' + thema, description='Word should start with ' + '`' + lower_strip_accents(letter) + '`' + ', final letter of ' + '`' + woord + '`', colour=0xff0000)
+                    embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'Word should start with `{lower_strip_accents(letter)}`, final letter of `{woord}`', colour=0xff0000)
                     await ctx.send(embed=embed)
 
     @commands.command(usage="!delete_word",
@@ -89,12 +87,12 @@ class Woordenketting(commands.Cog):
                 txt.write(thema + '\n')
                 for word_user in ketting[:-1]:
                     txt.write(word_user)
-            embed = discord.Embed(title='Woordenketting: ' + thema, description='`' + last_word + '`' + ' has been deleted!', colour=0xff0000)
+            embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'`{last_word}` has been deleted!', colour=0xff0000)
             await ctx.send(embed=embed)
             return
         # User is andere user
         else:
-            embed = discord.Embed(title='Woordenketting: ' + thema, description='You do not have permission to delete this word!', colour=0xff0000)
+            embed = discord.Embed(title=f'Woordenketting: {thema}', description='You do not have permission to delete this word!', colour=0xff0000)
             await ctx.send(embed=embed)
 
     @commands.command(usage="!edit <word>",
@@ -113,17 +111,17 @@ class Woordenketting(commands.Cog):
         last_user = ketting[-1].split('\t')[1][:-1]
         # Vragen om laatste woord
         if nieuwe_entry is None:
-            embed = discord.Embed(title='Woordenketting: ' + thema, description='The last word that can be edited was ' + '`' + last_word + '`', colour=0x11806a)
+            embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'The last word that can be edited was `{last_word}`', colour=0x11806a)
             await ctx.send(embed=embed)
             return
         # Edit blijft hetzelfde
         if nieuwe_entry == last_word:
-            embed = discord.Embed(title='Woordenketting: ' + thema, description='What\'s the point of editing if you are going to put ' + '`' + nieuwe_entry + '`' + ' again?', colour=0xff0000)
+            embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'What\'s the point of editing if you are going to put `{nieuwe_entry}` again?', colour=0xff0000)
             await ctx.send(embed=embed)
             return
         # Edit bevindt zich al in de lijst
         elif nieuwe_entry in list:
-            embed = discord.Embed(title='Woordenketting: ' + thema, description='`' + nieuwe_entry + '`' + ' already in list!\n The last word was ' + '`' + last_word + '`', colour=0xff0000)
+            embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'`{nieuwe_entry}` already in list!\n The last word was `{last_word}`', colour=0xff0000)
             await ctx.send(embed=embed)
             return
         # Nieuwe edit
@@ -136,10 +134,10 @@ class Woordenketting(commands.Cog):
                     for woord in ketting[:-1]:
                         txt.write(woord.lower())
                     txt.write(nieuwe_entry + '\t' + last_user + '\n')
-                embed = discord.Embed(title='Woordenketting: ' + thema, description='`' + str(last_word) + '`' + ' has been replaced with ' + '`' + nieuwe_entry + '`', colour=0x11806a)
+                embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'`{str(last_word)}` has been replaced with `{nieuwe_entry}`', colour=0x11806a)
                 await ctx.send(embed=embed)
             else:
-                embed = discord.Embed(title='Woordenketting: ' + thema, description='Word should start with ' + '`' + last_word[0] + '`' + ', first letter of ' + '`' + last_word + '`', colour=0xff0000)
+                embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'Word should start with `{last_word[0]}`, first letter of `{last_word}`', colour=0xff0000)
                 await ctx.send(embed=embed)
 
     @commands.command(usage="!show <letter>",
@@ -160,11 +158,11 @@ class Woordenketting(commands.Cog):
                 split_word = word.split('\t')
                 message += str(split_word[0]) + '\n'
                 if len(message) > 2000:
-                    embed = discord.Embed(title='Woordenketting: ' + thema + ' ' + str(page), description=message, colour=0x11806a)
+                    embed = discord.Embed(title=f'Woordenketting: {thema} {str(page)}', description=message, colour=0x11806a)
                     await ctx.send(embed=embed)
                     message = ''
                     page += 1
-            embed = discord.Embed(title='Woordenketting: ' + thema + ' ' + str(page), description=message, colour=0x11806a)
+            embed = discord.Embed(title=f'Woordenketting: {thema} {str(page)}', description=message, colour=0x11806a)
             await ctx.send(embed=embed)
         else:
             with open('Woordenketting.txt', 'r') as txt:
@@ -173,11 +171,11 @@ class Woordenketting(commands.Cog):
                     split_word = word.split('\t')
                     message += str(split_word[0]) + '\n'
                     if len(message) > 2000:
-                        embed = discord.Embed(title='Woordenketting: ' + thema + ' ' + str(page), description=message, colour=0x11806a)
+                        embed = discord.Embed(title=f'Woordenketting: {thema} {str(page)}', description=message, colour=0x11806a)
                         await ctx.send(embed=embed)
                         message = ''
                         page += 1
-            embed = discord.Embed(title='Woordenketting: ' + thema + ' ' + str(page), description=message, colour=0x11806a)
+            embed = discord.Embed(title=f'Woordenketting: {thema} {str(page)}', description=message, colour=0x11806a)
             await ctx.send(embed=embed)
 
     @commands.command(usage="!stats <member>",
@@ -191,7 +189,7 @@ class Woordenketting(commands.Cog):
                 thema = str(txt.readline()[:-1]).upper()
                 for word_user in txt.readlines():
                     number += 1
-            embed = discord.Embed(title='Woordenketting: ' + thema, description='The list contains ' + '`' + f'{number}' + '`' + ' words.', colour=0x11806a)
+            embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'The list contains `{number}` words.', colour=0x11806a)
             await ctx.send(embed=embed)
         # Stats voor opgegeven member
         else:
@@ -202,7 +200,7 @@ class Woordenketting(commands.Cog):
                     user = word_user.split('\t')[1][:-1]
                     if user == str(member.id):
                         number_user += 1
-            embed = discord.Embed(title='Woordenketting: ' + thema, description='The list contains ' + '`' + f'{number}' + '`' + ' words and ' + '`' + str(member)[:-5] + '`' + ' added ' + '`' + f'{number_user}' + '`' + 'words.', colour=0x11806a)
+            embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'The list contains `{number}` words and `{str(member)[:-5]}` added `{number_user}` words.', colour=0x11806a)
             await ctx.send(embed=embed)
 
 

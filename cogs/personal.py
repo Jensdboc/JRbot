@@ -1,7 +1,6 @@
 import datetime
 import discord
 from discord.ext import commands, tasks
-import datetime
 
 utc = datetime.timezone.utc
 
@@ -24,7 +23,7 @@ class Personal(commands.Cog):
     async def loop(self):
         newnumber = Personal.open_file_and_adapt(2)
         channel = self.client.get_channel(1007689563440951326)  # the-bank
-        embed = discord.Embed(title="The bank", description="Your current balance is "+str(newnumber)+", use it wisely!", color=0x7289da)
+        embed = discord.Embed(title="The bank", description=f"Your current balance is {str(newnumber)}, use it wisely!", color=0x7289da)
         await channel.send(embed=embed)
         if datetime.date.today().weekday() == 5:
             channel = self.client.get_channel(1002950360811438111)
@@ -42,7 +41,7 @@ class Personal(commands.Cog):
         if (ctx.author.id == 656916865364525067 or ctx.author.id == 960445370062766121):
             newnumber = Personal.open_file_and_adapt(amount)
             channel = self.client.get_channel(1007689563440951326)  # the-bank
-            embed = discord.Embed(title="The bank", description="Your current balance is "+str(newnumber)+", use it wisely!", color=0x7289da)
+            embed = discord.Embed(title="The bank", description=f"Your current balance is {str(newnumber)}, use it wisely!", color=0x7289da)
             await channel.send(embed=embed)
 
     @commands.command(usage="!minus <amount>",
@@ -52,7 +51,7 @@ class Personal(commands.Cog):
         if (ctx.author.id == 656916865364525067 or ctx.author.id == 960445370062766121):
             newnumber = Personal.open_file_and_adapt(-amount)
             channel = self.client.get_channel(1007689563440951326)  # the-bank
-            embed = discord.Embed(title="The bank", description="Your current balance is "+str(newnumber)+", use it wisely!", color=0x7289da)
+            embed = discord.Embed(title="The bank", description=f"Your current balance is {str(newnumber)}, use it wisely!", color=0x7289da)
             await channel.send(embed=embed)
 
 

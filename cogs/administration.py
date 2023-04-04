@@ -54,7 +54,7 @@ class Administration(commands.Cog):
             for member in ctx.guild.members:
                 for activity in member.activities:
                     if isinstance(activity, Spotify):
-                        await ctx.send(member.name + ' is listening to ' + activity.title + ' from ' + activity.album + ' by ' + activity.artist)
+                        await ctx.send(f'{member.name} is listening to {activity.title} from {activity.album} by {activity.artist}')
 
     @commands.command(usage="!join",
                       description="Make the bot join a voice channel",

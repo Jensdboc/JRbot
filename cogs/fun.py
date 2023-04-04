@@ -96,7 +96,7 @@ class Fun(commands.Cog):
                         answer += str(letter)
                     if str(letter) == ' ':
                         start += 1
-                embed = discord.Embed(title=name + ': ' + answer, color=0x7289da)
+                embed = discord.Embed(title=f'{name}: {answer}', color=0x7289da)
                 await user.send(embed=embed)
 
     @commands.command(usage="!secret <sentence>",
@@ -121,18 +121,18 @@ class Fun(commands.Cog):
         chance = random.randint(0, 10)
         if chance < 8:
             await member.add_roles(pewpew_role)
-            await ctx.send("Oh no, " + member.name + " has been shot!")
+            await ctx.send(f"Oh no, {member.name} has been shot!")
             await asyncio.sleep(180)  # Wait time
             await member.remove_roles(pewpew_role)
-            await ctx.send(member.name + " has been revived!")
+            await ctx.send(f"{member.name} has been revived!")
         elif chance < 10:
-            await ctx.send("The shot missed " + member.name + "!")
+            await ctx.send(f"The shot missed {member.name}!")
         elif chance == 10:
             await ctx.author.add_roles(pewpew_role)
-            await ctx.send("Oh no, " + ctx.author.name + " shot themself! Now laugh!")
+            await ctx.send(f"Oh no, {ctx.author.name} shot themself! Now laugh!")
             await asyncio.sleep(100)  # Wait time
             await ctx.author.remove_roles(pewpew_role)
-            await ctx.send(ctx.author.name + " has been revived!")
+            await ctx.send(f"{ctx.author.name} has been revived!")
 
     @commands.Cog.listener("on_message")
     async def taylor(self, message):

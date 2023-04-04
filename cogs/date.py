@@ -66,7 +66,7 @@ class Date(commands.Cog):
                     file.write(' ')
                 else:
                     file.write('\t')
-            file.write(ctx.message.author.name + '\t' + str(ctx.message.author.id) + '\n')
+            file.write(f"{ctx.message.author.name}\t{str(ctx.message.author.id)}\n")
         Date.sort()
         await ctx.send("Date added!")
 
@@ -90,7 +90,7 @@ class Date(commands.Cog):
             split_line[3] = split_line[3][:-1]
             if member is None or str(split_line[3]) == str(member.id):
                 if len(message) > 2000:
-                    embed = discord.Embed(title="Examen Data " + str(page), description=message)
+                    embed = discord.Embed(title=f"Examen Data {str(page)}", description=message)
                     await ctx.send(embed=embed)
                     message = ''
                     page += 1
@@ -104,7 +104,7 @@ class Date(commands.Cog):
         if count == 0:
             await ctx.send("No such user found!")
         else:
-            embed = discord.Embed(title="Examen Data " + str(page), description=message)
+            embed = discord.Embed(title=f"Examen Data {str(page)}", description=message)
             await ctx.send(embed=embed)
 
     @commands.command(usage="!deletedate <date> <name>",

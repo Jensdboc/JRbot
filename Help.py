@@ -13,19 +13,19 @@ class CustomHelpCommand(commands.HelpCommand):
             if cog:
                 list = ""
                 for command in cog.get_commands():
-                    list += command.name + ', '
+                    list += f"{command.name} , "
                 embed.add_field(name=cog.qualified_name, value=list[:-2])
         await self.get_destination().send(embed=embed)  # get_destination: Calls destination a.k.a. where you want to send the command
 
     async def send_cog_help(self, cog):
         if cog:
-            embed = discord.Embed(title="Help " + cog.qualified_name, description="Use !help <command> for more information.")
+            embed = discord.Embed(title=f"Help {cog.qualified_name}", description="Use !help <command> for more information.")
             list = ""
             for command in cog.get_commands():
                 list += command.usage
                 for alias in command.aliases:
-                    list += ', [!' + alias + ']'
-                list += ': ' + command.description + "\n"
+                    list += f", [!{alias}]"
+                list += f": {command.description}\n"
             embed.add_field(name=cog.qualified_name, value=list[:-2])
             await self.get_destination().send(embed=embed)
         else:
@@ -38,7 +38,7 @@ class CustomHelpCommand(commands.HelpCommand):
     async def send_command_help(self, command):
         title = command.name.capitalize()
         for alias in command.aliases:
-            title += ', [!' + alias + ']'
+            title += f", [! {alias}]"
         embed = discord.Embed(title=title, description=command.description)
         if command.usage != '':
             embed.add_field(name="Syntax:", value=command.usage, inline=False)
