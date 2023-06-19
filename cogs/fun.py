@@ -109,8 +109,10 @@ class Fun(commands.Cog):
         embed_color = random.randint(0, 16777215)
         #Split message if longer than 256 (= embed title character limit) characters
         if len(message) >= 256:
+            
+            #You only have to do this once (comment it out afterwards)
+            nltk.download('punkt')
 
-            nltk.download('punkt')    
             #Seperate words into messages of max 256 characters
             words = nltk.word_tokenize(message)
             messages = []
@@ -124,12 +126,11 @@ class Fun(commands.Cog):
             if current_line:
                 messages.append(current_line.strip())
             
-            print(messages)
-            
-            #Print each message with 
+            #Print each message with message number
+            embeds = []
             for i in range(len(messages)):
-                embed = discord.Embed(title=messages[i], description=f"{i+1}/{len(messages)}", color=discord.Color(embed_color))
-                await channel.send(embed=embed)
+                embeds.append(discord.Embed(title=messages[i], description=f"{i+1}/{len(messages)}", color=discord.Color(embed_color)))
+            await channel.send(embeds=embeds)
 
         else:
             embed = discord.Embed(title=message, color=discord.Color(embed_color))
