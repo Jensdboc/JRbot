@@ -6,6 +6,7 @@ import typing
 import asyncio
 import nltk
 
+MAX_TITLE_LENGTH = 256
 
 class Fun(commands.Cog):
 
@@ -107,18 +108,18 @@ class Fun(commands.Cog):
         channel = self.client.get_channel(935507669580652544)
         message = ctx.message.content[8:]
         embed_color = random.randint(0, 16777215)
-        #Split message if longer than 256 (= embed title character limit) characters
-        if len(message) >= 256:
+        # Split message if longer than 256 (= embed title character limit) characters
+        if len(message) >= MAX_TITLE_LENGTH:
             
-            #You only have to do this once (comment it out afterwards)
+            # You only have to do this once (you can comment it out afterwards)
             nltk.download('punkt')
 
-            #Seperate words into messages of max 256 characters
+            # Seperate words into messages of max 256 characters
             words = nltk.word_tokenize(message)
             messages = []
             current_line = ""
             for word in words:
-                if len(current_line) + len(word) + 1 <= 256:
+                if len(current_line) + len(word) + 1 <= MAX_TITLE_LENGTH:
                     current_line += word + " "
                 else:
                     messages.append(current_line.strip())
@@ -126,7 +127,7 @@ class Fun(commands.Cog):
             if current_line:
                 messages.append(current_line.strip())
             
-            #Print each message with message number
+            # Print each message with message number
             embeds = []
             for i in range(len(messages)):
                 embeds.append(discord.Embed(title=messages[i], description=f"{i+1}/{len(messages)}", color=discord.Color(embed_color)))
