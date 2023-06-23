@@ -4,7 +4,9 @@ import random
 import re
 import typing
 import asyncio
+import nltk
 
+MAX_TITLE_LENGTH = 256
 
 class Fun(commands.Cog):
 
@@ -104,8 +106,37 @@ class Fun(commands.Cog):
                       help="This message will be posted in the secretchannel with a randomised color :). Sentence can contain **spaces**")
     async def secret(self, ctx):
         channel = self.client.get_channel(935507669580652544)
-        embed = discord.Embed(title=ctx.message.content[8:], color=discord.Color(random.randint(0, 16777215)))
-        await channel.send(embed=embed)
+        message = ctx.message.content[8:]
+        embed_color = random.randint(0, 16777215)
+        # Split message if longer than 256 (= embed title character limit) characters
+        if len(message) >= MAX_TITLE_LENGTH:
+            
+            # You only have to do this once (you can comment it out afterwards)
+            nltk.download('punkt')
+
+            # Seperate words into messages of max 256 characters
+            words = nltk.word_tokenize(message)
+            messages = []
+            current_line = ""
+            for word in words:
+                if len(current_line) + len(word) + 1 <= MAX_TITLE_LENGTH:
+                    current_line += word + " "
+                else:
+                    messages.append(current_line.strip())
+                    current_line = word + " "
+            if current_line:
+                messages.append(current_line.strip())
+            
+            # Print each message with message number
+            embeds = []
+            for i in range(len(messages)):
+                embeds.append(discord.Embed(title=messages[i], description=f"{i+1}/{len(messages)}", color=discord.Color(embed_color)))
+            await channel.send(embeds=embeds)
+
+        else:
+            embed = discord.Embed(title=message, color=discord.Color(embed_color))
+            await channel.send(embed=embed)
+        
 
     @commands.command(usage="!pewpew <user>",
                       description="Pewpew somebody ",
