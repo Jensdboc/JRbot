@@ -38,7 +38,10 @@ class Daycounter(commands.Cog):
                       description="Creates a new counter and sets the last reset to the current date",
                       help="!createcounter Goose the last goose incident\nThe name cannot contain any spaces. The description will be be added to the sentence *It has been been x days since ...*.",
                       aliases=["makecounter", "startcounter", "cc"])
-    async def createcounter(self, ctx, name, *, description):
+    async def createcounter(self, ctx, name=None, *, description=None):
+        if name is None or description is None:
+            await ctx.send("Please add a name and description for your counter.")
+            return
         with open('Day_counters.txt', 'r') as readfile:
             for line in readfile.readlines():
                 counter_name, _, _, _, guild_id = line[:-1].split("\t")
@@ -46,15 +49,11 @@ class Daycounter(commands.Cog):
                     await ctx.send(f"There already exists a counter with the name **{name.capitalize()}**. Please pick a new name or delete the previous one.")
                     return
         with open('Day_counters.txt', 'a') as file:
-            if not description:
-                await ctx.send("Please enter a name and description for your counter.")
-                return
-            else:
-                last_reset = datetime.datetime.now().strftime("%Y/%m/%d")
-                creator_id = str(ctx.message.author.id)
-                guild_id = str(ctx.guild.id)
-                counter_entry = f"{name.capitalize()}\t{str(last_reset)}\t{creator_id}\t{description}\t{guild_id}\n"
-                file.write(counter_entry)
+            last_reset = datetime.datetime.now().strftime("%Y/%m/%d")
+            creator_id = str(ctx.message.author.id)
+            guild_id = str(ctx.guild.id)
+            counter_entry = f"{name.capitalize()}\t{last_reset}\t{creator_id}\t{description}\t{guild_id}\n"
+            file.write(counter_entry)
         embed = Daycounter.printcounter(name, guild_id)
         if embed is not None:
             await ctx.send(embed=embed)
@@ -64,7 +63,10 @@ class Daycounter(commands.Cog):
                       description="Deletes a counter by name",
                       help="!deletecounter goose",
                       aliases=["removecounter", "dc"])
-    async def deletecounter(self, ctx, to_delete):
+    async def deletecounter(self, ctx, to_delete=None):
+        if to_delete is None:
+            await ctx.send("Please specify which counter you want to delete.")
+            return
         with open('Day_counters.txt', 'r') as file:
             content = file.readlines()
         with open('Day_counters.txt', 'w') as newfile:
@@ -89,7 +91,10 @@ class Daycounter(commands.Cog):
                       description="Resets a counter and displays how many days have passed since the last reset.",
                       help="!resetcounter goose",
                       aliases=["rc"])
-    async def resetcounter(self, ctx, to_reset):
+    async def resetcounter(self, ctx, to_reset=None):
+        if to_reset is None:
+            await ctx.send("Please specify which counter you want to reset.")
+            return
         with open('Day_counters.txt', 'r') as file:
             content = file.readlines()
         with open('Day_counters.txt', 'w') as newfile:
@@ -119,7 +124,10 @@ class Daycounter(commands.Cog):
                       description="Edits the description of a counter.",
                       help="!editcounter goose the last horrible goose incident",
                       aliases=["ec"])
-    async def editcounter(self, ctx, to_edit, *, new_description):
+    async def editcounter(self, ctx, to_edit=None, *, new_description=None):
+        if to_edit is None or new_description is None:
+            await ctx.send("Please specify which counter you want to edit and the description you want to replace it with.")
+            return
         with open('Day_counters.txt', 'r') as file:
             content = file.readlines()
         with open('Day_counters.txt', 'w') as newfile:
@@ -138,7 +146,7 @@ class Daycounter(commands.Cog):
                         message += f"It's been **{str(days_since_last_reset)}** days since {new_description.lower()}."
                         embed = discord.Embed(title=f"Counter **{to_edit}** successfully updated", description=message)
                         await ctx.send(embed=embed)
-                        newfile.write(name.capitalize() + "\t" + last_reset + "\t" + creator_id + "\t" + new_description + "\t" + guild_id + "\n")
+                        newfile.write(f"{name.capitalize()}\t{last_reset}\t{creator_id}\t{new_description}\t{guild_id}\n")
                     edited = True
                 else:
                     newfile.write(line)
@@ -150,7 +158,10 @@ class Daycounter(commands.Cog):
                       description="Displays the days that have passed sinc the last reset of a counter.",
                       help="!showcounter goose",
                       aliases=["printcounter", "displaycounter", "sc"])
-    async def showcounter(self, ctx, name):
+    async def showcounter(self, ctx, name=None):
+        if name is None:
+            await ctx.send("Please specify which counter you want to display.")
+            return
         embed = Daycounter.printcounter(name, str(ctx.guild.id))
         if embed is not None:
             await ctx.send(embed=embed)
