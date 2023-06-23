@@ -1,13 +1,24 @@
 import datetime
 import discord
+import os
 from discord.ext import commands
 
 utc = datetime.timezone.utc
+
 
 class Daycounter(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+
+    # Creates the Day_counter.txt file
+    @commands.Cog.listener()
+    async def on_ready(self):
+        file_path = "Day_counters.txt"
+        if not os.path.exists(file_path):
+            with open(file_path, 'w'):
+                pass
+            print(f"{file_path} created")
 
     # Creates an embed message for a counter
     def printcounter(counter_name, ctx_guild_id):
@@ -19,13 +30,13 @@ class Daycounter(commands.Cog):
                 days_since_last_reset = (datetime.datetime.now() - datetime.datetime.strptime(last_reset, "%Y/%m/%d")).days
                 message = f"It's been **{str(days_since_last_reset)}** days since {description.lower()}."
                 embed = discord.Embed(title=name, description=message)
-                return embed   
+                return embed
         return None
 
     # Creates a counter and adds it to the file
     @commands.command(usage="!createcounter <name> <description>",
                       description="Creates a new counter and sets the last reset to the current date",
-                      help="!createcounter Goose the last goose incident\nThe name cannot contain any spaces. The description needs to be someething that continues the sentence *It has been been x days since ...*.",
+                      help="!createcounter Goose the last goose incident\nThe name cannot contain any spaces. The description will be be added to the sentence *It has been been x days since ...*.",
                       aliases=["makecounter", "startcounter", "cc"])
     async def createcounter(self, ctx, name, *, description):
         with open('Day_counters.txt', 'r') as readfile:
@@ -42,12 +53,12 @@ class Daycounter(commands.Cog):
                 last_reset = datetime.datetime.now().strftime("%Y/%m/%d")
                 creator_id = str(ctx.message.author.id)
                 guild_id = str(ctx.guild.id)
-                counter_entry = name.capitalize() + "\t" + str(last_reset) + "\t" + creator_id + "\t" + description + "\t" + guild_id + "\n"
+                counter_entry = f"{name.capitalize()}\t{str(last_reset)}\t{creator_id}\t{description}\t{guild_id}\n"
                 file.write(counter_entry)
         embed = Daycounter.printcounter(name, guild_id)
         if embed is not None:
             await ctx.send(embed=embed)
-                
+
     # Deletes a counter from the file
     @commands.command(usage="!deletecounter <name>",
                       description="Deletes a counter by name",
@@ -64,7 +75,7 @@ class Daycounter(commands.Cog):
                 if to_delete.lower() == name.lower() and guild_id == ctx_guild_id:
                     if creator_id != str(ctx.message.author.id):
                         await ctx.send("You can only delete counters you created!")
-                        newfile.write(line) 
+                        newfile.write(line)
                     else:
                         await ctx.send(f"Counter **{to_delete.capitalize()}** has been succesfully deleted.")
                     deleted = True
@@ -96,7 +107,7 @@ class Daycounter(commands.Cog):
                         embed = discord.Embed(title=name, description=message)
                         await ctx.send(embed=embed)
                         new_reset = datetime.datetime.now().strftime("%Y/%m/%d")
-                        newfile.write(name.capitalize() + "\t" + new_reset + "\t" + creator_id + "\t" + description + "\t" + guild_id + "\n")
+                        newfile.write(f"{name.capitalize()}\t{new_reset}\t{creator_id}\t{description}\t{guild_id}\n")
                     reset = True
                 else:
                     newfile.write(line)
@@ -164,6 +175,7 @@ class Daycounter(commands.Cog):
         else:
             embed = discord.Embed(title="Day counters", description=message)
         await ctx.send(embed=embed)
+
 
 # Allows to connect cog to bot
 async def setup(client):
