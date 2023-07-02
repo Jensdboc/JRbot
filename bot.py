@@ -44,6 +44,12 @@ status = cycle(["Goat Simulator and the grass is extra good today 🐐",
 async def on_ready():
     change_status.start()
     print('Bot = ready')
+    # Initialize slash-commands
+    try:
+        synced = await client.tree.sync()
+        print(f"Synced all {len(synced)} commands.")
+    except Exception as e:
+        print(e)
 
 
 @tasks.loop(seconds=180)

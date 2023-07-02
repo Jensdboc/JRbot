@@ -49,10 +49,10 @@ class Date(commands.Cog):
             for index in dates:
                 newfile.write(text[index[3]])
 
-    @commands.command(usage="!adddate <date> <name>",
-                      description="Add date to list of exams",
-                      help="!adddate 15/02/2022 a very hard exam\nDate should follow the format **DD/MM/YYYY**\nExam is allowed to contain **spaces**",
-                      aliases=['ad'])
+    @commands.hybrid_command(usage="!adddate <date> <name>",
+                             description="Add date to list of exams",
+                             help="!adddate 15/02/2022 a very hard exam\nDate should follow the format **DD/MM/YYYY**\nExam is allowed to contain **spaces**",
+                             aliases=['ad'])
     async def adddate(self, ctx, date, *, name):
         if not re.match("[0-3][0-9]/[0-1][0-9]/[0-9]{4}", date):
             await ctx.send("Date has to be DD/MM/YYYY, try again.")
@@ -70,10 +70,10 @@ class Date(commands.Cog):
         Date.sort()
         await ctx.send("Date added!")
 
-    @commands.command(usage="!showdate <member>",
-                      description="Show current examdates",
-                      help="!showdate: Show all dates\n!showdate @member: Show all dates from certain member",
-                      aliases=['sd'])
+    @commands.hybrid_command(usage="!showdate <member>",
+                             description="Show current examdates",
+                             help="!showdate: Show all dates\n!showdate @member: Show all dates from certain member",
+                             aliases=['sd'])
     async def showdate(self, ctx, member: discord.Member = None):
         with open('Examen_data.txt', 'r') as file:
             content = file.readlines()
@@ -107,10 +107,10 @@ class Date(commands.Cog):
             embed = discord.Embed(title=f"Examen Data {str(page)}", description=message)
             await ctx.send(embed=embed)
 
-    @commands.command(usage="!deletedate <date> <name>",
-                      description="Delete date from list of exams",
-                      help="!deletedate 15/02/2022 a very hard exam\nThe arguments have to be **the same arguments** as the ones in !adddate",
-                      aliases=['dd'])
+    @commands.hybrid_command(usage="!deletedate <date> <name>",
+                             description="Delete date from list of exams",
+                             help="!deletedate 15/02/2022 a very hard exam\nThe arguments have to be **the same arguments** as the ones in !adddate",
+                             aliases=['dd'])
     async def deletedate(self, ctx, date, *, name):
         with open('Examen_data.txt', 'r') as file:
             content = file.readlines()
