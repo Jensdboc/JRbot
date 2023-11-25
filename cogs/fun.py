@@ -7,7 +7,7 @@ import asyncio
 import nltk
 
 MAX_TITLE_LENGTH = 256
-
+LARS_CHANNEL_ID = 1178007345243103302
 class Fun(commands.Cog):
 
     def __init__(self, client):
@@ -165,6 +165,19 @@ class Fun(commands.Cog):
             await ctx.author.remove_roles(pewpew_role)
             await ctx.send(f"{ctx.author.name} has been revived!")
 
+    @commands.command(usage="!lars <message_id> <correction>",
+                      description="The wrong message will be posted into the channel with the correction underneath",
+                      help="This message will be posted in the channel of Lars. Right click to copy the message id.")
+    async def lars(self, ctx: commands.Context, id: str, *, description: str=None):
+        lars_message = await ctx.channel.fetch_message(id)
+        lars_channel = self.client.get_channel(LARS_CHANNEL_ID)
+        if lars_message.author.id != 350243309270335489:
+            embed = discord.Embed(title="Woops...", description="This message was not from Lars!")
+            await ctx.reply(embed=embed) 
+        else:
+            embed = discord.Embed(title=lars_message.content, description=description)
+            await lars_channel.send(embed=embed)
+
     @commands.Cog.listener("on_message")
     async def taylor(self, message):
         verboden_woorden = ['taylor swift', 'taylor', 'swift', 'taylorswift', 'folklore', 'love story', 'evermore', 'lovestory', 'taytay', 't swizzle', 'tswizzle', 'swizzle', 'queen t']
@@ -191,7 +204,6 @@ class Fun(commands.Cog):
             emoji = "\U0001F1F1"  # regional_indicator_l
             if present:
                 await message.add_reaction(emoji)
-
 
 # Allows to connect cog to bot
 async def setup(client):
