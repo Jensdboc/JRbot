@@ -165,18 +165,23 @@ class Fun(commands.Cog):
             await ctx.author.remove_roles(pewpew_role)
             await ctx.send(f"{ctx.author.name} has been revived!")
 
-    @commands.command(usage="!lars <message_id> <correction>",
+    @commands.command(usage="!lars <correction>",
                       description="The wrong message will be posted into the channel with the correction underneath",
-                      help="This message will be posted in the channel of Lars. Right click to copy the message id.")
+                      help="This message will be posted in the channel of Lars. Reply to the message that contains a mistake.")
     async def lars(self, ctx: commands.Context, id: str, *, description: str=None):
-        lars_message = await ctx.channel.fetch_message(id)
         lars_channel = self.client.get_channel(LARS_CHANNEL_ID)
-        if lars_message.author.id != 350243309270335489:
-            embed = discord.Embed(title="Woops...", description="This message was not from Lars!")
-            await ctx.reply(embed=embed) 
+        if ctx.message.reference is not None:
+            lars_message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+            if lars_message:
+                if lars_message.author.id != 350243309270335489:
+                    embed = discord.Embed(title="Woops...", description="This message was not from Lars!")
+                    await ctx.reply(embed=embed) 
+                else:
+                    embed = discord.Embed(title=lars_message.content, description=description)
+                    await lars_channel.send(embed=embed)
         else:
-            embed = discord.Embed(title=lars_message.content, description=description)
-            await lars_channel.send(embed=embed)
+            embed = discord.Embed(title="Woops...", description="You did not reply to a message of Lars!")
+            await ctx.reply(embed=embed) 
 
     @commands.Cog.listener("on_message")
     async def taylor(self, message):
