@@ -128,6 +128,7 @@ class Othello(commands.Cog):
                       help="https://nl.wikipedia.org/wiki/Reversi for more information",
                       aliases=['oc'])
     async def othello_clear(self, ctx):
+        global games
         games = []
         await ctx.send("All games have been succesfully cleared!")
 

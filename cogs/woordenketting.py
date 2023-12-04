@@ -97,7 +97,8 @@ class Woordenketting(commands.Cog):
 
     @commands.command(usage="!edit <word>",
                       description="Replace the last word",
-                      help="!edit België: This will replace the last entry to België if the first letter is still the same.\nThe word will still count towards the wordcount of the user who submitted the original word",)
+                      help="""!edit België: This will replace the last entry to België if the first letter is still the same.\n
+                            The word will still count towards the wordcount of the user who submitted the original word""",)
     async def edit(self, ctx, nieuwe_entry=None):
         list = []
         ketting = []

@@ -112,7 +112,7 @@ class Fun(commands.Cog):
         embed_color = random.randint(0, 16777215)
         # Split message if longer than 256 (= embed title character limit) characters
         if len(message) >= MAX_TITLE_LENGTH:
-            
+
             # You only have to do this once (you can comment it out afterwards)
             nltk.download('punkt')
 
@@ -128,7 +128,7 @@ class Fun(commands.Cog):
                     current_line = word + " "
             if current_line:
                 messages.append(current_line.strip())
-            
+
             # Print each message with message number
             embeds = []
             for i in range(len(messages)):
@@ -138,7 +138,6 @@ class Fun(commands.Cog):
         else:
             embed = discord.Embed(title=message, color=discord.Color(embed_color))
             await channel.send(embed=embed)
-        
 
     @commands.command(usage="!pewpew <user>",
                       description="Pewpew somebody ",
