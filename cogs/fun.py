@@ -8,6 +8,7 @@ import nltk
 
 MAX_TITLE_LENGTH = 256
 LARS_CHANNEL_ID = 1178007345243103302
+SECRET_CHANNEL_ID = 935507669580652544
 
 
 class Fun(commands.Cog):
@@ -107,7 +108,7 @@ class Fun(commands.Cog):
                       description="Send a secret message",
                       help="This message will be posted in the secretchannel with a randomised color :). Sentence can contain **spaces**")
     async def secret(self, ctx):
-        channel = self.client.get_channel(935507669580652544)
+        channel = self.client.get_channel(SECRET_CHANNEL_ID)
         message = ctx.message.content[8:]
         embed_color = random.randint(0, 16777215)
         # Split message if longer than 256 (= embed title character limit) characters
@@ -178,7 +179,7 @@ class Fun(commands.Cog):
                     embed = discord.Embed(title="Woops...", description="This message was not from Lars!")
                     await ctx.reply(embed=embed)
                 else:
-                    embed = discord.Embed(title=lars_message.content, description=description)
+                    embed = discord.Embed(title=description, description=lars_message.content)
                     await lars_channel.send(embed=embed)
         else:
             embed = discord.Embed(title="Woops...", description="You did not reply to a message of Lars!")
