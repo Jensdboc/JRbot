@@ -265,7 +265,7 @@ class Menu(discord.ui.View):
 
         self.page = 0
 
-    @discord.ui.button(label="<", style=discord.ButtonStyle.red, custom_id="<", disabled=True)
+    @discord.ui.button(label="<", style=discord.ButtonStyle.blurple, custom_id="<", disabled=True)
     async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
         """
         Show to UI for the current selected stats and show the previous stat option
@@ -281,6 +281,7 @@ class Menu(discord.ui.View):
 
         if self.page < len(self.activities_messages):
             self.enable_and_disable_button('join', disabled=True)
+            self.enable_and_disable_button('leave', disabled=True)
 
         self.enable_and_disable_button('>')
 
@@ -292,7 +293,7 @@ class Menu(discord.ui.View):
         embed = await self.make_embed()
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(label="Join", style=discord.ButtonStyle.red, custom_id="join", disabled=True)
+    @discord.ui.button(label="Join", style=discord.ButtonStyle.green, custom_id="join", disabled=True)
     async def join(self, interaction: discord.Interaction, button: discord.ui.Button):
         """
         Join an activity.
@@ -313,7 +314,30 @@ class Menu(discord.ui.View):
         embed = await self.make_embed()
         await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(label=">", style=discord.ButtonStyle.red, custom_id=">")
+    @discord.ui.button(label="Leave", style=discord.ButtonStyle.red, custom_id="leave", disabled=True)
+    async def leave(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """
+        Join an activity.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            Used to handle button interaction
+        button : discord.ui.Button
+            Button object
+        """
+        activity_index = self.page - len(self.activities_messages)
+
+        participating_individuals = self.activities_obj.activities[activity_index].participating_individuals
+        if interaction.user.name in participating_individuals:
+            participating_individuals.remove(interaction.user.name)
+
+        write_activities_to_file(self.filename, self.activities_obj)
+
+        embed = await self.make_embed()
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label=">", style=discord.ButtonStyle.blurple, custom_id=">")
     async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
         """
         Show to UI for the current selected stats and show the next stat option
@@ -329,6 +353,7 @@ class Menu(discord.ui.View):
 
         if self.page >= len(self.activities_messages):
             self.enable_and_disable_button('join')
+            self.enable_and_disable_button('leave')
 
         self.enable_and_disable_button('<')
 
