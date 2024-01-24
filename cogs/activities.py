@@ -156,7 +156,6 @@ class ActivitiesCog(commands.Cog):
             await ctx.send("Time has to be HH:MM, try again.")
             return
 
-        # TODO check if activity doesn't exist yet
         activity_date, activity_time = string_to_date(date), string_to_time(time)
 
         if datetime.datetime.combine(activity_date, activity_time) <= datetime.datetime.now():
