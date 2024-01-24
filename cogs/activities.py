@@ -375,7 +375,11 @@ class Menu(discord.ui.View):
     async def make_embed(self):
         if self.page < len(self.activities_messages):
             return discord.Embed(title=self.activities_messages[self.page][0], description=self.activities_messages[self.page][1])
-        return discord.Embed(title=self.activities_obj.activities[self.page - len(self.activities_messages)].name, description=self.activities_obj.get_string_of_participants_of_activity(self.page - len(self.activities_messages)))
+
+        activity = self.activities_obj.activities[self.page - len(self.activities_messages)]
+        name = activity.name
+
+        return discord.Embed(title=f'{name} ({convert_date_and_time_to_unix_time(datetime.datetime.combine(activity.date, activity.time))})', description=self.activities_obj.get_string_of_participants_of_activity(self.page - len(self.activities_messages)))
 
 
 # Allows to connect cog to bot
