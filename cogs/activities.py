@@ -29,6 +29,9 @@ class Activity:
 
         return self.name < other.name
 
+    def __eq__(self, other):
+        return self.date == other.date and self.time == other.time and self.name == other.name
+
 
 class Activities:
     def __init__(self):
@@ -39,11 +42,15 @@ class Activities:
 
     def add_activity(self, new_activity: Activity):
         for index, activity in enumerate(self.activities):
+            if new_activity == activity:
+                return "This activity already exists!"
             if new_activity < activity:
                 self.activities.insert(index, new_activity)
-                return
+                return "Activity added!"
 
         self.activities.append(new_activity)
+
+        return "Activity added!"
 
     def remove_activities_from_the_past(self):
         index = 0
@@ -157,14 +164,10 @@ class ActivitiesCog(commands.Cog):
             return
 
         activities = load_activities_from_file(self.filename)
-        activities.add_activity(Activity(activity_date, activity_time, name))
+        message = activities.add_activity(Activity(activity_date, activity_time, name))
         write_activities_to_file(self.filename, activities)
 
-        print('\n')
-        print(activities)
-        print('\n')
-
-        await ctx.send("Activity added!")
+        await ctx.send(message)
 
     @commands.command(usage="!deleteactivity <date> <time> <name>",
                       description="Delete activity from the list of activities",
@@ -183,11 +186,6 @@ class ActivitiesCog(commands.Cog):
         activities = load_activities_from_file(self.filename)
         message = activities.remove_activity(activity_date, activity_time, name)
         write_activities_to_file(self.filename, activities)
-
-        print('\n')
-        print(message)
-        print(activities)
-        print('\n')
 
         await ctx.send(message)
 
