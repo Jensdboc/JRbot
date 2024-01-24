@@ -21,7 +21,8 @@ class Activity:
         return f'{self.name} will take place on {self.date.strftime("%d/%m/%Y")} at {self.time}h'
 
     def get_message_representation(self):
-        return f'{self.name}: {self.time}'
+        print()
+        return f'{self.name}: {self.time} ({convert_date_and_time_to_unix_time(datetime.datetime.combine(self.date, self.time))})'
 
     def __lt__(self, other):
         if self.date != other.date:
@@ -125,6 +126,12 @@ def string_to_time(time_string: str) -> datetime.time:
     return datetime.datetime.strptime(time_string, time_format).time()
 
 
+def convert_date_and_time_to_unix_time(date_and_time):
+    # Convert to Unix timestamp
+    unix_timestamp = int(date_and_time.timestamp())
+    return f'<t:{unix_timestamp}:R>'
+
+
 class ActivitiesCog(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -198,12 +205,12 @@ class ActivitiesCog(commands.Cog):
                     current_date_string = current_date.strftime("%d/%m/%Y")
 
                 message_length = 0
-                message = [f"**__{current_date_string}:__**\n{current_activity.get_message_representation()}"]
+                message = [f"\n**__{current_date_string}:__**\n{current_activity.get_message_representation()}"]
             elif current_activity.date != current_date:
                 current_date = current_activity.date
                 current_date_string = current_date.strftime("%d/%m/%Y")
 
-                message_representation = f"**__{current_date}:__**\n{current_activity.get_message_representation()}"
+                message_representation = f"\n**__{current_date_string}:__**\n{current_activity.get_message_representation()}"
                 message_length += len(message_representation)
                 message.append(message_representation)
             else:
