@@ -112,7 +112,7 @@ class ActivitiesCog(commands.Cog):
         self.filename = 'activity_dates.pkl'
         self.check_loop.start()
 
-    @tasks.loop(time=datetime.time(hour=17, minute=47, tzinfo=utc))
+    @tasks.loop(time=datetime.time(hour=23, minute=00, tzinfo=utc))
     async def check_loop(self):
         activities = load_activities_from_file(self.filename)
         activities.remove_activities_from_the_past()
@@ -149,8 +149,6 @@ class ActivitiesCog(commands.Cog):
         activities = load_activities_from_file(self.filename)
         activities.add_activity(Activity(activity_date, activity_time, name))
         write_activities_to_file(self.filename, activities)
-
-        print(activities)
 
         await ctx.send("Activity added!")
 
