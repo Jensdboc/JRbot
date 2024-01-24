@@ -45,6 +45,17 @@ class Activities:
 
         self.activities.append(new_activity)
 
+    def remove_activities_from_the_past(self):
+        index = 0
+
+        activity = self.activities[index]
+
+        while index < len(self.activities) and datetime.datetime.combine(activity.date, activity.time) <= datetime.datetime.now() - datetime.timedelta(days=1):
+            index += 1
+            activity = self.activities[index]
+
+        self.activities = self.activities[index:]
+
 
 def write_activities_to_file(output_file: str, activities: Activities):
     """
@@ -99,24 +110,17 @@ class ActivitiesCog(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.filename = 'activity_dates.pkl'
-        '''self.check_loop.start()
+        self.check_loop.start()
 
-    @tasks.loop(time=datetime.time(hour=23, minute=0, tzinfo=utc))
+    @tasks.loop(time=datetime.time(hour=17, minute=47, tzinfo=utc))
     async def check_loop(self):
-        with open('activity_dates.txt', 'r') as file:
-            content = file.readlines()
-        with open('activity_dates.txt', 'w') as newfile:
-            for i in range(len(content)):
-                split_line = content[i].split('\t')
-                split_line[3] = split_line[3][:-1]
-                date = split_line[0]
-                date_time = datetime.datetime.strptime(date, "%d/%m/%Y")
-                if date_time >= datetime.datetime.now() - datetime.timedelta(days=1):
-                    newfile.write(content[i])
+        activities = load_activities_from_file(self.filename)
+        activities.remove_activities_from_the_past()
+        write_activities_to_file(self.filename, activities)
 
     @check_loop.before_loop
     async def before_printer(self):
-        await self.client.wait_until_ready()'''
+        await self.client.wait_until_ready()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -145,6 +149,8 @@ class ActivitiesCog(commands.Cog):
         activities = load_activities_from_file(self.filename)
         activities.add_activity(Activity(activity_date, activity_time, name))
         write_activities_to_file(self.filename, activities)
+
+        print(activities)
 
         await ctx.send("Activity added!")
 
