@@ -228,7 +228,7 @@ class ActivitiesCog(commands.Cog):
 
         embed = discord.Embed(title=messages[0][0], description=messages[0][1])
 
-        view = Menu(messages, activities_obj)
+        view = Menu(self.filename, messages, activities_obj)
         try:
             await ctx.send(embed=embed, view=view)
         except Exception as e:
@@ -256,9 +256,10 @@ class ActivitiesCog(commands.Cog):
 
 
 class Menu(discord.ui.View):
-    def __init__(self, activities_messages: List[Tuple[str, str]], activities_obj: Activities):
+    def __init__(self, filename: str, activities_messages: List[Tuple[str, str]], activities_obj: Activities):
         super().__init__()
 
+        self.filename = filename
         self.activities_messages = activities_messages
         self.activities_obj = activities_obj
 
@@ -278,16 +279,36 @@ class Menu(discord.ui.View):
         """
         self.page = (self.page - 1) % (len(self.activities_obj.activities) + len(self.activities_messages))
 
-        child_index = 0
-        while child_index < len(self.children) and self.children[child_index].custom_id != '>':
-            child_index += 1
+        if self.page < len(self.activities_messages):
+            self.enable_and_disable_button('join', disabled=True)
 
-        self.children[child_index].disabled = False
+        self.enable_and_disable_button('>')
 
         if self.page == 0:
             button.disabled = True
         else:
             button.disabled = False
+
+        embed = await self.make_embed()
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="Join", style=discord.ButtonStyle.red, custom_id="join", disabled=True)
+    async def join(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """
+        Join an activity.
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            Used to handle button interaction
+        button : discord.ui.Button
+            Button object
+        """
+        activity_index = self.page - len(self.activities_messages)
+
+        self.activities_obj.activities[activity_index].participating_individuals.add(interaction.user.name)
+
+        write_activities_to_file(self.filename, self.activities_obj)
 
         embed = await self.make_embed()
         await interaction.response.edit_message(embed=embed, view=self)
@@ -306,26 +327,30 @@ class Menu(discord.ui.View):
         """
         self.page = (self.page + 1) % (len(self.activities_obj.activities) + len(self.activities_messages))
 
-        child_index = 0
-        while child_index < len(self.children) and self.children[child_index].custom_id != '<':
-            child_index += 1
+        if self.page >= len(self.activities_messages):
+            self.enable_and_disable_button('join')
 
-        self.children[child_index].disabled = False
+        self.enable_and_disable_button('<')
 
         if self.page == len(self.activities_obj.activities) + len(self.activities_messages) - 1:
             button.disabled = True
         else:
             button.disabled = False
 
-        #clicked_by_id, clicked_by_name = interaction.user.id, interaction.user.name
-
         embed = await self.make_embed()
         await interaction.response.edit_message(embed=embed, view=self)
+
+    def enable_and_disable_button(self, custom_id, disabled: bool = False):
+        child_index = 0
+        while child_index < len(self.children) and self.children[child_index].custom_id != custom_id:
+            child_index += 1
+
+        self.children[child_index].disabled = disabled
 
     async def make_embed(self):
         if self.page < len(self.activities_messages):
             return discord.Embed(title=self.activities_messages[self.page][0], description=self.activities_messages[self.page][1])
-        return discord.Embed(title=self.activities_obj.activities[self.page - len(self.activities_messages)].name, description='test')
+        return discord.Embed(title=self.activities_obj.activities[self.page - len(self.activities_messages)].name, description=self.activities_obj.get_string_of_participants_of_activity(self.page - len(self.activities_messages)))
 
 
 # Allows to connect cog to bot
