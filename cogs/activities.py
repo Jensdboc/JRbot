@@ -2,66 +2,12 @@ import datetime
 import os
 import pickle
 import re
-from typing import List
+from typing import List, Tuple
 
 import discord
 from discord.ext import commands, tasks
 
 utc = datetime.timezone.utc
-
-
-'''class Menu(discord.ui.View):
-    def __init__(self, id: int, type: str):
-        """
-        Initialize the Ranking UI
-
-        Parameters
-        ----------
-        id : int
-            Id of the requested user
-        type : str
-            Type of stats
-        """
-        super().__init__()
-
-        self.tab_index = -1
-
-        self.value = None
-        self.id = id
-        self.type = type
-        self.view = "all"
-        self.list = ["credit", "xp", "current streak", "highest streak", "games played", "games won", "average guesses"]
-        for index, type in enumerate(self.list):
-            if self.type == type:
-                self.index = index
-
-    @discord.ui.button(label=">", style=discord.ButtonStyle.red, custom_id=">")
-    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """
-        Show to UI for the current selected stats and show the next stat option
-
-        Parameters
-        ----------
-        interaction : discord.Interaction
-            Used to handle button interaction
-        button : discord.ui.Button
-            Button object
-        """
-        self.index = (self.index + 1) % len(self.list)
-        self.type = self.list[self.index]
-        button.label = self.list[(self.index + 1) % len(self.list)].capitalize()
-
-        previous_button = [x for x in self.children if x.custom_id == "<"][0]
-        previous_button.label = self.list[(self.index - 1) % len(self.list)].capitalize()
-
-        if self.view == "all":
-            datas, title, currency = self.get_all_data()
-        elif self.view == "month":
-            datas, title, currency = self.get_month_data()
-        embed = await self.make_embed(datas, title, currency)
-        await interaction.response.edit_message(embed=embed, view=self)
-
-        if self.tab_index == '''
 
 
 class Activity:
@@ -257,8 +203,7 @@ class ActivitiesCog(commands.Cog):
 
         for current_activity in activities_obj.activities[1:]:
             if message_length > 2000:
-                embed = discord.Embed(title=f"Upcoming activities", description='\n'.join(message))
-                messages.append(embed)
+                messages.append(('Upcoming activities', '\n'.join(message)))
 
                 if current_activity.date != current_date:
                     current_date = current_activity.date
@@ -279,11 +224,15 @@ class ActivitiesCog(commands.Cog):
                 message.append(message_representation)
 
         if message_length > 0:
-            embed = discord.Embed(title=f"Upcoming activities", description='\n'.join(message))
-            messages.append(embed)
+            messages.append(('Upcoming activities', '\n'.join(message)))
 
-        for embed in messages:
-            await ctx.send(embed=embed)
+        embed = discord.Embed(title=messages[0][0], description=messages[0][1])
+
+        view = Menu(messages, activities_obj)
+        try:
+            await ctx.send(embed=embed, view=view)
+        except Exception as e:
+            print(e)
 
     @commands.command(usage="!deleteactivity <date> <time> <name>",
                       description="Delete activity from the list of activities",
@@ -304,6 +253,79 @@ class ActivitiesCog(commands.Cog):
         write_activities_to_file(self.filename, activities)
 
         await ctx.send(message)
+
+
+class Menu(discord.ui.View):
+    def __init__(self, activities_messages: List[Tuple[str, str]], activities_obj: Activities):
+        super().__init__()
+
+        self.activities_messages = activities_messages
+        self.activities_obj = activities_obj
+
+        self.page = 0
+
+    @discord.ui.button(label="<", style=discord.ButtonStyle.red, custom_id="<", disabled=True)
+    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """
+        Show to UI for the current selected stats and show the previous stat option
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            Used to handle button interaction
+        button : discord.ui.Button
+            Button object
+        """
+        self.page = (self.page - 1) % (len(self.activities_obj.activities) + len(self.activities_messages))
+
+        child_index = 0
+        while child_index < len(self.children) and self.children[child_index].custom_id != '>':
+            child_index += 1
+
+        self.children[child_index].disabled = False
+
+        if self.page == 0:
+            button.disabled = True
+        else:
+            button.disabled = False
+
+        embed = await self.make_embed()
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label=">", style=discord.ButtonStyle.red, custom_id=">")
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """
+        Show to UI for the current selected stats and show the next stat option
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            Used to handle button interaction
+        button : discord.ui.Button
+            Button object
+        """
+        self.page = (self.page + 1) % (len(self.activities_obj.activities) + len(self.activities_messages))
+
+        child_index = 0
+        while child_index < len(self.children) and self.children[child_index].custom_id != '<':
+            child_index += 1
+
+        self.children[child_index].disabled = False
+
+        if self.page == len(self.activities_obj.activities) + len(self.activities_messages) - 1:
+            button.disabled = True
+        else:
+            button.disabled = False
+
+        #clicked_by_id, clicked_by_name = interaction.user.id, interaction.user.name
+
+        embed = await self.make_embed()
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    async def make_embed(self):
+        if self.page < len(self.activities_messages):
+            return discord.Embed(title=self.activities_messages[self.page][0], description=self.activities_messages[self.page][1])
+        return discord.Embed(title=self.activities_obj.activities[self.page - len(self.activities_messages)].name, description='test')
 
 
 # Allows to connect cog to bot
