@@ -20,6 +20,9 @@ class Activity:
     def get_string_representation(self):
         return f'{self.name} will take place on {self.date.strftime("%d/%m/%Y")} at {self.time}h'
 
+    def get_message_representation(self):
+        return f'{self.name}: {self.time}'
+
     def __lt__(self, other):
         if self.date != other.date:
             return self.date < other.date
@@ -167,6 +170,50 @@ class ActivitiesCog(commands.Cog):
         write_activities_to_file(self.filename, activities)
 
         await ctx.send(message)
+
+    @commands.command(usage="!listactivities",
+                      description="List all activities",
+                      help="!listactivities",
+                      aliases=['la'])
+    async def listactivities(self, ctx):
+        activities_obj: Activities = load_activities_from_file(self.filename)
+
+        if len(activities_obj.activities) == 0:
+            await ctx.send("No activities planned!")
+
+        current_activity = activities_obj.activities[0]
+        current_date = current_activity.date
+        current_date_string = current_date.strftime("%d/%m/%Y")
+
+        message = [f"**__{current_date_string}:__**\n{current_activity.get_message_representation()}"]
+        message_length = len(message[0])
+
+        for current_activity in activities_obj.activities[1:]:
+            if message_length > 2000:
+                embed = discord.Embed(title=f"Upcoming activities", description='\n'.join(message))
+                await ctx.send(embed=embed)
+
+                if current_activity.date != current_date:
+                    current_date = current_activity.date
+                    current_date_string = current_date.strftime("%d/%m/%Y")
+
+                message_length = 0
+                message = [f"**__{current_date_string}:__**\n{current_activity.get_message_representation()}"]
+            elif current_activity.date != current_date:
+                current_date = current_activity.date
+                current_date_string = current_date.strftime("%d/%m/%Y")
+
+                message_representation = f"**__{current_date}:__**\n{current_activity.get_message_representation()}"
+                message_length += len(message_representation)
+                message.append(message_representation)
+            else:
+                message_representation = current_activity.get_message_representation()
+                message_length += len(message_representation)
+                message.append(message_representation)
+
+        if message_length > 0:
+            embed = discord.Embed(title=f"Upcoming activities", description='\n'.join(message))
+            await ctx.send(embed=embed)
 
     @commands.command(usage="!deleteactivity <date> <time> <name>",
                       description="Delete activity from the list of activities",
