@@ -48,13 +48,22 @@ class Activities:
     def remove_activities_from_the_past(self):
         index = 0
 
-        activity = self.activities[index]
-
-        while index < len(self.activities) and datetime.datetime.combine(activity.date, activity.time) <= datetime.datetime.now() - datetime.timedelta(days=1):
+        while index < len(self.activities) and datetime.datetime.combine(self.activities[index].date, self.activities[index].time) <= datetime.datetime.now() - datetime.timedelta(days=1):
             index += 1
-            activity = self.activities[index]
 
         self.activities = self.activities[index:]
+
+    def remove_activity(self, date, time, name):
+        index = 0
+
+        while index < len(self.activities) and (self.activities[index].date != date or self.activities[index].time != time or self.activities[index].name != name):
+            index += 1
+
+        if index < len(self.activities):
+            del self.activities[index]
+            return "Activity deleted!"
+
+        return "This activity does not exist!"
 
 
 def write_activities_to_file(output_file: str, activities: Activities):
@@ -140,6 +149,7 @@ class ActivitiesCog(commands.Cog):
             await ctx.send("Time has to be HH:MM, try again.")
             return
 
+        # TODO check if activity doesn't exist yet
         activity_date, activity_time = string_to_date(date), string_to_time(time)
 
         if datetime.datetime.combine(activity_date, activity_time) <= datetime.datetime.now():
@@ -150,7 +160,36 @@ class ActivitiesCog(commands.Cog):
         activities.add_activity(Activity(activity_date, activity_time, name))
         write_activities_to_file(self.filename, activities)
 
+        print('\n')
+        print(activities)
+        print('\n')
+
         await ctx.send("Activity added!")
+
+    @commands.command(usage="!deleteactivity <date> <time> <name>",
+                      description="Delete activity from the list of activities",
+                      help="!deleteactivity 15/12/2024 18:30 Yammi Yammi diner",
+                      aliases=['da'])
+    async def deleteactivity(self, ctx, date, time, *, name):
+        if not re.match("[0-3][0-9]/[0-1][0-9]/[0-9]{4}", date):
+            await ctx.send("Date has to be DD/MM/YYYY, try again.")
+            return
+        if not re.match("^(?:[01]\d|2[0-3]):[0-5]\d$", time):
+            await ctx.send("Time has to be HH:MM, try again.")
+            return
+
+        activity_date, activity_time = string_to_date(date), string_to_time(time)
+
+        activities = load_activities_from_file(self.filename)
+        message = activities.remove_activity(activity_date, activity_time, name)
+        write_activities_to_file(self.filename, activities)
+
+        print('\n')
+        print(message)
+        print(activities)
+        print('\n')
+
+        await ctx.send(message)
 
 
 # Allows to connect cog to bot
