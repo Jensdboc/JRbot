@@ -10,6 +10,60 @@ from discord.ext import commands, tasks
 utc = datetime.timezone.utc
 
 
+'''class Menu(discord.ui.View):
+    def __init__(self, id: int, type: str):
+        """
+        Initialize the Ranking UI
+
+        Parameters
+        ----------
+        id : int
+            Id of the requested user
+        type : str
+            Type of stats
+        """
+        super().__init__()
+
+        self.tab_index = -1
+
+        self.value = None
+        self.id = id
+        self.type = type
+        self.view = "all"
+        self.list = ["credit", "xp", "current streak", "highest streak", "games played", "games won", "average guesses"]
+        for index, type in enumerate(self.list):
+            if self.type == type:
+                self.index = index
+
+    @discord.ui.button(label=">", style=discord.ButtonStyle.red, custom_id=">")
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """
+        Show to UI for the current selected stats and show the next stat option
+
+        Parameters
+        ----------
+        interaction : discord.Interaction
+            Used to handle button interaction
+        button : discord.ui.Button
+            Button object
+        """
+        self.index = (self.index + 1) % len(self.list)
+        self.type = self.list[self.index]
+        button.label = self.list[(self.index + 1) % len(self.list)].capitalize()
+
+        previous_button = [x for x in self.children if x.custom_id == "<"][0]
+        previous_button.label = self.list[(self.index - 1) % len(self.list)].capitalize()
+
+        if self.view == "all":
+            datas, title, currency = self.get_all_data()
+        elif self.view == "month":
+            datas, title, currency = self.get_month_data()
+        embed = await self.make_embed(datas, title, currency)
+        await interaction.response.edit_message(embed=embed, view=self)
+
+        if self.tab_index == '''
+
+
 class Activity:
     def __init__(self, date, time, name):
         self.date = date
@@ -18,10 +72,10 @@ class Activity:
         self.participating_individuals = set()
 
     def get_string_representation(self):
+        # TODO remove
         return f'{self.name} will take place on {self.date.strftime("%d/%m/%Y")} at {self.time}h'
 
     def get_message_representation(self):
-        print()
         return f'{self.name}: {self.time} ({convert_date_and_time_to_unix_time(datetime.datetime.combine(self.date, self.time))})'
 
     def __lt__(self, other):
@@ -42,6 +96,7 @@ class Activities:
         self.activities: List[Activity] = []
 
     def __str__(self):
+        # TODO remove
         return '\n'.join(list(map(lambda activity: activity.get_string_representation(), self.activities)))
 
     def add_activity(self, new_activity: Activity):
@@ -75,6 +130,9 @@ class Activities:
             return "Activity deleted!"
 
         return "This activity does not exist!"
+
+    def get_string_of_participants_of_activity(self, activity_index):
+        return '\n'.join(list(sorted(self.activities[activity_index].participating_individuals)))
 
 
 def write_activities_to_file(output_file: str, activities: Activities):
@@ -188,6 +246,8 @@ class ActivitiesCog(commands.Cog):
         if len(activities_obj.activities) == 0:
             await ctx.send("No activities planned!")
 
+        messages = []
+
         current_activity = activities_obj.activities[0]
         current_date = current_activity.date
         current_date_string = current_date.strftime("%d/%m/%Y")
@@ -198,7 +258,7 @@ class ActivitiesCog(commands.Cog):
         for current_activity in activities_obj.activities[1:]:
             if message_length > 2000:
                 embed = discord.Embed(title=f"Upcoming activities", description='\n'.join(message))
-                await ctx.send(embed=embed)
+                messages.append(embed)
 
                 if current_activity.date != current_date:
                     current_date = current_activity.date
@@ -220,6 +280,9 @@ class ActivitiesCog(commands.Cog):
 
         if message_length > 0:
             embed = discord.Embed(title=f"Upcoming activities", description='\n'.join(message))
+            messages.append(embed)
+
+        for embed in messages:
             await ctx.send(embed=embed)
 
     @commands.command(usage="!deleteactivity <date> <time> <name>",
