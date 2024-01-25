@@ -11,17 +11,32 @@ utc = datetime.timezone.utc
 
 
 class Activity:
-    def __init__(self, date: datetime.date, time: datetime.time, name):
+    """
+    This class contains the date, time and name of the activity and a dictionary that maps the ID of the participants to their name.
+    """
+    def __init__(self, date: datetime.date, time: datetime.time, name: str):
         self.date = date
         self.time = time
         self.name = name
         self.participating_individuals = dict()
 
-    def get_message_representation(self):
+    def get_string_representation(self) -> str:
+        """
+        Obtain the string representation of an activity.
+
+        :return: The string representation.
+        """
         t = self.time.strftime('%H:%M')
         return f'{self.name}: {t}h'
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
+        """
+        Override the less than operator so that you can sort a list of activities.
+
+        :param other: The other Activity object.
+
+        :return: True if the object is smaller than the other one, else False.
+        """
         if self.date != other.date:
             return self.date < other.date
 
@@ -30,18 +45,36 @@ class Activity:
 
         return self.name < other.name
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
+        """
+        Override the __eq__ operator so that you can sort a list of activities.
+
+        :param other: The other Activity object.
+
+        :return: True if the objects are equal, else False.
+        """
         return self.date == other.date and self.time == other.time and self.name == other.name
 
 
-class Activities:
+class ActivitiesObj:
+    """
+    This class contains a list of Activity objects.
+    """
     def __init__(self):
         self.activities: List[Activity] = []
 
     def add_activity(self, new_activity: Activity):
+        """
+        Add an activity to the list of activities if it doesn't exist yet.
+
+        :param new_activity: The new activity object.
+
+        :return: The status message.
+        """
         for index, activity in enumerate(self.activities):
             if new_activity == activity:
                 return "This activity already exists!"
+
             if new_activity < activity:
                 self.activities.insert(index, new_activity)
                 return "Activity added!"
@@ -50,7 +83,10 @@ class Activities:
 
         return "Activity added!"
 
-    def remove_activities_from_the_past(self):
+    def remove_activities_from_the_past(self) -> None:
+        """
+        Remove all outdated activities.
+        """
         index = 0
 
         while index < len(self.activities) and datetime.datetime.combine(self.activities[index].date, self.activities[index].time) <= datetime.datetime.now() - datetime.timedelta(days=1):
@@ -58,7 +94,16 @@ class Activities:
 
         self.activities = self.activities[index:]
 
-    def remove_activity(self, date, time, name):
+    def remove_activity(self, date: datetime.date, time: datetime.time, name: str) -> str:
+        """
+        Remove an activity.
+
+        :param date: The date of the activity to be removed.
+        :param time: The time of the activity to be removed.
+        :param name: The name of the activity to be removed.
+
+        :return: The status message.
+        """
         index = 0
 
         while index < len(self.activities) and (self.activities[index].date != date or self.activities[index].time != time or self.activities[index].name != name):
@@ -70,17 +115,29 @@ class Activities:
 
         return "This activity does not exist!"
 
-    def get_string_of_participants_of_activity(self, activity_index):
+    def get_string_of_participants_of_activity(self, activity_index: int) -> str:
+        """
+        Obtain the string representation of all participants of an activity.
+
+        :param activity_index: The index of the activity in the activities list.
+
+        :return: The string of participants.
+        """
         return '\n'.join(list(sorted(map(lambda x: x[1], self.activities[activity_index].participating_individuals.items()))))
 
-    def list_activities(self):
+    def list_activities(self) -> List[Tuple[str, List[Tuple[str, int]]]]:
+        """
+        Obtain a list of pages/messages. Each page/message contains a title and another list that contains tuples: each tuple contains an activity string and the current number of participants.
+
+        :return: The list of pages/messages.
+        """
         messages = []
 
         current_activity = self.activities[0]
         current_date = current_activity.date
         current_date_string = current_date.strftime("%d/%m/%Y")
 
-        message = [(f"**__{current_date_string}:__**\n{current_activity.get_message_representation()}", len(current_activity.participating_individuals))]
+        message = [(f"**__{current_date_string}:__**\n{current_activity.get_string_representation()}", len(current_activity.participating_individuals))]
         message_length = len(message[0][0]) + 16 + len(str(len(current_activity.participating_individuals)))
 
         for current_activity in self.activities[1:]:
@@ -91,17 +148,17 @@ class Activities:
                     current_date = current_activity.date
                     current_date_string = current_date.strftime("%d/%m/%Y")
 
-                message = [(f"\n**__{current_date_string}:__**\n{current_activity.get_message_representation()}", len(current_activity.participating_individuals))]
+                message = [(f"\n**__{current_date_string}:__**\n{current_activity.get_string_representation()}", len(current_activity.participating_individuals))]
                 message_length = (len(message[0][0]) + 16 + len(str(len(current_activity.participating_individuals))))
             elif current_activity.date != current_date:
                 current_date = current_activity.date
                 current_date_string = current_date.strftime("%d/%m/%Y")
 
-                message_representation = f"\n**__{current_date_string}:__**\n{current_activity.get_message_representation()}"
+                message_representation = f"\n**__{current_date_string}:__**\n{current_activity.get_string_representation()}"
                 message_length += (len(message_representation) + 16 + len(str(len(current_activity.participating_individuals))))
                 message.append((message_representation, len(current_activity.participating_individuals)))
             else:
-                message_representation = current_activity.get_message_representation()
+                message_representation = current_activity.get_string_representation()
                 message_length += (len(message_representation) + 16 + len(str(len(current_activity.participating_individuals))))
                 message.append(message_representation)
 
@@ -111,7 +168,7 @@ class Activities:
         return messages
 
 
-def write_activities_to_file(output_file: str, activities: Activities):
+def write_activities_to_file(output_file: str, activities: ActivitiesObj):
     """
     Write an Activities object to a pickle file.
 
@@ -180,7 +237,7 @@ def get_indices_of_activity(messages: List[Tuple[str, List[Tuple[str, int]]]], a
     return page_index, index_on_page
 
 
-class ActivitiesCog(commands.Cog):
+class Activities(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.filename = 'activity_dates.pkl'
@@ -199,7 +256,7 @@ class ActivitiesCog(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         if not os.path.exists(self.filename):
-            write_activities_to_file(self.filename, Activities())
+            write_activities_to_file(self.filename, ActivitiesObj())
             print(f"{self.filename} created")
 
     @commands.command(usage="!addactivity <date> <time> <name>",
@@ -231,7 +288,7 @@ class ActivitiesCog(commands.Cog):
                       help="!listactivities",
                       aliases=['la'])
     async def listactivities(self, ctx):
-        activities_obj: Activities = load_activities_from_file(self.filename)
+        activities_obj: ActivitiesObj = load_activities_from_file(self.filename)
 
         if len(activities_obj.activities) == 0:
             await ctx.send("No activities planned!")
@@ -268,7 +325,7 @@ class ActivitiesCog(commands.Cog):
 
 
 class Menu(discord.ui.View):
-    def __init__(self, filename: str, activities_messages: List[Tuple[str, List[Tuple[str, int]]]], activities_obj: Activities):
+    def __init__(self, filename: str, activities_messages: List[Tuple[str, List[Tuple[str, int]]]], activities_obj: ActivitiesObj):
         super().__init__()
 
         self.filename = filename
@@ -404,4 +461,4 @@ class Menu(discord.ui.View):
 
 # Allows to connect cog to bot
 async def setup(client):
-    await client.add_cog(ActivitiesCog(client))
+    await client.add_cog(Activities(client))
