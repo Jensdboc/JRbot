@@ -96,26 +96,16 @@ class ActivitiesObj:
 
         self.activities = self.activities[index:]
 
-    def remove_activity(self, date: datetime.date, time: datetime.time, name: str) -> str:
+    def remove_activity(self, activity_id: int) -> str:
         """
         Remove an activity.
 
-        :param date: The date of the activity to be removed.
-        :param time: The time of the activity to be removed.
-        :param name: The name of the activity to be removed.
+        :param activity_id: The id of the activity.
 
         :return: The status message.
         """
-        index = 0
-
-        while index < len(self.activities) and (self.activities[index].date != date or self.activities[index].time != time or self.activities[index].name != name):
-            index += 1
-
-        if index < len(self.activities):
-            del self.activities[index]
-            return "Activity deleted!"
-
-        return "This activity does not exist!"
+        del self.activities[activity_id - 1]
+        return "Activity deleted!"
 
     def get_string_of_participants_of_activity(self, activity_index: int) -> str:
         """
@@ -328,7 +318,7 @@ class Activities(commands.Cog):
 
         await ctx.send(message)
 
-    @commands.command(usage="!listactivities activity_id",
+    @commands.command(usage="!listactivities <activity_id>",
                       description="List all activities or one activity in particular",
                       help="!listactivities (1)",
                       aliases=['la'])
@@ -363,30 +353,28 @@ class Activities(commands.Cog):
         except Exception as e:
             print(e)
 
-    @commands.command(usage="!deleteactivity <date> <time> <name>",
-                      description="Delete activity from the list of activities",
-                      help="!deleteactivity 15/12/2024 18:30 Yammi Yammi diner",
+    @commands.command(usage="!deleteactivity <activity_id>",
+                      description="Delete an activity from the list of activities",
+                      help="!deleteactivity 1",
                       aliases=['da'])
-    async def deleteactivity(self, ctx: discord.ext.commands.context.Context, date: str, time: str, *, name: str) -> None:
+    async def deleteactivity(self, ctx: discord.ext.commands.context.Context, activity_id: int) -> None:
         """
         Remove an activity from the list.
 
         :param ctx: The context.
-        :param date: The date of the activity.
-        :param time: The time of the activity.
-        :param name: The name of the activity.
+        :param activity_id: The id of the activity.
         """
-        if not is_valid_date(date):
-            await ctx.send("This is not a valid date! The date has to be DD/MM/YYYY, try again.")
-            return
-        if not re.match("^(?:[01]\d|2[0-3]):[0-5]\d$", time):
-            await ctx.send("Time has to be HH:MM, try again.")
-            return
+        activities_obj: ActivitiesObj = load_activities_from_file(self.filename)
 
-        activity_date, activity_time = string_to_date(date), string_to_time(time)
+        if len(activities_obj.activities) == 0:
+            await ctx.send("There are no activities planned!")
+
+        if activity_id < 1 or activity_id > len(activities_obj.activities):
+            await ctx.send(f"The id must be greater than 0 and less than {len(activities_obj.activities) + 1}!")
+            return
 
         activities = load_activities_from_file(self.filename)
-        message = activities.remove_activity(activity_date, activity_time, name)
+        message = activities.remove_activity(activity_id)
         write_activities_to_file(self.filename, activities)
 
         await ctx.send(message)
