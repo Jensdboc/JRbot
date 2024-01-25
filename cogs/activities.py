@@ -137,7 +137,10 @@ class ActivitiesObj:
         current_date = current_activity.date
         current_date_string = current_date.strftime("%d/%m/%Y")
 
+        # start of first message
         message = [(f"**__{current_date_string}:__**\n{current_activity.get_string_representation()}", len(current_activity.participating_individuals))]
+
+        # get the message length: 16 for the '(... participants)' part
         message_length = len(message[0][0]) + 16 + len(str(len(current_activity.participating_individuals)))
 
         for current_activity in self.activities[1:]:
@@ -283,21 +286,30 @@ class Activities(commands.Cog):
 
         await ctx.send(message)
 
-    @commands.command(usage="!listactivities",
-                      description="List all activities",
-                      help="!listactivities",
+    @commands.command(usage="!listactivities activity_id",
+                      description="List all activities or one activity in particular",
+                      help="!listactivities (1)",
                       aliases=['la'])
-    async def listactivities(self, ctx):
+    async def listactivities(self, ctx, activity_id: int = None):
         activities_obj: ActivitiesObj = load_activities_from_file(self.filename)
-
-        if len(activities_obj.activities) == 0:
-            await ctx.send("No activities planned!")
-
         messages = activities_obj.list_activities()
 
-        embed = discord.Embed(title=messages[0][0], description='\n'.join(list(map(lambda x: x[0] + f' ({x[1]} participants)' if x[1] != 1 else x[0] + ' (1 participant)', messages[0][1]))))
+        if activity_id is not None and activity_id < 1:
+            await ctx.send(f"The id must be greater than 0 and less than {len(activities_obj.activities) + 1}!")
+            return
 
-        view = Menu(self.filename, messages, activities_obj)
+        if len(activities_obj.activities) == 0 and activity_id is None:
+            await ctx.send("No activities planned!")
+
+        if activity_id is None:
+            page = 0
+            embed = discord.Embed(title=messages[0][0], description='\n'.join(list(map(lambda x: x[0] + f' ({x[1]} participants)' if x[1] != 1 else x[0] + ' (1 participant)', messages[0][1]))))
+        else:
+            page = len(messages) - 1 + activity_id
+            activity = activities_obj.activities[activity_id - 1]
+            embed = discord.Embed(title=f'{activity.name} ({convert_date_and_time_to_unix_time(datetime.datetime.combine(activity.date, activity.time))})', description=activities_obj.get_string_of_participants_of_activity(activity_id - 1))
+
+        view = Menu(self.filename, messages, activities_obj, page=page)
         try:
             await ctx.send(embed=embed, view=view)
         except Exception as e:
@@ -325,14 +337,22 @@ class Activities(commands.Cog):
 
 
 class Menu(discord.ui.View):
-    def __init__(self, filename: str, activities_messages: List[Tuple[str, List[Tuple[str, int]]]], activities_obj: ActivitiesObj):
+    def __init__(self, filename: str, activities_messages: List[Tuple[str, List[Tuple[str, int]]]], activities_obj: ActivitiesObj, page: int = 0):
         super().__init__()
 
         self.filename = filename
         self.activities_messages = activities_messages
         self.activities_obj = activities_obj
 
-        self.page = 0
+        if page == len(self.activities_messages) + len(self.activities_obj.activities) - 1:
+            self.enable_and_disable_button('>', disabled=True)
+
+        if page != 0:
+            self.enable_and_disable_button('<')
+            self.enable_and_disable_button('join')
+            self.enable_and_disable_button('leave')
+
+        self.page = page
 
     @discord.ui.button(label="<", style=discord.ButtonStyle.blurple, custom_id="<", disabled=True)
     async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
