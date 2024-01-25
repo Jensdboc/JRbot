@@ -332,7 +332,13 @@ class Activities(commands.Cog):
                       description="List all activities or one activity in particular",
                       help="!listactivities (1)",
                       aliases=['la'])
-    async def listactivities(self, ctx, activity_id: int = None):
+    async def listactivities(self, ctx: discord.ext.commands.context.Context, activity_id: int = None) -> None:
+        """
+        List all activities or one activity in particular.
+
+        :param ctx: The context.
+        :param activity_id: The id of the activity.
+        """
         activities_obj: ActivitiesObj = load_activities_from_file(self.filename)
         messages = activities_obj.list_activities()
 
