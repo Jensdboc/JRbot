@@ -330,14 +330,15 @@ class Activities(commands.Cog):
         :param activity_id: The id of the activity.
         """
         activities_obj: ActivitiesObj = load_activities_from_file(self.filename)
+
+        if len(activities_obj.activities) == 0:
+            await ctx.send("No activities planned!")
+
         messages = activities_obj.list_activities()
 
         if activity_id is not None and activity_id < 1:
             await ctx.send(f"The id must be greater than 0 and less than {len(activities_obj.activities) + 1}!")
             return
-
-        if len(activities_obj.activities) == 0 and activity_id is None:
-            await ctx.send("No activities planned!")
 
         # list all activities or one in particular
         if activity_id is None:
