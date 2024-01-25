@@ -143,14 +143,16 @@ class ActivitiesObj:
         # start of first message
         message = [(f"**__{current_date_string}:__**\n{current_activity.get_string_representation(current_activity_index)}", len(current_activity.participating_individuals))]
 
-        # get the message length: 16 for the '(... participants)' part
+        # get the message length: 16 for the ' (... participants)' part
         message_length = len(message[0][0]) + 16 + len(str(len(current_activity.participating_individuals)))
 
         for current_activity in self.activities[1:]:
             current_activity_index += 1
+            # if message too large -> output
             if message_length > 2000:
                 messages.append(('Upcoming activities', message))
 
+                # update the current date to sort the activities
                 if current_activity.date != current_date:
                     current_date = current_activity.date
                     current_date_string = current_date.strftime("%d/%m/%Y")
@@ -175,15 +177,15 @@ class ActivitiesObj:
         return messages
 
 
-def write_activities_to_file(output_file: str, activities: ActivitiesObj):
+def write_activities_to_file(output_file: str, activities_obj: ActivitiesObj) -> None:
     """
     Write an Activities object to a pickle file.
 
     :param output_file: The output file.
-    :param activities: The activities.
+    :param activities_obj: The activities object.
     """
     with open(output_file, 'wb') as file:
-        pickle.dump(activities, file)
+        pickle.dump(activities_obj, file)
 
 
 def load_activities_from_file(input_file: str):
@@ -195,39 +197,42 @@ def load_activities_from_file(input_file: str):
     :return: The Activities object.
     """
     with open(input_file, 'rb') as file:
-        activities = pickle.load(file)
+        activities_obj = pickle.load(file)
 
-    return activities
+    return activities_obj
 
 
 def string_to_date(date_string: str) -> datetime.date:
     """
-    Convert a string "day/month/year" to a date instance.
+    Convert a string "day/month/year" to a date object.
 
     :param date_string: The date.
 
-    :return: The date instance.
+    :return: The date object.
     """
-    date_format = "%d/%m/%Y"
-    return datetime.datetime.strptime(date_string, date_format).date()
+    return datetime.datetime.strptime(date_string, "%d/%m/%Y").date()
 
 
 def string_to_time(time_string: str) -> datetime.time:
     """
-    Convert a string "hours:minutes" to a time instance.
+    Convert a string "hours:minutes" to a time object.
 
     :param time_string: The time.
 
-    :return: The time instance.
+    :return: The time object.
     """
-    time_format = "%H:%M"
-    return datetime.datetime.strptime(time_string, time_format).time()
+    return datetime.datetime.strptime(time_string, "%H:%M").time()
 
 
-def convert_date_and_time_to_unix_time(date_and_time):
-    # Convert to Unix timestamp
-    unix_timestamp = int(date_and_time.timestamp())
-    return f'<t:{unix_timestamp}:R>'
+def convert_date_and_time_to_unix_time(date_and_time: datetime.datetime) -> str:
+    """
+    Convert a datetime object to a unix timestamp.
+
+    :param date_and_time: The datetime object.
+
+    :return: The unix timestamp (as a string).
+    """
+    return f'<t:{int(date_and_time.timestamp())}:R>'
 
 
 def get_indices_of_activity(messages: List[Tuple[str, List[Tuple[str, int]]]], activity_index: int):
