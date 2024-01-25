@@ -80,33 +80,33 @@ class Activities:
         current_date = current_activity.date
         current_date_string = current_date.strftime("%d/%m/%Y")
 
-        message = [f"**__{current_date_string}:__**\n{current_activity.get_message_representation()}"]
-        message_length = len(message[0])
+        message = [(f"**__{current_date_string}:__**\n{current_activity.get_message_representation()}", len(current_activity.participating_individuals))]
+        message_length = len(message[0][0]) + 16 + len(str(len(current_activity.participating_individuals)))
 
         for current_activity in self.activities[1:]:
             if message_length > 2000:
-                messages.append(('Upcoming activities', '\n'.join(message)))
+                messages.append(('Upcoming activities', message))
 
                 if current_activity.date != current_date:
                     current_date = current_activity.date
                     current_date_string = current_date.strftime("%d/%m/%Y")
 
-                message_length = 0
-                message = [f"\n**__{current_date_string}:__**\n{current_activity.get_message_representation()}"]
+                message = [(f"\n**__{current_date_string}:__**\n{current_activity.get_message_representation()}", len(current_activity.participating_individuals))]
+                message_length = (len(message[0][0]) + 16 + len(str(len(current_activity.participating_individuals))))
             elif current_activity.date != current_date:
                 current_date = current_activity.date
                 current_date_string = current_date.strftime("%d/%m/%Y")
 
                 message_representation = f"\n**__{current_date_string}:__**\n{current_activity.get_message_representation()}"
-                message_length += len(message_representation)
-                message.append(message_representation)
+                message_length += (len(message_representation) + 16 + len(str(len(current_activity.participating_individuals))))
+                message.append((message_representation, len(current_activity.participating_individuals)))
             else:
                 message_representation = current_activity.get_message_representation()
-                message_length += len(message_representation)
+                message_length += (len(message_representation) + 16 + len(str(len(current_activity.participating_individuals))))
                 message.append(message_representation)
 
         if message_length > 0:
-            messages.append(('Upcoming activities', '\n'.join(message)))
+            messages.append(('Upcoming activities', message))
 
         return messages
 
@@ -164,6 +164,20 @@ def convert_date_and_time_to_unix_time(date_and_time):
     # Convert to Unix timestamp
     unix_timestamp = int(date_and_time.timestamp())
     return f'<t:{unix_timestamp}:R>'
+
+
+def get_indices_of_activity(messages: List[Tuple[str, List[Tuple[str, int]]]], activity_index: int):
+    page_index, index_on_page = 0, 0
+
+    while activity_index != 0:
+        if activity_index >= len(messages[page_index][1]):
+            page_index += 1
+            activity_index -= len(messages[page_index][1])
+        else:
+            index_on_page = activity_index
+            activity_index = 0
+
+    return page_index, index_on_page
 
 
 class ActivitiesCog(commands.Cog):
@@ -224,7 +238,7 @@ class ActivitiesCog(commands.Cog):
 
         messages = activities_obj.list_activities()
 
-        embed = discord.Embed(title=messages[0][0], description=messages[0][1])
+        embed = discord.Embed(title=messages[0][0], description='\n'.join(list(map(lambda x: x[0] + f' ({x[1]} participants)' if x[1] != 1 else x[0] + ' (1 participant)', messages[0][1]))))
 
         view = Menu(self.filename, messages, activities_obj)
         try:
@@ -254,7 +268,7 @@ class ActivitiesCog(commands.Cog):
 
 
 class Menu(discord.ui.View):
-    def __init__(self, filename: str, activities_messages: List[Tuple[str, str]], activities_obj: Activities):
+    def __init__(self, filename: str, activities_messages: List[Tuple[str, List[Tuple[str, int]]]], activities_obj: Activities):
         super().__init__()
 
         self.filename = filename
@@ -307,6 +321,10 @@ class Menu(discord.ui.View):
 
         self.activities_obj.activities[activity_index].participating_individuals[interaction.user.id] = interaction.user.name
 
+        page_index, activity_index_on_page = get_indices_of_activity(self.activities_messages, activity_index)
+
+        self.activities_messages[page_index][1][activity_index_on_page] = (self.activities_messages[page_index][1][activity_index_on_page][0], len(self.activities_obj.activities[activity_index].participating_individuals))
+
         write_activities_to_file(self.filename, self.activities_obj)
 
         embed = await self.make_embed()
@@ -329,6 +347,10 @@ class Menu(discord.ui.View):
         participating_individuals = self.activities_obj.activities[activity_index].participating_individuals
         if interaction.user.id in participating_individuals:
             del participating_individuals[interaction.user.id]
+
+        page_index, activity_index_on_page = get_indices_of_activity(self.activities_messages, activity_index)
+
+        self.activities_messages[page_index][1][activity_index_on_page] = (self.activities_messages[page_index][1][activity_index_on_page][0], len(self.activities_obj.activities[activity_index].participating_individuals))
 
         write_activities_to_file(self.filename, self.activities_obj)
 
@@ -372,7 +394,7 @@ class Menu(discord.ui.View):
 
     async def make_embed(self):
         if self.page < len(self.activities_messages):
-            return discord.Embed(title=self.activities_messages[self.page][0], description=self.activities_messages[self.page][1])
+            return discord.Embed(title=self.activities_messages[self.page][0], description='\n'.join(list(map(lambda x: x[0] + f' ({x[1]} participants)' if x[1] != 1 else x[0] + ' (1 participant)', self.activities_messages[self.page][1]))))
 
         activity = self.activities_obj.activities[self.page - len(self.activities_messages)]
         name = activity.name
