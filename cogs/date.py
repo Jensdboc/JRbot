@@ -280,16 +280,16 @@ class Exams(commands.Cog):
         """
         exams_obj = load_exams_from_file(self.filename)
 
-        if member is not None:
-            exams_obj.exams = list(filter(lambda exam: exam.person_id == member.id, exams_obj.exams))
-
-        messages = exams_obj.list_exams()
-
         if len(exams_obj.exams) == 0:
             if member is not None:
                 await ctx.send(f"{member.name} has no exams!")
             else:
                 await ctx.send(f"No exams, hooray!!!")
+
+        if member is not None:
+            exams_obj.exams = list(filter(lambda exam: exam.person_id == member.id, exams_obj.exams))
+
+        messages = exams_obj.list_exams()
 
         # list all exams or the exams of one person in particular
         embed = discord.Embed(title=messages[0][0], description=messages[0][1])
