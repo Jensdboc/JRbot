@@ -235,7 +235,15 @@ def convert_date_and_time_to_unix_time(date_and_time: datetime.datetime) -> str:
     return f'<t:{int(date_and_time.timestamp())}:R>'
 
 
-def get_indices_of_activity(messages: List[Tuple[str, List[Tuple[str, int]]]], activity_index: int):
+def get_indices_of_activity(messages: List[Tuple[str, List[Tuple[str, int]]]], activity_index: int) -> Tuple[int, int]:
+    """
+    Obtain the message page where the activity occurs and the index on that page.
+
+    :param messages: The pages/messages.
+    :param activity_index: The activity index.
+
+    :return: A tuple that represents the page and the index on that page.
+    """
     page_index, index_on_page = 0, 0
 
     while activity_index != 0:
@@ -249,14 +257,28 @@ def get_indices_of_activity(messages: List[Tuple[str, List[Tuple[str, int]]]], a
     return page_index, index_on_page
 
 
+def is_valid_date(date_string):
+    try:
+        datetime_object = datetime.datetime.strptime(date_string, '%d/%m/%Y')
+        return True
+    except ValueError:
+        return False
+
+
 class Activities(commands.Cog):
+    """
+    This class contains the filename in which the data is stored and the commands.
+    """
     def __init__(self, client):
         self.client = client
         self.filename = 'activity_dates.pkl'
         self.check_loop.start()
 
     @tasks.loop(time=datetime.time(hour=23, minute=00, tzinfo=utc))
-    async def check_loop(self):
+    async def check_loop(self) -> None:
+        """
+        Each day, remove all outdated activities at a certain time.
+        """
         activities = load_activities_from_file(self.filename)
         activities.remove_activities_from_the_past()
         write_activities_to_file(self.filename, activities)
@@ -266,7 +288,10 @@ class Activities(commands.Cog):
         await self.client.wait_until_ready()
 
     @commands.Cog.listener()
-    async def on_ready(self):
+    async def on_ready(self) -> None:
+        """
+        Create the file in which the data will be stored.
+        """
         if not os.path.exists(self.filename):
             write_activities_to_file(self.filename, ActivitiesObj())
             print(f"{self.filename} created")
@@ -275,9 +300,17 @@ class Activities(commands.Cog):
                       description="Add activity to list of activities",
                       help="!addactivity 15/12/2024 18:30 Yammi Yammi diner",
                       aliases=['aa'])
-    async def addactivity(self, ctx, date, time, *, name):
-        if not re.match("[0-3][0-9]/[0-1][0-9]/[0-9]{4}", date):
-            await ctx.send("Date has to be DD/MM/YYYY, try again.")
+    async def addactivity(self, ctx: discord.ext.commands.context.Context, date: str, time: str, *, name: str) -> None:
+        """
+        Add an activity to the list.
+
+        :param ctx: The context.
+        :param date: The date of the new activity.
+        :param time: The time of the new activity.
+        :param name: The name of the activity.
+        """
+        if not is_valid_date(date):
+            await ctx.send("This is not a valid date! The date has to be DD/MM/YYYY, try again.")
             return
         if not re.match("^(?:[01]\d|2[0-3]):[0-5]\d$", time):
             await ctx.send("Time has to be HH:MM, try again.")
@@ -328,9 +361,17 @@ class Activities(commands.Cog):
                       description="Delete activity from the list of activities",
                       help="!deleteactivity 15/12/2024 18:30 Yammi Yammi diner",
                       aliases=['da'])
-    async def deleteactivity(self, ctx, date, time, *, name):
-        if not re.match("[0-3][0-9]/[0-1][0-9]/[0-9]{4}", date):
-            await ctx.send("Date has to be DD/MM/YYYY, try again.")
+    async def deleteactivity(self, ctx: discord.ext.commands.context.Context, date: str, time: str, *, name: str) -> None:
+        """
+        Remove an activity from the list.
+
+        :param ctx: The context.
+        :param date: The date of the activity.
+        :param time: The time of the activity.
+        :param name: The name of the activity.
+        """
+        if not is_valid_date(date):
+            await ctx.send("This is not a valid date! The date has to be DD/MM/YYYY, try again.")
             return
         if not re.match("^(?:[01]\d|2[0-3]):[0-5]\d$", time):
             await ctx.send("Time has to be HH:MM, try again.")
