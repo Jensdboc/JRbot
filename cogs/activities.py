@@ -15,7 +15,7 @@ class Activity:
         self.date = date
         self.time = time
         self.name = name
-        self.participating_individuals = set()
+        self.participating_individuals = dict()
 
     def get_message_representation(self):
         t = self.time.strftime('%H:%M')
@@ -71,7 +71,7 @@ class Activities:
         return "This activity does not exist!"
 
     def get_string_of_participants_of_activity(self, activity_index):
-        return '\n'.join(list(sorted(self.activities[activity_index].participating_individuals)))
+        return '\n'.join(list(sorted(map(lambda x: x[1], self.activities[activity_index].participating_individuals.items()))))
 
     def list_activities(self):
         messages = []
@@ -305,7 +305,7 @@ class Menu(discord.ui.View):
         """
         activity_index = self.page - len(self.activities_messages)
 
-        self.activities_obj.activities[activity_index].participating_individuals.add(interaction.user.name)
+        self.activities_obj.activities[activity_index].participating_individuals[interaction.user.id] = interaction.user.name
 
         write_activities_to_file(self.filename, self.activities_obj)
 
@@ -327,8 +327,8 @@ class Menu(discord.ui.View):
         activity_index = self.page - len(self.activities_messages)
 
         participating_individuals = self.activities_obj.activities[activity_index].participating_individuals
-        if interaction.user.name in participating_individuals:
-            participating_individuals.remove(interaction.user.name)
+        if interaction.user.id in participating_individuals:
+            del participating_individuals[interaction.user.id]
 
         write_activities_to_file(self.filename, self.activities_obj)
 
