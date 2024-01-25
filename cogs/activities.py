@@ -339,6 +339,7 @@ class Activities(commands.Cog):
         if len(activities_obj.activities) == 0 and activity_id is None:
             await ctx.send("No activities planned!")
 
+        # list all activities or one in particular
         if activity_id is None:
             page = 0
             embed = discord.Embed(title=messages[0][0], description='\n'.join(list(map(lambda x: x[0] + f' ({x[1]} participants)' if x[1] != 1 else x[0] + ' (1 participant)', messages[0][1]))))
@@ -381,6 +382,9 @@ class Activities(commands.Cog):
 
 
 class Menu(discord.ui.View):
+    """
+    This class represents the view. It contains the filename in which the data is stored and the buttons.
+    """
     def __init__(self, filename: str, activities_messages: List[Tuple[str, List[Tuple[str, int]]]], activities_obj: ActivitiesObj, page: int = 0):
         super().__init__()
 
@@ -399,16 +403,12 @@ class Menu(discord.ui.View):
         self.page = page
 
     @discord.ui.button(label="<", style=discord.ButtonStyle.blurple, custom_id="<", disabled=True)
-    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def previous(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """
-        Show to UI for the current selected stats and show the previous stat option
+        Go to the previous tab and show its elements.
 
-        Parameters
-        ----------
-        interaction : discord.Interaction
-            Used to handle button interaction
-        button : discord.ui.Button
-            Button object
+        :param interaction: Used to handle the button interaction.
+        :param button: The button object.
         """
         self.page = (self.page - 1) % (len(self.activities_obj.activities) + len(self.activities_messages))
 
@@ -427,16 +427,12 @@ class Menu(discord.ui.View):
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="Join", style=discord.ButtonStyle.green, custom_id="join", disabled=True)
-    async def join(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def join(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """
         Join an activity.
 
-        Parameters
-        ----------
-        interaction : discord.Interaction
-            Used to handle button interaction
-        button : discord.ui.Button
-            Button object
+        :param interaction: Used to handle the button interaction.
+        :param button: The button object.
         """
         activity_index = self.page - len(self.activities_messages)
 
@@ -452,16 +448,12 @@ class Menu(discord.ui.View):
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="Leave", style=discord.ButtonStyle.red, custom_id="leave", disabled=True)
-    async def leave(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def leave(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """
-        Join an activity.
+        Leave an activity.
 
-        Parameters
-        ----------
-        interaction : discord.Interaction
-            Used to handle button interaction
-        button : discord.ui.Button
-            Button object
+        :param interaction: Used to handle the button interaction.
+        :param button: The button object.
         """
         activity_index = self.page - len(self.activities_messages)
 
@@ -479,16 +471,12 @@ class Menu(discord.ui.View):
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label=">", style=discord.ButtonStyle.blurple, custom_id=">")
-    async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def next(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """
-        Show to UI for the current selected stats and show the next stat option
+        Go to the next tab and show its elements.
 
-        Parameters
-        ----------
-        interaction : discord.Interaction
-            Used to handle button interaction
-        button : discord.ui.Button
-            Button object
+        :param interaction: Used to handle the button interaction.
+        :param button: The button object.
         """
         self.page = (self.page + 1) % (len(self.activities_obj.activities) + len(self.activities_messages))
 
@@ -506,14 +494,25 @@ class Menu(discord.ui.View):
         embed = await self.make_embed()
         await interaction.response.edit_message(embed=embed, view=self)
 
-    def enable_and_disable_button(self, custom_id, disabled: bool = False):
+    def enable_and_disable_button(self, custom_id: str, disabled: bool = False) -> None:
+        """
+        Enable or disable the button with a certain custom id.
+
+        :param custom_id: The custom id of the button to enable or disable.
+        :param disabled: True if the button needs to be disabled, else False.
+        """
         child_index = 0
         while child_index < len(self.children) and self.children[child_index].custom_id != custom_id:
             child_index += 1
 
         self.children[child_index].disabled = disabled
 
-    async def make_embed(self):
+    async def make_embed(self) -> discord.embeds.Embed:
+        """
+        Create the views of the activities.
+
+        :return: The embedded strings.
+        """
         if self.page < len(self.activities_messages):
             return discord.Embed(title=self.activities_messages[self.page][0], description='\n'.join(list(map(lambda x: x[0] + f' ({x[1]} participants)' if x[1] != 1 else x[0] + ' (1 participant)', self.activities_messages[self.page][1]))))
 
