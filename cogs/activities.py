@@ -5,9 +5,10 @@ import re
 from typing import List, Tuple
 
 import discord
+import pytz as pytz
 from discord.ext import commands, tasks
 
-utc = datetime.timezone.utc
+utc = pytz.timezone('Europe/Brussels')
 
 
 class Activity:
