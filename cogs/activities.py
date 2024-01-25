@@ -17,10 +17,6 @@ class Activity:
         self.name = name
         self.participating_individuals = set()
 
-    def get_string_representation(self):
-        # TODO remove
-        return f'{self.name} will take place on {self.date.strftime("%d/%m/%Y")} at {self.time}h'
-
     def get_message_representation(self):
         return f'{self.name}: {self.time} ({convert_date_and_time_to_unix_time(datetime.datetime.combine(self.date, self.time))})'
 
@@ -40,10 +36,6 @@ class Activity:
 class Activities:
     def __init__(self):
         self.activities: List[Activity] = []
-
-    def __str__(self):
-        # TODO remove
-        return '\n'.join(list(map(lambda activity: activity.get_string_representation(), self.activities)))
 
     def add_activity(self, new_activity: Activity):
         for index, activity in enumerate(self.activities):
