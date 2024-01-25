@@ -20,14 +20,16 @@ class Activity:
         self.name = name
         self.participating_individuals = dict()
 
-    def get_string_representation(self) -> str:
+    def get_string_representation(self, current_activity_index: int) -> str:
         """
         Obtain the string representation of an activity.
+
+        :param current_activity_index: The index of the activity.
 
         :return: The string representation.
         """
         t = self.time.strftime('%H:%M')
-        return f'{self.name}: {t}h'
+        return f'({current_activity_index}) {self.name}: {t}h'
 
     def __lt__(self, other) -> bool:
         """
@@ -133,17 +135,19 @@ class ActivitiesObj:
         """
         messages = []
 
+        current_activity_index = 1
         current_activity = self.activities[0]
         current_date = current_activity.date
         current_date_string = current_date.strftime("%d/%m/%Y")
 
         # start of first message
-        message = [(f"**__{current_date_string}:__**\n{current_activity.get_string_representation()}", len(current_activity.participating_individuals))]
+        message = [(f"**__{current_date_string}:__**\n{current_activity.get_string_representation(current_activity_index)}", len(current_activity.participating_individuals))]
 
         # get the message length: 16 for the '(... participants)' part
         message_length = len(message[0][0]) + 16 + len(str(len(current_activity.participating_individuals)))
 
         for current_activity in self.activities[1:]:
+            current_activity_index += 1
             if message_length > 2000:
                 messages.append(('Upcoming activities', message))
 
@@ -151,17 +155,17 @@ class ActivitiesObj:
                     current_date = current_activity.date
                     current_date_string = current_date.strftime("%d/%m/%Y")
 
-                message = [(f"\n**__{current_date_string}:__**\n{current_activity.get_string_representation()}", len(current_activity.participating_individuals))]
+                message = [(f"\n**__{current_date_string}:__**\n{current_activity.get_string_representation(current_activity_index)}", len(current_activity.participating_individuals))]
                 message_length = (len(message[0][0]) + 16 + len(str(len(current_activity.participating_individuals))))
             elif current_activity.date != current_date:
                 current_date = current_activity.date
                 current_date_string = current_date.strftime("%d/%m/%Y")
 
-                message_representation = f"\n**__{current_date_string}:__**\n{current_activity.get_string_representation()}"
+                message_representation = f"\n**__{current_date_string}:__**\n{current_activity.get_string_representation(current_activity_index)}"
                 message_length += (len(message_representation) + 16 + len(str(len(current_activity.participating_individuals))))
                 message.append((message_representation, len(current_activity.participating_individuals)))
             else:
-                message_representation = current_activity.get_string_representation()
+                message_representation = current_activity.get_string_representation(current_activity_index)
                 message_length += (len(message_representation) + 16 + len(str(len(current_activity.participating_individuals))))
                 message.append(message_representation)
 
