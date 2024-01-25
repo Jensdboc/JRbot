@@ -11,14 +11,15 @@ utc = datetime.timezone.utc
 
 
 class Activity:
-    def __init__(self, date, time, name):
+    def __init__(self, date: datetime.date, time: datetime.time, name):
         self.date = date
         self.time = time
         self.name = name
         self.participating_individuals = set()
 
     def get_message_representation(self):
-        return f'{self.name}: {self.time} ({convert_date_and_time_to_unix_time(datetime.datetime.combine(self.date, self.time))})'
+        t = self.time.strftime('%H:%M')
+        return f'{self.name}: {t}h'
 
     def __lt__(self, other):
         if self.date != other.date:
@@ -71,6 +72,43 @@ class Activities:
 
     def get_string_of_participants_of_activity(self, activity_index):
         return '\n'.join(list(sorted(self.activities[activity_index].participating_individuals)))
+
+    def list_activities(self):
+        messages = []
+
+        current_activity = self.activities[0]
+        current_date = current_activity.date
+        current_date_string = current_date.strftime("%d/%m/%Y")
+
+        message = [f"**__{current_date_string}:__**\n{current_activity.get_message_representation()}"]
+        message_length = len(message[0])
+
+        for current_activity in self.activities[1:]:
+            if message_length > 2000:
+                messages.append(('Upcoming activities', '\n'.join(message)))
+
+                if current_activity.date != current_date:
+                    current_date = current_activity.date
+                    current_date_string = current_date.strftime("%d/%m/%Y")
+
+                message_length = 0
+                message = [f"\n**__{current_date_string}:__**\n{current_activity.get_message_representation()}"]
+            elif current_activity.date != current_date:
+                current_date = current_activity.date
+                current_date_string = current_date.strftime("%d/%m/%Y")
+
+                message_representation = f"\n**__{current_date_string}:__**\n{current_activity.get_message_representation()}"
+                message_length += len(message_representation)
+                message.append(message_representation)
+            else:
+                message_representation = current_activity.get_message_representation()
+                message_length += len(message_representation)
+                message.append(message_representation)
+
+        if message_length > 0:
+            messages.append(('Upcoming activities', '\n'.join(message)))
+
+        return messages
 
 
 def write_activities_to_file(output_file: str, activities: Activities):
@@ -184,39 +222,7 @@ class ActivitiesCog(commands.Cog):
         if len(activities_obj.activities) == 0:
             await ctx.send("No activities planned!")
 
-        messages = []
-
-        current_activity = activities_obj.activities[0]
-        current_date = current_activity.date
-        current_date_string = current_date.strftime("%d/%m/%Y")
-
-        message = [f"**__{current_date_string}:__**\n{current_activity.get_message_representation()}"]
-        message_length = len(message[0])
-
-        for current_activity in activities_obj.activities[1:]:
-            if message_length > 2000:
-                messages.append(('Upcoming activities', '\n'.join(message)))
-
-                if current_activity.date != current_date:
-                    current_date = current_activity.date
-                    current_date_string = current_date.strftime("%d/%m/%Y")
-
-                message_length = 0
-                message = [f"\n**__{current_date_string}:__**\n{current_activity.get_message_representation()}"]
-            elif current_activity.date != current_date:
-                current_date = current_activity.date
-                current_date_string = current_date.strftime("%d/%m/%Y")
-
-                message_representation = f"\n**__{current_date_string}:__**\n{current_activity.get_message_representation()}"
-                message_length += len(message_representation)
-                message.append(message_representation)
-            else:
-                message_representation = current_activity.get_message_representation()
-                message_length += len(message_representation)
-                message.append(message_representation)
-
-        if message_length > 0:
-            messages.append(('Upcoming activities', '\n'.join(message)))
+        messages = activities_obj.list_activities()
 
         embed = discord.Embed(title=messages[0][0], description=messages[0][1])
 
