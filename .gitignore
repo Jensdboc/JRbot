@@ -3,3 +3,5 @@ secret.html
 *.txt
 __pycache__
 .pyc
+venv
+*.pkl
