@@ -159,7 +159,7 @@ class ActivitiesObj:
             else:
                 message_representation = current_activity.get_string_representation(current_activity_index)
                 message_length += (len(message_representation) + 16 + len(str(len(current_activity.participating_individuals))))
-                message.append(message_representation)
+                message.append((message_representation, len(current_activity.participating_individuals)))
 
         if message_length > 0:
             messages.append(('Upcoming activities', message))
