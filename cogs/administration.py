@@ -1,6 +1,9 @@
 import discord
 from discord.activity import Spotify
 from discord.ext import commands
+from discord import app_commands
+
+from admincheck import admin_check
 
 
 class Administration(commands.Cog):
@@ -8,11 +11,21 @@ class Administration(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+    @commands.command()
+    @app_commands.check(admin_check)
+    async def admin(self, ctx):
+        await ctx.channel.send("Yup")
+
     @commands.command(usage="!nick <member> <name>",
                       description="Change nickname of member",
                       help="!nick @member a very cool nickname\nName is allowed to contain **spaces**")
     async def nick(self, ctx, member: discord.Member, *, nickname):
+        oldnick = member.nick
         await member.edit(nick=nickname)
+        if oldnick is None:
+            await ctx.send(f"{member.name} just got a new name: {member.nick}")
+        else:
+            await ctx.send(f"{oldnick} changed to {member.nick}")
 
     @commands.command(usage="!welcome <member>",
                       description="Give member all required roles",
@@ -25,16 +38,9 @@ class Administration(commands.Cog):
     @commands.command(usage="!clear <number>",
                       description="Clear the last number of messages",
                       help="The default value is 1 message")
+    @app_commands.check(admin_check)
     async def clear(self, ctx, *, number=1):
-        messages = await ctx.channel.history(limit=number+1).flatten()
-        for mes in messages:
-            if (self.client.mute_message):
-                if (self.client.mute_message.id == mes.id):
-                    if (ctx.message.author.voice):
-                        vc = ctx.message.author.voice.channel
-                        for member in vc.members:
-                            await member.edit(mute=0)
-                    self.client.mute_message = None
+        messages = [message async for message in ctx.channel.history(limit=number + 1)]
         await ctx.channel.delete_messages(messages)
 
     @commands.command(usage="!thumbmail <url>",

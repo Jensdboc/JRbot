@@ -1,8 +1,9 @@
+import unicodedata  # Used for accents
 import discord
 from discord.ext import commands
+from discord import app_commands
 
-# Used for accents
-import unicodedata
+from admincheck import admin_check
 
 
 def lower_strip_accents(word):
@@ -202,6 +203,23 @@ class Woordenketting(commands.Cog):
                     if user == str(member.id):
                         number_user += 1
             embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'The list contains `{number}` words and `{str(member)[:-5]}` added `{number_user}` words.', colour=0x11806a)
+            await ctx.send(embed=embed)
+
+    @commands.command()
+    @app_commands.check(admin_check)
+    async def start(ctx, thema=None, woord=None):
+        if thema is None or woord is None:
+            embed = discord.Embed(title='Woordenketting', description='Something went wrong with starting a game. Use !start <theme> <word>', colour=0xFF0000)
+            await ctx.send(embed=embed)
+            return
+        else:
+            with open('Woordenketting.txt', 'a') as txt:
+                txt.truncate(0)
+                txt.write(thema + '\n' + woord + '\t' + str(ctx.message.author.id) + '\n')
+            with open('Woordenketting_users.txt', 'a') as user_file:
+                user_file.truncate(0)
+                user_file.write(str(ctx.message.author.id) + '\n')
+            embed = discord.Embed(title='Woordenketting', description=f'A new game has been started with `{thema}` as theme and `{woord}` as first word.', colour=0x11806a)
             await ctx.send(embed=embed)
 
 
