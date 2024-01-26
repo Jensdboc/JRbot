@@ -215,14 +215,16 @@ def string_to_time(time_string: str) -> datetime.time:
     return datetime.datetime.strptime(time_string, "%H:%M").time()
 
 
-def convert_date_and_time_to_unix_time(date_and_time: datetime.datetime) -> str:
+def convert_date_and_time_to_unix_time(date_and_time: datetime.datetime, server_offset: int = -1) -> str:
     """
     Convert a datetime object to a unix timestamp.
 
     :param date_and_time: The datetime object.
+    :param server_offset: The server offset.
 
     :return: The unix timestamp (as a string).
     """
+    date_and_time += datetime.timedelta(hours=server_offset)
     return f'<t:{int(date_and_time.timestamp())}:R>'
 
 
