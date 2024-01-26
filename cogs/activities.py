@@ -300,7 +300,7 @@ class Activities(commands.Cog):
                     member = guild.get_member(participant_id)
                     if member:
                         t = activities_obj.activities[activity_index].time.strftime('%H:%M')
-                        embed = discord.Embed(title='There is an activity scheduled for you today!', description=f'{activities_obj.activities[activity_index].name}: {t}h!')
+                        embed = discord.Embed(title='There is an activity scheduled for you today!', description=f'{activities_obj.activities[activity_index].name}: {t}h')
                         await member.send(embed=embed)
                 activity_index += 1
 
