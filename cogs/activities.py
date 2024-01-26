@@ -8,7 +8,7 @@ import discord
 import pytz as pytz
 from discord.ext import commands, tasks
 
-utc = pytz.timezone('Europe/Brussels')
+utc = datetime.timezone.utc
 
 
 class Activity:
@@ -137,11 +137,15 @@ class ActivitiesObj:
         # get the message length: 16 for the ' (... participants)' part
         message_length = len(message[0][0]) + 16 + len(str(len(current_activity.participating_individuals)))
 
+        page = 1
+
         for current_activity in self.activities[1:]:
             current_activity_index += 1
             # if message too large -> output
-            if message_length > 2000:
-                messages.append(('Upcoming activities', message))
+            if message_length > 750:
+                messages.append((f'Upcoming activities {page}', message))
+
+                page += 1
 
                 # update the current date to sort the activities
                 if current_activity.date != current_date:
@@ -163,7 +167,7 @@ class ActivitiesObj:
                 message.append((message_representation, len(current_activity.participating_individuals)))
 
         if message_length > 0:
-            messages.append(('Upcoming activities', message))
+            messages.append((f'Upcoming activities {page}', message))
 
         return messages
 
