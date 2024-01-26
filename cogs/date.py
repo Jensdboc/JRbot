@@ -127,10 +127,14 @@ class ExamsObj:
         message = [f"**__{current_date_string}:__**\n{current_exam.get_string_representation()}"]
         message_length = len(message[0][0])
 
+        page = 1
+
         for current_exam in self.exams[1:]:
             # if message too large -> output
-            if message_length > 2000:
-                messages.append(('Exam dates', '\n'.join(message)))
+            if message_length > 750:
+                messages.append((f'Exam dates {page}', '\n'.join(message)))
+
+                page += 1
 
                 # update the current date to sort the exams
                 if current_exam.date != current_date:
@@ -152,7 +156,7 @@ class ExamsObj:
                 message.append(message_representation)
 
         if message_length > 0:
-            messages.append(('Exam dates', '\n'.join(message)))
+            messages.append((f'Exam dates {page}', '\n'.join(message)))
 
         return messages
 
@@ -281,13 +285,13 @@ class Exams(commands.Cog):
         exams_obj = load_exams_from_file(self.filename)
 
         if len(exams_obj.exams) == 0:
-            if member is not None:
-                await ctx.send(f"{member.name} has no exams!")
-            else:
-                await ctx.send(f"No exams, hooray!!!")
+            await ctx.send(f"No exams, hooray!!!")
 
         if member is not None:
             exams_obj.exams = list(filter(lambda exam: exam.person_id == member.id, exams_obj.exams))
+
+        if len(exams_obj.exams) == 0:
+            await ctx.send(f"{member.name} has no exams!")
 
         messages = exams_obj.list_exams()
 
