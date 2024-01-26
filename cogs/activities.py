@@ -183,7 +183,7 @@ def write_activities_to_file(output_file: str, activities_obj: ActivitiesObj) ->
         pickle.dump(activities_obj, file)
 
 
-def load_activities_from_file(input_file: str):
+def load_activities_from_file(input_file: str) -> ActivitiesObj:
     """
     Read an Activities object from a pickle file.
 
@@ -270,6 +270,7 @@ class Activities(commands.Cog):
         self.client = client
         self.filename = 'activity_dates.pkl'
         self.check_loop.start()
+        self.ping_users_loop.start()
 
     @tasks.loop(time=datetime.time(hour=23, minute=00, tzinfo=utc))
     async def check_loop(self) -> None:
@@ -281,6 +282,29 @@ class Activities(commands.Cog):
         write_activities_to_file(self.filename, activities)
 
     @check_loop.before_loop
+    async def before_printer(self):
+        await self.client.wait_until_ready()
+
+    @tasks.loop(time=datetime.time(hour=9, minute=00, tzinfo=utc))
+    async def ping_users_loop(self):
+        activities_obj = load_activities_from_file(self.filename)
+
+        activity_index = 0
+
+        guild_id = 764196816517464084
+        guild = self.client.get_guild(guild_id)
+
+        if guild:
+            while activity_index < len(activities_obj.activities) and activities_obj.activities[activity_index].date == datetime.datetime.now().date():
+                for participant_id, participant_name in activities_obj.activities[activity_index].participating_individuals.items():
+                    member = guild.get_member(participant_id)
+                    if member:
+                        t = activities_obj.activities[activity_index].time.strftime('%H:%M')
+                        embed = discord.Embed(title='There is an activity scheduled for you today!', description=f'{activities_obj.activities[activity_index].name}: {t}h!')
+                        await member.send(embed=embed)
+                activity_index += 1
+
+    @ping_users_loop.before_loop
     async def before_printer(self):
         await self.client.wait_until_ready()
 
