@@ -526,6 +526,21 @@ class Menu(discord.ui.View):
         embed = await self.make_embed()
         await interaction.response.edit_message(embed=embed, view=self)
 
+    @discord.ui.button(label="♻️", style=discord.ButtonStyle.blurple, custom_id="refresh")
+    async def refresh(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        """
+        Go to the next tab and show its elements.
+
+        :param interaction: Used to handle the button interaction.
+        :param button: The button object.
+        """
+        self.activities_obj = load_activities_from_file(self.filename)
+
+        self.activities_messages = self.activities_obj.list_activities()
+
+        embed = await self.make_embed()
+        await interaction.response.edit_message(embed=embed, view=self)
+
     def enable_and_disable_button(self, custom_id: str, disabled: bool = False) -> None:
         """
         Enable or disable the button with a certain custom id.
