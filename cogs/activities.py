@@ -442,6 +442,10 @@ class Menu(discord.ui.View):
         :param interaction: Used to handle the button interaction.
         :param button: The button object.
         """
+        self.activities_obj = load_activities_from_file(self.filename)
+
+        self.activities_messages = self.activities_obj.list_activities()
+
         self.page = (self.page - 1) % (len(self.activities_obj.activities) + len(self.activities_messages))
 
         if self.page < len(self.activities_messages):
@@ -466,6 +470,10 @@ class Menu(discord.ui.View):
         :param interaction: Used to handle the button interaction.
         :param button: The button object.
         """
+        self.activities_obj = load_activities_from_file(self.filename)
+
+        self.activities_messages = self.activities_obj.list_activities()
+
         activity_index = self.page - len(self.activities_messages)
 
         self.activities_obj.activities[activity_index].participating_individuals[interaction.user.id] = interaction.user.name
@@ -487,6 +495,10 @@ class Menu(discord.ui.View):
         :param interaction: Used to handle the button interaction.
         :param button: The button object.
         """
+        self.activities_obj = load_activities_from_file(self.filename)
+
+        self.activities_messages = self.activities_obj.list_activities()
+
         activity_index = self.page - len(self.activities_messages)
 
         participating_individuals = self.activities_obj.activities[activity_index].participating_individuals
@@ -510,6 +522,10 @@ class Menu(discord.ui.View):
         :param interaction: Used to handle the button interaction.
         :param button: The button object.
         """
+        self.activities_obj = load_activities_from_file(self.filename)
+
+        self.activities_messages = self.activities_obj.list_activities()
+
         self.page = (self.page + 1) % (len(self.activities_obj.activities) + len(self.activities_messages))
 
         if self.page >= len(self.activities_messages):
@@ -522,6 +538,21 @@ class Menu(discord.ui.View):
             button.disabled = True
         else:
             button.disabled = False
+
+        embed = await self.make_embed()
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="♻️", style=discord.ButtonStyle.blurple, custom_id="refresh")
+    async def refresh(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        """
+        Go to the next tab and show its elements.
+
+        :param interaction: Used to handle the button interaction.
+        :param button: The button object.
+        """
+        self.activities_obj = load_activities_from_file(self.filename)
+
+        self.activities_messages = self.activities_obj.list_activities()
 
         embed = await self.make_embed()
         await interaction.response.edit_message(embed=embed, view=self)
