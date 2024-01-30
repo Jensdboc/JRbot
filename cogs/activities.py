@@ -183,7 +183,7 @@ def write_activities_to_file(output_file: str, activities_obj: ActivitiesObj) ->
         pickle.dump(activities_obj, file)
 
 
-def load_activities_from_file(input_file: str):
+def load_activities_from_file(input_file: str) -> ActivitiesObj:
     """
     Read an Activities object from a pickle file.
 
@@ -270,6 +270,7 @@ class Activities(commands.Cog):
         self.client = client
         self.filename = 'activity_dates.pkl'
         self.check_loop.start()
+        self.ping_users_loop.start()
 
     @tasks.loop(time=datetime.time(hour=23, minute=00, tzinfo=utc))
     async def check_loop(self) -> None:
@@ -281,6 +282,29 @@ class Activities(commands.Cog):
         write_activities_to_file(self.filename, activities)
 
     @check_loop.before_loop
+    async def before_printer(self):
+        await self.client.wait_until_ready()
+
+    @tasks.loop(time=datetime.time(hour=9, minute=00, tzinfo=utc))
+    async def ping_users_loop(self):
+        activities_obj = load_activities_from_file(self.filename)
+
+        activity_index = 0
+
+        guild_id = 764196816517464084
+        guild = self.client.get_guild(guild_id)
+
+        if guild:
+            while activity_index < len(activities_obj.activities) and activities_obj.activities[activity_index].date == datetime.datetime.now().date():
+                for participant_id, participant_name in activities_obj.activities[activity_index].participating_individuals.items():
+                    member = guild.get_member(participant_id)
+                    if member:
+                        t = activities_obj.activities[activity_index].time.strftime('%H:%M')
+                        embed = discord.Embed(title='There is an activity scheduled for you today!', description=f'{activities_obj.activities[activity_index].name}: {t}h')
+                        await member.send(embed=embed)
+                activity_index += 1
+
+    @ping_users_loop.before_loop
     async def before_printer(self):
         await self.client.wait_until_ready()
 
@@ -418,6 +442,10 @@ class Menu(discord.ui.View):
         :param interaction: Used to handle the button interaction.
         :param button: The button object.
         """
+        self.activities_obj = load_activities_from_file(self.filename)
+
+        self.activities_messages = self.activities_obj.list_activities()
+
         self.page = (self.page - 1) % (len(self.activities_obj.activities) + len(self.activities_messages))
 
         if self.page < len(self.activities_messages):
@@ -442,6 +470,10 @@ class Menu(discord.ui.View):
         :param interaction: Used to handle the button interaction.
         :param button: The button object.
         """
+        self.activities_obj = load_activities_from_file(self.filename)
+
+        self.activities_messages = self.activities_obj.list_activities()
+
         activity_index = self.page - len(self.activities_messages)
 
         self.activities_obj.activities[activity_index].participating_individuals[interaction.user.id] = interaction.user.name
@@ -463,6 +495,10 @@ class Menu(discord.ui.View):
         :param interaction: Used to handle the button interaction.
         :param button: The button object.
         """
+        self.activities_obj = load_activities_from_file(self.filename)
+
+        self.activities_messages = self.activities_obj.list_activities()
+
         activity_index = self.page - len(self.activities_messages)
 
         participating_individuals = self.activities_obj.activities[activity_index].participating_individuals
@@ -486,6 +522,10 @@ class Menu(discord.ui.View):
         :param interaction: Used to handle the button interaction.
         :param button: The button object.
         """
+        self.activities_obj = load_activities_from_file(self.filename)
+
+        self.activities_messages = self.activities_obj.list_activities()
+
         self.page = (self.page + 1) % (len(self.activities_obj.activities) + len(self.activities_messages))
 
         if self.page >= len(self.activities_messages):
@@ -498,6 +538,21 @@ class Menu(discord.ui.View):
             button.disabled = True
         else:
             button.disabled = False
+
+        embed = await self.make_embed()
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="♻️", style=discord.ButtonStyle.blurple, custom_id="refresh")
+    async def refresh(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        """
+        Go to the next tab and show its elements.
+
+        :param interaction: Used to handle the button interaction.
+        :param button: The button object.
+        """
+        self.activities_obj = load_activities_from_file(self.filename)
+
+        self.activities_messages = self.activities_obj.list_activities()
 
         embed = await self.make_embed()
         await interaction.response.edit_message(embed=embed, view=self)
