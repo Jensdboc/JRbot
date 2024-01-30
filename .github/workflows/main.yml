@@ -1,0 +1,31 @@
+name: Update SSH
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Stop Service
+      run: |
+        echo "${{ secrets.SSH_PASSWORD }}" | sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "sudo -S systemctl stop ${{ secrets.SERVICE_NAME }}"
+
+    - name: SSH Pull
+      run: |
+        ssh -o StrictHostKeyChecking=no -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull"
+
+    - name: Start Service
+      run: |
+        echo "${{ secrets.SSH_PASSWORD }}" | sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no -l ${{ secrets.SSH_USER }} ${{ secrets.SSH_HOST }} "sudo -S systemctl start ${{ secrets.SERVICE_NAME }}"
