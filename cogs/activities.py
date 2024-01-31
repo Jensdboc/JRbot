@@ -545,7 +545,7 @@ class Menu(discord.ui.View):
     @discord.ui.button(label="♻️", style=discord.ButtonStyle.blurple, custom_id="refresh")
     async def refresh(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """
-        Go to the next tab and show its elements.
+        Refresh the current message.
 
         :param interaction: Used to handle the button interaction.
         :param button: The button object.
