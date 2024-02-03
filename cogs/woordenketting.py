@@ -5,12 +5,20 @@ from discord.ext import commands
 from admincheck import admin_check
 
 
-def lower_strip_accents(word):
+def lower_strip_accents(word: str) -> str:
+    """
+    Convert to lower case and strip accents.
+
+    :param word: Word to be converted.
+    :return: Converted word.
+    """
     return (''.join(c for c in unicodedata.normalize('NFD', word) if unicodedata.category(c) != 'Mn')).lower()
 
 
 class Woordenketting(commands.Cog):
-
+    """
+    This class contains the commands for woordenketting.
+    """
     def __init__(self, client: discord.Client):
         self.client = client
 
@@ -18,7 +26,13 @@ class Woordenketting(commands.Cog):
                       description="Add a word",
                       help="The word has to start with the last letter from the last word",
                       aliases=['aw'])
-    async def add_word(self, ctx, *, entry=None):
+    async def add_word(self, ctx: commands.Context, *, entry: str = None) -> None:
+        """
+        Add a word to the woordenketting
+
+        :param ctx: The context.
+        :param entry: The next word.
+        """
         list = []
         # Eerste lijn is nu het thema
         with open('Woordenketting.txt', 'r') as txt:
@@ -73,7 +87,12 @@ class Woordenketting(commands.Cog):
                       description="Delete the last word",
                       help="This command will only execute when you are the last user",
                       aliases=['dw'])
-    async def delete_word(self, ctx):
+    async def delete_word(self, ctx: commands.Context) -> None:
+        """
+        Delete the last word if you are that user.
+
+        :param ctx: The context.
+        """
         ketting = []
         with open('Woordenketting.txt', 'r') as txt:
             thema = str(txt.readline()[:-1]).upper()
@@ -99,7 +118,13 @@ class Woordenketting(commands.Cog):
                       description="Replace the last word",
                       help="""!edit België: This will replace the last entry to België if the first letter is still the same.\n
                             The word will still count towards the wordcount of the user who submitted the original word""",)
-    async def edit(self, ctx, nieuwe_entry=None):
+    async def edit(self, ctx: commands.Context, new_entry: str = None) -> None:
+        """
+        Edit the last word if you are that user.
+
+        :param ctx: The context.
+        :param new_entry: New word.
+        """
         list = []
         ketting = []
         with open('Woordenketting.txt', 'r') as txt:
@@ -111,31 +136,31 @@ class Woordenketting(commands.Cog):
         last_word = ketting[-1].split('\t')[0]
         last_user = ketting[-1].split('\t')[1][:-1]
         # Vragen om laatste woord
-        if nieuwe_entry is None:
+        if new_entry is None:
             embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'The last word that can be edited was `{last_word}`', colour=0x11806a)
             await ctx.send(embed=embed)
             return
         # Edit blijft hetzelfde
-        if nieuwe_entry == last_word:
-            embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'What\'s the point of editing if you are going to put `{nieuwe_entry}` again?', colour=0xff0000)
+        if new_entry == last_word:
+            embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'What\'s the point of editing if you are going to put `{new_entry}` again?', colour=0xff0000)
             await ctx.send(embed=embed)
             return
         # Edit bevindt zich al in de lijst
-        elif nieuwe_entry in list:
-            embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'`{nieuwe_entry}` already in list!\n The last word was `{last_word}`', colour=0xff0000)
+        elif new_entry in list:
+            embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'`{new_entry}` already in list!\n The last word was `{last_word}`', colour=0xff0000)
             await ctx.send(embed=embed)
             return
         # Nieuwe edit
         else:
-            ketting[-1] = nieuwe_entry
+            ketting[-1] = new_entry
             # Edit start met juiste letter
-            if lower_strip_accents(str(last_word[0])) == lower_strip_accents(str(nieuwe_entry[0])):
+            if lower_strip_accents(str(last_word[0])) == lower_strip_accents(str(new_entry[0])):
                 with open('Woordenketting.txt', 'w') as txt:
                     txt.write(thema + '\n')
                     for woord in ketting[:-1]:
                         txt.write(woord.lower())
-                    txt.write(nieuwe_entry + '\t' + last_user + '\n')
-                embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'`{str(last_word)}` has been replaced with `{nieuwe_entry}`', colour=0x11806a)
+                    txt.write(new_entry + '\t' + last_user + '\n')
+                embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'`{str(last_word)}` has been replaced with `{new_entry}`', colour=0x11806a)
                 await ctx.send(embed=embed)
             else:
                 embed = discord.Embed(title=f'Woordenketting: {thema}', description=f'Word should start with `{last_word[0]}`, first letter of `{last_word}`', colour=0xff0000)
@@ -144,7 +169,13 @@ class Woordenketting(commands.Cog):
     @commands.command(usage="!show <letter>",
                       description="Show words in current list",
                       help="!show: Shows all words alphabetical\n!show a: Show all words starting with an a")
-    async def show(self, ctx, first_letter=None):
+    async def show(self, ctx: commands.Context, first_letter: str = None) -> None:
+        """
+        Show the words that are already in the woordenketting.
+
+        :param ctx: The context.
+        :param first_letter: Only show words starting with this letter, if None show all.
+        """
         ketting = []
         message = ''
         page = 1
@@ -182,7 +213,13 @@ class Woordenketting(commands.Cog):
     @commands.command(usage="!stats <member>",
                       description="Show stats of current list",
                       help="!stats: Shows general stats\n!stats @member: Show stats for certain member")
-    async def stats(self, ctx, member: discord.Member = None):
+    async def stats(self, ctx: commands.Context, member: discord.Member = None) -> None:
+        """
+        Show the stats of the current woordenketting.
+
+        :param ctx: The context.
+        :param member: The member, if None show the total amount of words.
+        """
         number = 0
         number_user = 0
         if member is None:
@@ -206,15 +243,22 @@ class Woordenketting(commands.Cog):
 
     @commands.command()
     @commands.check(admin_check)
-    async def start(ctx, thema=None, woord=None):
-        if thema is None or woord is None:
+    async def start(ctx: commands.Context, theme: str = None, word: str = None) -> None:
+        """
+        Start a new woordenketting with a theme and word.
+
+        :param ctx: The context.
+        :param thema: The theme of the woordenketting.
+        :param woord: The starting word.
+        """
+        if theme is None or word is None:
             embed = discord.Embed(title='Woordenketting', description='Something went wrong with starting a game. Use !start <theme> <word>', colour=0xFF0000)
             await ctx.send(embed=embed)
             return
         else:
             with open('Woordenketting.txt', 'a') as txt:
                 txt.truncate(0)
-                txt.write(thema + '\n' + woord + '\t' + str(ctx.message.author.id) + '\n')
+                txt.write(theme + '\n' + word + '\t' + str(ctx.message.author.id) + '\n')
             with open('Woordenketting_users.txt', 'a') as user_file:
                 user_file.truncate(0)
                 user_file.write(str(ctx.message.author.id) + '\n')

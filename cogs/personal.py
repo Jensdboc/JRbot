@@ -20,6 +20,7 @@ class Personal(commands.Cog):
         Open the bank file and change the amount.
 
         :param amount: The amount to be added.
+        :return: The new amount.
         """
         with open('bank1.txt', 'r') as file:
             number = file.readlines()[0]
@@ -34,7 +35,7 @@ class Personal(commands.Cog):
         Check every 24 hours and send the current balance.
         """
         newnumber = Personal.open_file_and_adapt(2)
-        channel = self.client.get_channel(BANK_CHANNEL_ID)  # the-bank
+        channel = self.client.get_channel(BANK_CHANNEL_ID)
         embed = discord.Embed(title="The bank", description=f"Your current balance is {str(newnumber)}, use it wisely!", color=0x7289da)
         await channel.send(embed=embed)
 
