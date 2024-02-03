@@ -24,3 +24,4 @@ STATUS_CYCLE = cycle(["Goat Simulator and the grass is extra good today 🐐",
                       "waiting to claim my daily",
                       "clicking the damned circles",
                       "Valorant with a mousepad"])
+TAYLOR_WORDS = ['taylor swift', 'taylor', 'swift', 'taylorswift', 'folklore', 'love story', 'evermore', 'lovestory', 'taytay', 't swizzle', 'tswizzle', 'swizzle', 'queen t']
