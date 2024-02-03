@@ -5,7 +5,6 @@ import re
 from typing import List, Tuple
 
 import discord
-import pytz as pytz
 from discord.ext import commands, tasks
 
 utc = datetime.timezone.utc
@@ -282,7 +281,7 @@ class Activities(commands.Cog):
         write_activities_to_file(self.filename, activities)
 
     @check_loop.before_loop
-    async def before_printer(self):
+    async def before_check_loop(self):
         await self.client.wait_until_ready()
 
     @tasks.loop(time=datetime.time(hour=9, minute=00, tzinfo=utc))
@@ -305,7 +304,7 @@ class Activities(commands.Cog):
                 activity_index += 1
 
     @ping_users_loop.before_loop
-    async def before_printer(self):
+    async def before_ping_users_loop(self):
         await self.client.wait_until_ready()
 
     @commands.Cog.listener()

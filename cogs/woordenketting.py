@@ -262,7 +262,7 @@ class Woordenketting(commands.Cog):
             with open('Woordenketting_users.txt', 'a') as user_file:
                 user_file.truncate(0)
                 user_file.write(str(ctx.message.author.id) + '\n')
-            embed = discord.Embed(title='Woordenketting', description=f'A new game has been started with `{thema}` as theme and `{woord}` as first word.', colour=0x11806a)
+            embed = discord.Embed(title='Woordenketting', description=f'A new game has been started with `{theme}` as theme and `{word}` as first word.', colour=0x11806a)
             await ctx.send(embed=embed)
 
 

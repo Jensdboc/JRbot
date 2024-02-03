@@ -1,7 +1,6 @@
 import datetime
 import os
 import pickle
-import re
 from typing import List, Tuple
 
 import discord
@@ -285,7 +284,7 @@ class Exams(commands.Cog):
         exams_obj = load_exams_from_file(self.filename)
 
         if len(exams_obj.exams) == 0:
-            await ctx.send(f"No exams, hooray!!!")
+            await ctx.send("No exams, hooray!!!")
 
         if member is not None:
             exams_obj.exams = list(filter(lambda exam: exam.person_id == member.id, exams_obj.exams))
