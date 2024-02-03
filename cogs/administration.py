@@ -18,7 +18,7 @@ class Administration(commands.Cog):
 
     @commands.command()
     @app_commands.check(admin_check)
-    async def admin(self, ctx: discord.ext.commands.context.Context) -> None:
+    async def admin(self, ctx: commands.Context) -> None:
         """
         Confirm if user is an admin.
 
@@ -29,7 +29,7 @@ class Administration(commands.Cog):
     @commands.command(usage="!nick <member> <name>",
                       description="Change nickname of member",
                       help="!nick @member a very cool nickname\nName is allowed to contain **spaces**")
-    async def nick(self, ctx: discord.ext.commands.context.Context, member: discord.Member, *, nickname: str) -> None:
+    async def nick(self, ctx: commands.Context, member: discord.Member, *, nickname: str) -> None:
         """
         Give user a new nickname.
 
@@ -47,7 +47,7 @@ class Administration(commands.Cog):
     @commands.command(usage="!welcome <member>",
                       description="Give member all required roles",
                       help="Member will get 🌳-role, General Roles and Reward Roles")
-    async def welcome(self, ctx: discord.ext.commands.context.Context, member: discord.Member) -> None:
+    async def welcome(self, ctx: commands.Context, member: discord.Member) -> None:
         """
         Give a member the required roles.
 
@@ -68,7 +68,7 @@ class Administration(commands.Cog):
                       description="Clear the last number of messages",
                       help="The default value is 1 message")
     @app_commands.check(admin_check)
-    async def clear(self, ctx: discord.ext.commands.Context, *, number: int = 1) -> None:
+    async def clear(self, ctx: commands.Context, *, number: int = 1) -> None:
         """
         Clear the last amount of messages in the current channel.
 
@@ -82,7 +82,7 @@ class Administration(commands.Cog):
                       description="Return the thumbmail from youtube",
                       help="!thumbmail https://www.youtube.com/watch?v=dQw4w9WgXcQ 😏",
                       aliases=['tm'])
-    async def thumbmail(self, ctx: discord.ext.commands.Context, url) -> None:
+    async def thumbmail(self, ctx: commands.Context, url) -> None:
         """"
         Return the thumbmail of a given youtube url.
 
@@ -96,7 +96,7 @@ class Administration(commands.Cog):
                       description="Return the songs people in the server are listening to",
                       help="Specifying a certain user doesn't work yet. Use !sa for now",
                       aliases=['sa'])
-    async def show_activity(self, ctx: discord.ext.commands.context.Context, member: typing.Union[discord.Member, str] = None) -> None:
+    async def show_activity(self, ctx: commands.Context, member: typing.Union[discord.Member, str] = None) -> None:
         """
         Show the spotify activity of users.
 
@@ -126,7 +126,7 @@ class Administration(commands.Cog):
                       description="Make the bot join a voice channel",
                       help="The bot will and can only join the channel where you are currently in",
                       pass_context=True)
-    async def join(self, ctx: discord.ext.commands.Context) -> None:
+    async def join(self, ctx: commands.Context) -> None:
         """
         Make the bot join your current voice channel.
 
@@ -144,7 +144,7 @@ class Administration(commands.Cog):
                       description="Make the bot leave a voice channel",
                       help="The bot will leave the channel even if you are not in the channel",
                       pass_context=True)
-    async def leave(self, ctx: discord.ext.commands.context.Context) -> None:
+    async def leave(self, ctx: commands.Context) -> None:
         """
         Make the bot leave your current voice channel.
 
@@ -159,7 +159,7 @@ class Administration(commands.Cog):
             await ctx.message.add_reaction("❌")
 
     @commands.Cog.listener()
-    async def on_guild_channel_create(self, channel: discord.ext.commands.Context.channel) -> None:
+    async def on_guild_channel_create(self, channel: commands.Context.channel) -> None:
         """
         Send a greeting in a newly created channel.
 

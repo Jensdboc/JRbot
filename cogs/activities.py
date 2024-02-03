@@ -321,7 +321,7 @@ class Activities(commands.Cog):
                       description="Add activity to list of activities",
                       help="!addactivity 15/12/2024 18:30 Yammi Yammi diner",
                       aliases=['aa'])
-    async def addactivity(self, ctx: discord.ext.commands.Context, date: str, time: str, *, name: str) -> None:
+    async def addactivity(self, ctx: commands.Context, date: str, time: str, *, name: str) -> None:
         """
         Add an activity to the list.
 
@@ -353,7 +353,7 @@ class Activities(commands.Cog):
                       description="List all activities or one activity in particular",
                       help="!listactivities (1)",
                       aliases=['la'])
-    async def listactivities(self, ctx: discord.ext.commands.Context, activity_id: int = None) -> None:
+    async def listactivities(self, ctx: commands.Context, activity_id: int = None) -> None:
         """
         List all activities or one activity in particular.
 
@@ -390,7 +390,7 @@ class Activities(commands.Cog):
                       description="Delete an activity from the list of activities",
                       help="!deleteactivity 1",
                       aliases=['da'])
-    async def deleteactivity(self, ctx: discord.ext.commands.Context, activity_id: int) -> None:
+    async def deleteactivity(self, ctx: commands.Context, activity_id: int) -> None:
         """
         Remove an activity from the list.
 
