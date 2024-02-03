@@ -27,10 +27,11 @@ async def on_ready():
 
 @client.command()
 @commands.check(admin_check)
-async def load(ctx, extension) -> None:
+async def load(ctx: commands.Context, extension: str) -> None:
     """
-    Load a given extension
+    Load a given extension.
 
+    :param ctx: The context.
     :param extension: Extension to be loaded.
     """
     await client.load_extension(f'cogs.{extension}')
@@ -39,10 +40,11 @@ async def load(ctx, extension) -> None:
 
 @client.command()
 @commands.check(admin_check)
-async def unload(ctx, extension) -> None:
+async def unload(ctx: commands.Context, extension: str) -> None:
     """
-    Unload a given extension
+    Unload a given extension.
 
+    :param ctx: The context.
     :param extension: Extension to be unloaded.
     """
     await client.unload_extension(f'cogs.{extension}')
@@ -51,10 +53,11 @@ async def unload(ctx, extension) -> None:
 
 @client.command()
 @commands.check(admin_check)
-async def reload(ctx, extension) -> None:
+async def reload(ctx: commands.Context, extension: str) -> None:
     """
-    Reload a given extension
+    Reload a given extension.
 
+    :param ctx: The context.
     :param extension: Extension to be reloaded.
     """
     await client.unload_extension(f'cogs.{extension}')

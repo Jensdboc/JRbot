@@ -7,9 +7,13 @@ import discord
 import numpy as np
 from discord.ext import commands
 
+from admincheck import admin_check
+
 
 class Othello(commands.Cog):
-
+    """
+    This class contains the commands for Othello.
+    """
     def __init__(self, client: discord.Client):
         self.client = client
 
@@ -20,7 +24,12 @@ class Othello(commands.Cog):
                       description="Start othello game",
                       help="https://nl.wikipedia.org/wiki/Reversi for more information",
                       aliases=['os'])
-    async def othello_start(self, ctx):  # Show start screen, ask for input
+    async def othello_start(self, ctx: commands.Context) -> None:
+        """
+        Start an othello game and ask for input.
+
+        :param ctx: The context.
+        """
         embed = discord.Embed(title='Othello', description="Calculating board...", color=ctx.author.color)
         message = await ctx.send(embed=embed)
         new_board = Board(ctx.author, message)
@@ -36,7 +45,14 @@ class Othello(commands.Cog):
                       description="Give coordinates for next input",
                       help="https://nl.wikipedia.org/wiki/Reversi for more information",
                       aliases=['oi'])
-    async def othello_input(self, ctx, x, y):
+    async def othello_input(self, ctx: commands.Context, x: int, y: int) -> None:
+        """
+        Handle the players' input.
+
+        :param ctx: The context.
+        :param x: The x coordinate.
+        :param y: The y coordinate.
+        """
         await ctx.message.delete()
         for index, board in enumerate(games):
             if board.author == ctx.author:
@@ -127,7 +143,13 @@ class Othello(commands.Cog):
                       description="Remove all current games",
                       help="https://nl.wikipedia.org/wiki/Reversi for more information",
                       aliases=['oc'])
-    async def othello_clear(self, ctx):
+    @commands.check(admin_check)
+    async def othello_clear(self, ctx: commands.Context) -> None:
+        """
+        Clear all the othello games
+
+        :param ctx: The contexts.
+        """
         global games
         games = []
         await ctx.send("All games have been succesfully cleared!")
