@@ -10,6 +10,7 @@ class Amongus(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+        self.client.mute_message = None
 
     @commands.command(usage="!code <code>",
                       description="Start among us game in mutechannel",
