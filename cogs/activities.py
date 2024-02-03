@@ -266,7 +266,7 @@ class Activities(commands.Cog):
     """
     This class contains the filename in which the data is stored and the commands.
     """
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
         self.filename = 'activity_dates.pkl'
         self.check_loop.start()

@@ -12,7 +12,7 @@ class Administration(commands.Cog):
     """
     This class contains the commands for administrations.
     """
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     @commands.command()

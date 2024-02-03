@@ -7,7 +7,7 @@ utc = datetime.timezone.utc
 
 class Personal(commands.Cog):
 
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
         self.loop.start()
 

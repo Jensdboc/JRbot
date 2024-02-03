@@ -13,7 +13,7 @@ SECRET_CHANNEL_ID = 935507669580652544
 
 class Fun(commands.Cog):
 
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     autist_id = 383952659310444544

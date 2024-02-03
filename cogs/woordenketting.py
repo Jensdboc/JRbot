@@ -11,7 +11,7 @@ def lower_strip_accents(word):
 
 class Woordenketting(commands.Cog):
 
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
 
     @commands.command(usage="!addword <word>",

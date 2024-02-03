@@ -12,7 +12,7 @@ class Amongus(commands.Cog):
     """
     This class contains the commands for Among Us.
     """
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
         self.client.mute_message = None
 
