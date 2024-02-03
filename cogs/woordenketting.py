@@ -1,7 +1,6 @@
 import unicodedata  # Used for accents
 import discord
 from discord.ext import commands
-from discord import app_commands
 
 from admincheck import admin_check
 
@@ -206,7 +205,7 @@ class Woordenketting(commands.Cog):
             await ctx.send(embed=embed)
 
     @commands.command()
-    @app_commands.check(admin_check)
+    @commands.check(admin_check)
     async def start(ctx, thema=None, woord=None):
         if thema is None or woord is None:
             embed = discord.Embed(title='Woordenketting', description='Something went wrong with starting a game. Use !start <theme> <word>', colour=0xFF0000)

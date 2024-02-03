@@ -2,7 +2,6 @@ import discord
 import typing
 from discord.activity import Spotify
 from discord.ext import commands
-from discord import app_commands
 
 from admincheck import admin_check
 
@@ -17,7 +16,7 @@ class Administration(commands.Cog):
         self.client = client
 
     @commands.command()
-    @app_commands.check(admin_check)
+    @commands.check(admin_check)
     async def admin(self, ctx: commands.Context) -> None:
         """
         Confirm if user is an admin.
@@ -67,7 +66,7 @@ class Administration(commands.Cog):
     @commands.command(usage="!clear <number>",
                       description="Clear the last number of messages",
                       help="The default value is 1 message")
-    @app_commands.check(admin_check)
+    @commands.check(admin_check)
     async def clear(self, ctx: commands.Context, *, number: int = 1) -> None:
         """
         Clear the last amount of messages in the current channel.

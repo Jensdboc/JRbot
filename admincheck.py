@@ -1,3 +1,4 @@
+from discord.ext import commands
 from pathlib import Path
 
 
@@ -11,7 +12,7 @@ def file_exist(name) -> None:
     file.touch(exist_ok=True)
 
 
-def admin_check(ctx) -> bool:
+def admin_check(ctx: commands.Context) -> bool:
     """
     Check if user has admin priveledges
 

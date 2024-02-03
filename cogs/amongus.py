@@ -2,12 +2,16 @@ import random
 import discord
 from discord.ext import commands
 
+from admincheck import admin_check
+
 lobbycode = None
 dead = []
 
 
 class Amongus(commands.Cog):
-
+    """
+    This class contains the commands for Among Us.
+    """
     def __init__(self, client):
         self.client = client
         self.client.mute_message = None
@@ -16,14 +20,19 @@ class Amongus(commands.Cog):
                       description="Start among us game in mutechannel",
                       help="The code has to be a valid 6-digit number. The following message will be posted in mutechannel",
                       aliases=['cd'])
-    async def code(self, ctx, *, new_lobbycode=''):
+    async def code(self, ctx: commands.Context, *, new_lobbycode: str = None) -> None:
+        """
+        Show lobbycode or update to a new code.
+
+        :param ctx: The Context.
+        :param new_lobbycode: The new lobbycode, if None show old lobbycode.
+        """
         global lobbycode
-        await ctx.message.delete()
-        if len(new_lobbycode) == 0:
-            if (lobbycode is not None):
+        if new_lobbycode is None:
+            if lobbycode is not None:
                 embed1 = discord.Embed(title=lobbycode, color=0x2ecc71)
             else:
-                embed1 = discord.Embed(title='No code yet', color=0xff0000)
+                embed1 = discord.Embed(title="No code yet!", color=0xff0000)
             await ctx.channel.send(embed=embed1)
         elif len(new_lobbycode) == 9 or len(new_lobbycode) == 6:
             for channel in ctx.guild.channels:
@@ -51,48 +60,72 @@ class Amongus(commands.Cog):
                       description="Mute all members",
                       help="This will mute the members from the channel where you are currently in.",
                       aliases=['m'])
-    async def mute(self, ctx):
+    @commands.check(admin_check)
+    async def mute(self, ctx: commands.Context) -> None:
+        """
+        Mute all members in your current voice channel
+
+        :param ctx: The Context.
+        """
         vc = ctx.message.author.voice.channel
         for member in vc.members:
-            if member.id != 235088799074484224:
-                await member.edit(mute=1)
-        await ctx.message.delete()
+            await member.edit(mute=1)
 
     @commands.command(usage="!unmute",
                       description="Unmute all members",
                       help="This will unmute the members from the channel where you are currently in.",
                       aliases=['um'])
-    async def unmute(self, ctx):
+    @commands.check(admin_check)
+    async def unmute(self, ctx: commands.Context) -> None:
+        """
+        Unmute all members in your current voice channel
+
+        :param ctx: The Context.
+        """
         vc = ctx.message.author.voice.channel
         for member in vc.members:
             await member.edit(mute=0)
-        await ctx.message.delete()
 
     @commands.command(usage="!switch",
                       description="Start a switch-game",
                       help="People in the voice channel will get assigned a name to pretend they are this person in the next game")
-    async def switch(self, ctx):
+    async def switch(self, ctx: commands.Context) -> None:
+        """
+        Assign people in the voice random names from other people.
+
+        :param ctx: The Context.
+        """
         l1 = []
         vc = ctx.message.author.voice.channel
         for member in vc.members:
-            if member.id != 235088799074484224:
-                l1.append(member.nick)
+            l1.append(member.nick)
         l2 = l1.copy()
         random.shuffle(l1)
         embed = discord.Embed(title='Switch-game', description='Click on the spoiler message next to your name to reveal who you need to be!', color=0x9b59b6)
         for i in range(len(l1)):
             embed.add_field(name=f'{l2[i]}', value='||' + f'{l1[i]}' + '||')
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command(usage="!deads",
                       description="Show the list of dead people",
                       help="")
-    async def deads(self, ctx):
+    async def deads(self, ctx: commands.Context) -> None:
+        """"
+        Show the list of dead people in the Among Us game
+
+        :param ctx: The Context.
+        """
         global dead
         await ctx.send(dead)
 
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
+    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User) -> None:
+        """
+        Execute the code whenever a reaction is pressed.
+
+        :param reaction: The pressed reaction.
+        :param user: The user.
+        """
         global dead
         if user.id != self.client.user.id:
             try:
@@ -138,8 +171,8 @@ class Amongus(commands.Cog):
                             vc = user.voice.channel
                             for member in vc.members:
                                 await member.edit(mute=0, deafen=0)
-            finally:
-                return
+            except Exception as e:
+                print(f"Exception in on_reaction_add: {e}")
 
 
 # Allows to connect cog to bot
