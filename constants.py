@@ -1,6 +1,6 @@
 from itertools import cycle
 
-PREFIX = "!!"
+PREFIX = "!"
 STATUS_CYCLE = cycle(["Goat Simulator and the grass is extra good today 🐐",
                       "Monopoly and rent is due",
                       "Monopoly",
