@@ -352,7 +352,7 @@ class Activities(commands.Cog):
     @commands.command(usage="!modifyactivity <activity_id> <date_or_time> (<time>)",
                       description="Modify an activity",
                       help="!modifyactivity 1 15/12/2024 (15:00)",
-                      aliases=['ma'])
+                      aliases=['ma', 'ea'])
     async def modifyactivity(self, ctx: discord.ext.commands.context.Context, activity_id: int, date_or_time: str, p_time: str = None) -> None:
         """
         Modify an activity.
