@@ -349,6 +349,59 @@ class Activities(commands.Cog):
 
         await ctx.send(message)
 
+    @commands.command(usage="!modifyactivity <activity_id> <date_or_time> <time>",
+                      description="Modify an activity",
+                      help="!modifyactivity 1 15/12/2024 (15:00)",
+                      aliases=['ma'])
+    async def modifyactivity(self, ctx: discord.ext.commands.context.Context, activity_id: int, date_or_time: str, p_time: str = None) -> None:
+        """
+        Modify an activity.
+
+        :param ctx: The context.
+        :param activity_id: The id of the activity.
+        :param date_or_time: The date or time of the activity.
+        """
+        activities_obj: ActivitiesObj = load_activities_from_file(self.filename)
+
+        if len(activities_obj.activities) == 0:
+            await ctx.send("No activities planned!")
+            return
+
+        if activity_id < 1 or activity_id > len(activities_obj.activities):
+            await ctx.send(f"The id must be greater than 0 and less than {len(activities_obj.activities) + 1}!")
+            return
+
+        if not is_valid_date(date_or_time) and not re.match("^(?:[01]\d|2[0-3]):[0-5]\d$", date_or_time):
+            await ctx.send("This is not a valid date (DD/MM/YYYY) or time (HH:MM), try again!")
+            return
+
+        activity = activities_obj.activities[activity_id - 1]
+
+        if is_valid_date(date_or_time):
+            activity_date = string_to_date(date_or_time)
+            if p_time is not None and not re.match("^(?:[01]\d|2[0-3]):[0-5]\d$", p_time):
+                await ctx.send("Time has to be HH:MM, try again.")
+                return
+            elif p_time is not None:
+                activity_time = string_to_time(p_time)
+            else:
+                activity_time = activity.time
+        else:
+            if re.match("^(?:[01]\d|2[0-3]):[0-5]\d$", date_or_time) and p_time is not None and is_valid_date(p_time):
+                await ctx.send("Make sure the date comes before the time!")
+                return
+            activity_date = activity.date
+            activity_time = string_to_time(date_or_time)
+
+        if datetime.datetime.combine(activity_date, activity_time) <= datetime.datetime.now():
+            await ctx.send("Unfortunately, we cannot go back to the past!")
+            return
+
+        activity.date, activity.time = activity_date, activity_time
+        write_activities_to_file(self.filename, activities_obj)
+
+        await ctx.send("Activity modified!")
+
     @commands.command(usage="!listactivities <activity_id>",
                       description="List all activities or one activity in particular",
                       help="!listactivities (1)",
@@ -367,7 +420,7 @@ class Activities(commands.Cog):
 
         messages = activities_obj.list_activities()
 
-        if activity_id is not None and activity_id < 1:
+        if activity_id is not None and (activity_id < 1 or activity_id > len(activities_obj.activities)):
             await ctx.send(f"The id must be greater than 0 and less than {len(activities_obj.activities) + 1}!")
             return
 
