@@ -2,7 +2,7 @@ from discord.ext import commands
 from pathlib import Path
 
 
-def file_exist(name) -> None:
+def file_exist(name: str) -> None:
     """
     Create file if it doesn't exist
 
