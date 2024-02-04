@@ -1,27 +1,37 @@
 import datetime
 import discord
 import os
+import typing
 from discord.ext import commands
 
 utc = datetime.timezone.utc
 
 
 class Daycounter(commands.Cog):
-
-    def __init__(self, client):
+    """
+    This class contains the commands for Daycounter.
+    """
+    def __init__(self, client: discord.Client):
         self.client = client
 
-    # Creates the Day_counter.txt file
     @commands.Cog.listener()
-    async def on_ready(self):
+    async def on_ready(self) -> None:
+        """"
+        Creates the Day_counter.txt file
+        """
         file_path = "Day_counters.txt"
         if not os.path.exists(file_path):
             with open(file_path, 'w'):
                 pass
             print(f"{file_path} created")
 
-    # Creates an embed message for a counter
-    def printcounter(counter_name, ctx_guild_id):
+    def printcounter(counter_name: str, ctx_guild_id: int) -> typing.Union[discord.Embed, None]:
+        """
+        Creates an embed message for a counter.
+
+        :param counter_name: Name of the counter.
+        :param ctx_guild_id: ID of the guild.
+        """
         with open('Day_counters.txt', 'r') as file:
             content = file.readlines()
         for line in content:
@@ -33,12 +43,18 @@ class Daycounter(commands.Cog):
                 return embed
         return None
 
-    # Creates a counter and adds it to the file
     @commands.command(usage="!createcounter <name> <description>",
                       description="Creates a new counter and sets the last reset to the current date",
                       help="!createcounter Goose the last goose incident\nThe name cannot contain any spaces. The description will be be added to the sentence *It has been been x days since ...*.",
                       aliases=["makecounter", "startcounter", "cc"])
-    async def createcounter(self, ctx, name=None, *, description=None):
+    async def createcounter(self, ctx: commands.Context, name: str = None, *, description: str = None) -> None:
+        """
+        Creates a counter and adds it to the file.
+
+        :param ctx: The context.
+        :param name: The name of the counter.
+        :param description: The description of the counter.
+        """
         if name is None or description is None:
             await ctx.send("Please add a name and description for your counter.")
             return
@@ -58,12 +74,17 @@ class Daycounter(commands.Cog):
         if embed is not None:
             await ctx.send(embed=embed)
 
-    # Deletes a counter from the file
     @commands.command(usage="!deletecounter <name>",
                       description="Deletes a counter by name",
                       help="!deletecounter goose",
                       aliases=["removecounter", "dc"])
-    async def deletecounter(self, ctx, to_delete=None):
+    async def deletecounter(self, ctx: commands.Context, to_delete: str = None) -> None:
+        """
+        Deletes a counter from the file.
+
+        :param ctx: The context.
+        :param to_delete: The counter to delete.
+        """
         if to_delete is None:
             await ctx.send("Please specify which counter you want to delete.")
             return
@@ -91,7 +112,13 @@ class Daycounter(commands.Cog):
                       description="Resets a counter and displays how many days have passed since the last reset.",
                       help="!resetcounter goose",
                       aliases=["rc"])
-    async def resetcounter(self, ctx, to_reset=None):
+    async def resetcounter(self, ctx: commands.Context, to_reset: str = None) -> None:
+        """
+        Resets the counter to the current date.
+
+        :param ctx: The context.
+        :param to_reset: The counter to reset.
+        """
         if to_reset is None:
             await ctx.send("Please specify which counter you want to reset.")
             return
@@ -124,7 +151,14 @@ class Daycounter(commands.Cog):
                       description="Edits the description of a counter.",
                       help="!editcounter goose the last horrible goose incident",
                       aliases=["ec"])
-    async def editcounter(self, ctx, to_edit=None, *, new_description=None):
+    async def editcounter(self, ctx: commands.Context, to_edit: str = None, *, new_description: str = None) -> None:
+        """
+        Edit the description of a counter.
+
+        :param ctx: The context.
+        :param to_edit: The counter to edit.
+        :param new_description: The new description of the counter.
+        """
         if to_edit is None or new_description is None:
             await ctx.send("Please specify which counter you want to edit and the description you want to replace it with.")
             return
@@ -153,12 +187,17 @@ class Daycounter(commands.Cog):
             if not edited:
                 await ctx.send(f"No counter with name **{to_edit.capitalize()}** was found.")
 
-    # Display the counter
     @commands.command(usage="!showcounter <name>",
                       description="Displays the days that have passed sinc the last reset of a counter.",
                       help="!showcounter goose",
                       aliases=["printcounter", "displaycounter", "sc"])
-    async def showcounter(self, ctx, name=None):
+    async def showcounter(self, ctx: commands.Context, name: str = None) -> NotImplemented:
+        """
+        Display the counter.
+
+        :param ctx: The context.
+        :param name: The name of the counter.
+        """
         if name is None:
             await ctx.send("Please specify which counter you want to display.")
             return
@@ -168,12 +207,16 @@ class Daycounter(commands.Cog):
         else:
             await ctx.send(f"No counter with name **{name.capitalize()}** was found.")
 
-    # Display an overview of all counters in this guild
     @commands.command(usage="!listcounters",
                       description="Gives an overview of all counters in this server",
                       help="!listcounters\nAll counters and the amount of days since their last reset are displayed.",
                       aliases=["listcounter", "showcounters", "lc"])
-    async def listcounters(self, ctx):
+    async def listcounters(self, ctx: commands.Context) -> None:
+        """
+        Display an overview of all counters in this guild.
+
+        :param ctx: The context.
+        """
         message = ""
         with open('Day_counters.txt', 'r') as readfile:
             for line in readfile.readlines():

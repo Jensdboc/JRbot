@@ -5,7 +5,6 @@ import re
 from typing import List, Tuple
 
 import discord
-import pytz as pytz
 from discord.ext import commands, tasks
 
 utc = datetime.timezone.utc
@@ -266,7 +265,7 @@ class Activities(commands.Cog):
     """
     This class contains the filename in which the data is stored and the commands.
     """
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
         self.filename = 'activity_dates.pkl'
         self.check_loop.start()
@@ -282,7 +281,7 @@ class Activities(commands.Cog):
         write_activities_to_file(self.filename, activities)
 
     @check_loop.before_loop
-    async def before_printer(self):
+    async def before_check_loop(self):
         await self.client.wait_until_ready()
 
     @tasks.loop(time=datetime.time(hour=9, minute=00, tzinfo=utc))
@@ -305,7 +304,7 @@ class Activities(commands.Cog):
                 activity_index += 1
 
     @ping_users_loop.before_loop
-    async def before_printer(self):
+    async def before_ping_users_loop(self):
         await self.client.wait_until_ready()
 
     @commands.Cog.listener()
@@ -321,7 +320,7 @@ class Activities(commands.Cog):
                       description="Add activity to list of activities",
                       help="!addactivity 15/12/2024 18:30 Yammi Yammi diner",
                       aliases=['aa'])
-    async def addactivity(self, ctx: discord.ext.commands.context.Context, date: str, time: str, *, name: str) -> None:
+    async def addactivity(self, ctx: commands.Context, date: str, time: str, *, name: str) -> None:
         """
         Add an activity to the list.
 
@@ -406,7 +405,7 @@ class Activities(commands.Cog):
                       description="List all activities or one activity in particular",
                       help="!listactivities (1)",
                       aliases=['la'])
-    async def listactivities(self, ctx: discord.ext.commands.context.Context, activity_id: int = None) -> None:
+    async def listactivities(self, ctx: commands.Context, activity_id: int = None) -> None:
         """
         List all activities or one activity in particular.
 
@@ -443,7 +442,7 @@ class Activities(commands.Cog):
                       description="Delete an activity from the list of activities",
                       help="!deleteactivity 1",
                       aliases=['da'])
-    async def deleteactivity(self, ctx: discord.ext.commands.context.Context, activity_id: int) -> None:
+    async def deleteactivity(self, ctx: commands.Context, activity_id: int) -> None:
         """
         Remove an activity from the list.
 

@@ -1,7 +1,6 @@
 import datetime
 import os
 import pickle
-import re
 from typing import List, Tuple
 
 import discord
@@ -216,7 +215,7 @@ class Exams(commands.Cog):
     """
     This class contains the filename in which the data is stored and the commands.
     """
-    def __init__(self, client):
+    def __init__(self, client: discord.Client):
         self.client = client
         self.filename = 'exam_dates.pkl'
         self.check_loop.start()
@@ -247,7 +246,7 @@ class Exams(commands.Cog):
                       description="Add date to the list of exams",
                       help="!adddate 15/02/2022 a very hard exam\nDate should follow the format **DD/MM/YYYY**\nExam is allowed to contain **spaces**",
                       aliases=['ad'])
-    async def adddate(self, ctx: discord.ext.commands.context.Context, date: str, *, name: str) -> None:
+    async def adddate(self, ctx: commands.Context, date: str, *, name: str) -> None:
         """
         Add an exam to the list.
 
@@ -275,7 +274,7 @@ class Exams(commands.Cog):
                       description="Show current examdates",
                       help="!showdate: Show all dates\n!showdate @member: Show all dates from certain member",
                       aliases=['sd'])
-    async def showdate(self, ctx: discord.ext.commands.context.Context, member: discord.Member = None):
+    async def showdate(self, ctx: commands.Context, member: discord.Member = None):
         """
         List all exams or the exams of one person in particular.
 
@@ -285,7 +284,7 @@ class Exams(commands.Cog):
         exams_obj = load_exams_from_file(self.filename)
 
         if len(exams_obj.exams) == 0:
-            await ctx.send(f"No exams, hooray!!!")
+            await ctx.send("No exams, hooray!!!")
 
         if member is not None:
             exams_obj.exams = list(filter(lambda exam: exam.person_id == member.id, exams_obj.exams))
@@ -308,7 +307,7 @@ class Exams(commands.Cog):
                       description="Delete date from list of exams",
                       help="!deletedate 15/02/2022 a very hard exam\nThe arguments have to be **the same arguments** as the ones in !adddate",
                       aliases=['dd'])
-    async def deletedate(self, ctx: discord.ext.commands.context.Context, date: str, *, name: str) -> None:
+    async def deletedate(self, ctx: commands.Context, date: str, *, name: str) -> None:
         """
         Remove an exam from the list.
 
