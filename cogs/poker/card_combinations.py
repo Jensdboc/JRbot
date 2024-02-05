@@ -1,7 +1,7 @@
 from typing import List
 
 from cogs.poker.card import Card
-from cogs.poker.constants import suits
+from cogs.poker.constants import suits, map_card_value_to_integer
 
 
 def royal_flush(cards: List[Card]):
@@ -39,3 +39,11 @@ def straight_flush(cards: List[Card]):
                         return True
 
     return False
+
+
+def four_of_a_kind(cards: List[Card]):
+    card_values_to_occurrences = {value: 0 for value in list(map_card_value_to_integer.keys())}
+    for card in cards:
+        card_values_to_occurrences[card.value] += 1
+
+    return 4 in list(card_values_to_occurrences.values())
