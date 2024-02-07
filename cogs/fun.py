@@ -6,22 +6,31 @@ import typing
 import asyncio
 import nltk
 
+from constants import TAYLOR_WORDS
+
 MAX_TITLE_LENGTH = 256
 LARS_CHANNEL_ID = 1178007345243103302
 SECRET_CHANNEL_ID = 935507669580652544
+QUIZ_MASTER_ID = 688070365448241247
 
 
 class Fun(commands.Cog):
-
-    def __init__(self, client):
+    """
+    This class contains the commands for fun.
+    """
+    def __init__(self, client: discord.Client):
         self.client = client
-
-    autist_id = 383952659310444544
 
     @commands.command(usage="!mock <sentence>",
                       description="Randomly capitalize the sentence",
                       help="The sentence can contain **spaces**")
-    async def mock(self, ctx, *, to_mock):
+    async def mock(self, ctx: commands.Context, *, to_mock: str) -> None:
+        """
+        Return the text in a mocked format
+
+        :param ctx: The context.
+        :param to_mock: The text to be mocked.
+        """
         mocked_text = ''
         if (ctx.message.author.id == 383952659310444544):
             c = 0
@@ -44,14 +53,24 @@ class Fun(commands.Cog):
     @commands.command(usage="!hotel",
                       description="Trivago!",
                       help="")
-    async def hotel(self, ctx):
+    async def hotel(self, ctx: commands.Context) -> None:
+        """
+        Hotel? Trivago!
+
+        :param ctx: The context.
+        """
         embedVar = discord.Embed(title="Trivago!", color=0x992d22)
         await ctx.send(embed=embedVar)
 
     @commands.command(usage="!broederliefde",
                       description=":)",
                       help="")
-    async def broederliefde(self, ctx):
+    async def broederliefde(self, ctx: commands.Context) -> None:
+        """
+        Show what true "broederliefde" looks like.
+
+        :param ctx: The context.
+        """
         file = discord.File("./data_pictures/broederliefde.png")
         embed = discord.Embed(color=0x9b59b6)
         embed.set_image(url="attachment://broederliefde.png")
@@ -60,7 +79,12 @@ class Fun(commands.Cog):
     @commands.command(usage="!perfection",
                       description=":^)",
                       help="")
-    async def perfection(self, ctx):
+    async def perfection(self, ctx: commands.Context) -> None:
+        """
+        Show what "perfection" looks like.
+
+        :param ctx: The context.
+        """
         file = discord.File("./data_pictures/floef.png")
         embed = discord.Embed(color=0x9b59b6)
         embed.set_image(url="attachment://floef.png")
@@ -69,7 +93,13 @@ class Fun(commands.Cog):
     @commands.command(usage="!hug <member/role>",
                       description="Give someone a hug!",
                       help="!hug @member: Send a random hug to the member\n!hug @role: Send a random hug to everyone with this role")
-    async def hug(self, ctx, target: typing.Union[discord.Member, discord.Role] = None):
+    async def hug(self, ctx: commands.Context, target: typing.Union[discord.Member, discord.Role] = None) -> None:
+        """
+        Give someone in need a hug.
+
+        :param ctx: The context.
+        :param target: The person(s) receiving the hug.
+        """
         embed = discord.Embed(title='You get a free hug!', color=0x1DDCF)
         hugs = ["hug1.gif", "hug2.gif", "hug3.gif", "hug4.gif", "hug5.gif"]
         picture = random.choice(hugs)
@@ -89,10 +119,14 @@ class Fun(commands.Cog):
                       description="Send a message to Britt for quizzes",
                       help="Sentence can contain **spaces**",
                       aliases=['a'])
-    async def answer(self, ctx):
+    async def answer(self, ctx: commands.Context) -> None:
+        """
+        Send a message to submit answers for quizzes.
+
+        :param ctx: The context.
+        """
         for user in self.client.users:
-            # Id van Britt
-            if user == self.client.get_user(688070365448241247):
+            if user == self.client.get_user(QUIZ_MASTER_ID):
                 name = str(ctx.author.name)
                 answer = ''
                 start = 0
@@ -107,7 +141,12 @@ class Fun(commands.Cog):
     @commands.command(usage="!secret <sentence>",
                       description="Send a secret message",
                       help="This message will be posted in the secretchannel with a randomised color :). Sentence can contain **spaces**")
-    async def secret(self, ctx):
+    async def secret(self, ctx: commands.Context) -> None:
+        """
+        Send an anonymous message in the secret channel.
+
+        :param ctx: The context.
+        """
         channel = self.client.get_channel(SECRET_CHANNEL_ID)
         message = ctx.message.content[8:]
         embed_color = random.randint(0, 16777215)
@@ -143,7 +182,13 @@ class Fun(commands.Cog):
     @commands.command(usage="!pewpew <user>",
                       description="Pewpew somebody ",
                       help="This person won't be able to see the normal channels anymore because he/she is dead")
-    async def pewpew(self, ctx, member: discord.Member):
+    async def pewpew(self, ctx: commands.Context, member: discord.Member) -> None:
+        """
+        Shoot someone to assign them the pewpew role.
+
+        :param ctx: The context.
+        :param member: The member to be shot.
+        """
         pewpew_role = ctx.guild.get_role(943050771228917812)  # Boomhut
         # Check if person doesn't have pewpewrole
         if pewpew_role in ctx.author.roles:
@@ -170,7 +215,13 @@ class Fun(commands.Cog):
     @commands.command(usage="!lars <correction>",
                       description="The wrong message will be posted into the channel with the correction underneath",
                       help="This message will be posted in the channel of Lars. Reply to the message that contains a mistake.")
-    async def lars(self, ctx: commands.Context, *, description: str = None):
+    async def lars(self, ctx: commands.Context, *, description: str = None) -> None:
+        """
+        Correct a message and send it in the Lars channel.
+
+        :param ctx: The context.
+        :param description: The correction of the message.
+        """
         lars_channel = self.client.get_channel(LARS_CHANNEL_ID)
         if ctx.message.reference is not None:
             lars_message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
@@ -186,10 +237,14 @@ class Fun(commands.Cog):
             await ctx.reply(embed=embed)
 
     @commands.Cog.listener("on_message")
-    async def taylor(self, message):
-        verboden_woorden = ['taylor swift', 'taylor', 'swift', 'taylorswift', 'folklore', 'love story', 'evermore', 'lovestory', 'taytay', 't swizzle', 'tswizzle', 'swizzle', 'queen t']
+    async def taylor(self, message: discord.Message) -> None:
+        """
+        Check whether a message contains a dangerous Taylor word and send a message depending on the user.
+
+        :param message: The message.
+        """
         aantal = 0
-        for woord in verboden_woorden:
+        for woord in TAYLOR_WORDS:
             if message.author.id == 249527744466124801 or message.author.id == 688070365448241247:
                 if woord in message.content.lower() and message.author.id != 754020821378269324 and aantal == 0:
                     embed = discord.Embed(title='Toch weer nie over Taylor Swift bezig???', colour=0x000000)
@@ -204,7 +259,12 @@ class Fun(commands.Cog):
                     await message.channel.send(embed=embed)
 
     @commands.Cog.listener("on_message")
-    async def loser(self, message):
+    async def loser(self, message: discord.Message) -> None:
+        """
+        Check whether a message is a message from Pingo stating you need to wait to claim credits.
+
+        :param message: The message.
+        """
         if message.author.id == 589027434611867668:  # Pingo id
             pattern_match = re.compile(r"You need to wait (\d+ day(s)?, )?\d+ hour(s)? and \d+ minute(s)? before you can collect your next credits")
             present = pattern_match.match(message.content)
