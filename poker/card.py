@@ -1,4 +1,4 @@
-from cogs.poker.constants import map_card_value_to_integer, suits
+from poker.constants import map_card_value_to_integer, suits
 
 
 class Card:
