@@ -57,3 +57,11 @@ def full_house(cards: List[Card]):
     occurrences = list(card_values_to_occurrences.values())
 
     return occurrences.count(3) == 2 or (3 in occurrences and 2 in occurrences)
+
+
+def flush(cards: List[Card]):
+    card_suits_to_occurrences = {suit: 0 for suit in suits}
+    for card in cards:
+        card_suits_to_occurrences[card.card_suit] += 1
+
+    return len(list(filter(lambda x: x >= 5, list(card_suits_to_occurrences.values())))) > 0

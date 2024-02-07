@@ -1,7 +1,7 @@
 import pytest
 
 from cogs.poker.card import Card
-from cogs.poker.card_combinations import royal_flush, straight_flush, four_of_a_kind, full_house
+from cogs.poker.card_combinations import royal_flush, straight_flush, four_of_a_kind, full_house, flush
 
 
 @pytest.mark.run(order=1)
@@ -17,17 +17,17 @@ def test_royal_flush():
 
 @pytest.mark.run(order=2)
 def test_straight_flush():
-    cards_flush = [Card('hearts', 'jack'), Card('spades', 'four'), Card('hearts', 'king'), Card('hearts', 'ten'), Card('spades', 'five'), Card('hearts', 'queen'), Card('hearts', 'ace')]
-    cards2_flush = [Card('hearts', 'five'), Card('spades', 'five'), Card('hearts', 'deuce'), Card('hearts', 'ace'), Card('hearts', 'four'), Card('spades', 'four'), Card('hearts', 'three')]
-    cards3_flush = [Card('hearts', 'eight'), Card('spades', 'five'), Card('hearts', 'five'), Card('hearts', 'nine'), Card('hearts', 'six'), Card('spades', 'four'), Card('hearts', 'seven')]
+    cards_straight_flush = [Card('hearts', 'jack'), Card('spades', 'four'), Card('hearts', 'king'), Card('hearts', 'ten'), Card('spades', 'five'), Card('hearts', 'queen'), Card('hearts', 'ace')]
+    cards2_straight_flush = [Card('hearts', 'five'), Card('spades', 'five'), Card('hearts', 'deuce'), Card('hearts', 'ace'), Card('hearts', 'four'), Card('spades', 'four'), Card('hearts', 'three')]
+    cards3_straight_flush = [Card('hearts', 'eight'), Card('spades', 'five'), Card('hearts', 'five'), Card('hearts', 'nine'), Card('hearts', 'six'), Card('spades', 'four'), Card('hearts', 'seven')]
 
-    assert straight_flush(cards_flush) and straight_flush(cards2_flush) and straight_flush(cards3_flush), 'This should be a straight flush!'
+    assert straight_flush(cards_straight_flush) and straight_flush(cards2_straight_flush) and straight_flush(cards3_straight_flush), 'This should be a straight flush!'
 
-    cards_no_flush = [Card('hearts', 'jack'), Card('spades', 'five'), Card('hearts', 'king'), Card('spades', 'four'), Card('hearts', 'nine'), Card('hearts', 'queen'), Card('hearts', 'ace')]
-    cards2_no_flush = [Card('hearts', 'five'), Card('spades', 'five'), Card('hearts', 'six'), Card('hearts', 'ace'), Card('hearts', 'four'), Card('hearts', 'three'), Card('spades', 'four')]
-    cards3_no_flush = [Card('hearts', 'eight'), Card('spades', 'five'), Card('hearts', 'deuce'), Card('hearts', 'nine'), Card('hearts', 'six'), Card('spades', 'four'), Card('hearts', 'seven')]
+    cards_no_straight_flush = [Card('hearts', 'jack'), Card('spades', 'five'), Card('hearts', 'king'), Card('spades', 'four'), Card('hearts', 'nine'), Card('hearts', 'queen'), Card('hearts', 'ace')]
+    cards2_no_straight_flush = [Card('hearts', 'five'), Card('spades', 'five'), Card('hearts', 'six'), Card('hearts', 'ace'), Card('hearts', 'four'), Card('hearts', 'three'), Card('spades', 'four')]
+    cards3_no_straight_flush = [Card('hearts', 'eight'), Card('spades', 'five'), Card('hearts', 'deuce'), Card('hearts', 'nine'), Card('hearts', 'six'), Card('spades', 'four'), Card('hearts', 'seven')]
 
-    assert not straight_flush(cards_no_flush) and not straight_flush(cards2_no_flush) and not straight_flush(cards3_no_flush), "This shouldn't be a straight flush!"
+    assert not straight_flush(cards_no_straight_flush) and not straight_flush(cards2_no_straight_flush) and not straight_flush(cards3_no_straight_flush), "This shouldn't be a straight flush!"
 
 
 @pytest.mark.run(order=3)
@@ -53,4 +53,19 @@ def test_full_house():
 
     cards = [Card('hearts', 'jack'), Card('diamonds', 'five'), Card('diamonds', 'jack'), Card('spades', 'ace'), Card('spades', 'five'), Card('clubs', 'deuce'), Card('hearts', 'ace')]
 
-    assert not four_of_a_kind(cards), "This shouldn't be a full house!"
+    assert not full_house(cards), "This shouldn't be a full house!"
+
+
+@pytest.mark.run(order=4)
+def test_flush():
+    cards = [Card('hearts', 'jack'), Card('hearts', 'five'), Card('hearts', 'ace'), Card('spades', 'jack'), Card('hearts', 'seven'), Card('clubs', 'deuce'), Card('hearts', 'three')]
+
+    assert flush(cards), 'This should be a flush!'
+
+    cards = [Card('hearts', 'jack'), Card('hearts', 'five'), Card('hearts', 'ace'), Card('hearts', 'nine'), Card('hearts', 'seven'), Card('hearts', 'deuce'), Card('hearts', 'three')]
+
+    assert flush(cards), 'This should also be a flush!'
+
+    cards = [Card('hearts', 'jack'), Card('diamonds', 'five'), Card('diamonds', 'jack'), Card('spades', 'ace'), Card('spades', 'five'), Card('clubs', 'deuce'), Card('hearts', 'ace')]
+
+    assert not flush(cards), "This shouldn't be a flush!"
