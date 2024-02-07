@@ -16,3 +16,9 @@ map_card_value_to_integer = {
 
 
 suits = ['diamonds', 'clubs', 'hearts', 'spades']
+
+game_states = {
+    "Starting": 0,
+    "Playing": 1,
+    "Finished": 2
+}
