@@ -1,7 +1,7 @@
 import pytest
 
 from cogs.poker.card import Card
-from cogs.poker.card_combinations import royal_flush, straight_flush, four_of_a_kind, full_house, flush
+from cogs.poker.card_combinations import royal_flush, straight_flush, four_of_a_kind, full_house, flush, straight
 
 
 @pytest.mark.run(order=1)
@@ -69,3 +69,16 @@ def test_flush():
     cards = [Card('hearts', 'jack'), Card('diamonds', 'five'), Card('diamonds', 'jack'), Card('spades', 'ace'), Card('spades', 'five'), Card('clubs', 'deuce'), Card('hearts', 'ace')]
 
     assert not flush(cards), "This shouldn't be a flush!"
+
+
+@pytest.mark.run(order=5)
+def test_straight():
+    cards_straight = [Card('spades', 'jack'), Card('spades', 'four'), Card('hearts', 'king'), Card('hearts', 'ten'), Card('spades', 'five'), Card('diamonds', 'queen'), Card('hearts', 'ace')]
+    cards2_straight = [Card('hearts', 'king'), Card('spades', 'five'), Card('hearts', 'deuce'), Card('hearts', 'ace'), Card('hearts', 'nine'), Card('spades', 'four'), Card('hearts', 'three')]
+    cards3_straight = [Card('hearts', 'eight'), Card('spades', 'five'), Card('hearts', 'ace'), Card('clubs', 'nine'), Card('hearts', 'six'), Card('spades', 'four'), Card('hearts', 'seven')]
+
+    assert straight(cards_straight) and straight(cards2_straight) and straight(cards3_straight), 'This should be a straight!'
+
+    cards_no_straight = [Card('hearts', 'jack'), Card('spades', 'five'), Card('hearts', 'king'), Card('spades', 'four'), Card('hearts', 'nine'), Card('hearts', 'queen'), Card('hearts', 'ace')]
+
+    assert not straight(cards_no_straight), "This shouldn't be a straight!"

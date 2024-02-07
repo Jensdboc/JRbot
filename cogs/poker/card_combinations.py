@@ -65,3 +65,21 @@ def flush(cards: List[Card]):
         card_suits_to_occurrences[card.card_suit] += 1
 
     return len(list(filter(lambda x: x >= 5, list(card_suits_to_occurrences.values())))) > 0
+
+
+def straight(cards: List[Card]):
+    card_integer_values_to_occurrences = [0 for _ in range(len(map_card_value_to_integer.values()) + 1)]
+    for card in cards:
+        if card.value == 'ace':
+            card_integer_values_to_occurrences[0] += 1
+        card_integer_values_to_occurrences[map_card_value_to_integer[card.value] - 1] += 1
+
+    consecutive_count = 0
+    for num in card_integer_values_to_occurrences:
+        if num > 0:
+            consecutive_count += 1
+            if consecutive_count == 5:
+                return True
+        else:
+            consecutive_count = 0
+    return False
