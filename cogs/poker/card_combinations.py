@@ -41,12 +41,16 @@ def straight_flush(cards: List[Card]):
     return False
 
 
-def four_of_a_kind(cards: List[Card]):
+def x_of_a_kind(cards: List[Card], n: int):
     card_values_to_occurrences = {value: 0 for value in list(map_card_value_to_integer.keys())}
     for card in cards:
         card_values_to_occurrences[card.value] += 1
 
-    return 4 in list(card_values_to_occurrences.values())
+    return n in list(card_values_to_occurrences.values())
+
+
+def four_of_a_kind(cards: List[Card]):
+    return x_of_a_kind(cards, 4)
 
 
 def full_house(cards: List[Card]):
@@ -83,3 +87,7 @@ def straight(cards: List[Card]):
         else:
             consecutive_count = 0
     return False
+
+
+def three_of_a_kind(cards: List[Card]):
+    return x_of_a_kind(cards, 3)

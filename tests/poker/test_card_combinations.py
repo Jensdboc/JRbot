@@ -1,7 +1,7 @@
 import pytest
 
 from cogs.poker.card import Card
-from cogs.poker.card_combinations import royal_flush, straight_flush, four_of_a_kind, full_house, flush, straight
+from cogs.poker.card_combinations import royal_flush, straight_flush, four_of_a_kind, full_house, flush, straight, three_of_a_kind
 
 
 @pytest.mark.run(order=1)
@@ -56,7 +56,7 @@ def test_full_house():
     assert not full_house(cards), "This shouldn't be a full house!"
 
 
-@pytest.mark.run(order=4)
+@pytest.mark.run(order=5)
 def test_flush():
     cards = [Card('hearts', 'jack'), Card('hearts', 'five'), Card('hearts', 'ace'), Card('spades', 'jack'), Card('hearts', 'seven'), Card('clubs', 'deuce'), Card('hearts', 'three')]
 
@@ -71,7 +71,7 @@ def test_flush():
     assert not flush(cards), "This shouldn't be a flush!"
 
 
-@pytest.mark.run(order=5)
+@pytest.mark.run(order=6)
 def test_straight():
     cards_straight = [Card('spades', 'jack'), Card('spades', 'four'), Card('hearts', 'king'), Card('hearts', 'ten'), Card('spades', 'five'), Card('diamonds', 'queen'), Card('hearts', 'ace')]
     cards2_straight = [Card('hearts', 'king'), Card('spades', 'five'), Card('hearts', 'deuce'), Card('hearts', 'ace'), Card('hearts', 'nine'), Card('spades', 'four'), Card('hearts', 'three')]
@@ -82,3 +82,14 @@ def test_straight():
     cards_no_straight = [Card('hearts', 'jack'), Card('spades', 'five'), Card('hearts', 'king'), Card('spades', 'four'), Card('hearts', 'nine'), Card('hearts', 'queen'), Card('hearts', 'ace')]
 
     assert not straight(cards_no_straight), "This shouldn't be a straight!"
+
+
+@pytest.mark.run(order=7)
+def test_three_of_a_kind():
+    cards = [Card('hearts', 'jack'), Card('diamonds', 'ace'), Card('diamonds', 'jack'), Card('spades', 'jack'), Card('spades', 'five'), Card('clubs', 'deuce'), Card('hearts', 'ace')]
+
+    assert three_of_a_kind(cards), 'This should be a three of a kind!'
+
+    cards = [Card('hearts', 'jack'), Card('diamonds', 'ace'), Card('diamonds', 'jack'), Card('spades', 'deuce'), Card('spades', 'five'), Card('clubs', 'ten'), Card('hearts', 'ace')]
+
+    assert not three_of_a_kind(cards), "This shouldn't be a three of a kind!"
