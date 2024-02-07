@@ -1,7 +1,7 @@
 from typing import List
 
-from cogs.poker.card import Card
-from cogs.poker.constants import suits, map_card_value_to_integer
+from poker.card import Card
+from poker.constants import suits, map_card_value_to_integer
 
 
 def royal_flush(cards: List[Card]):

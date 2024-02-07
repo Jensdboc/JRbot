@@ -1,7 +1,7 @@
 import pytest
 
-from cogs.poker.card import Card
-from cogs.poker.card_combinations import royal_flush, straight_flush, four_of_a_kind, full_house, flush, straight, three_of_a_kind, two_pair, one_pair
+from poker.card import Card
+from poker.card_combinations import royal_flush, straight_flush, four_of_a_kind, full_house, flush, straight, three_of_a_kind, two_pair, one_pair
 
 
 @pytest.mark.run(order=1)
