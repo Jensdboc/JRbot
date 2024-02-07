@@ -1,7 +1,7 @@
 import pytest
 
 from cogs.poker.card import Card
-from cogs.poker.card_combinations import royal_flush, straight_flush, four_of_a_kind, full_house, flush, straight, three_of_a_kind
+from cogs.poker.card_combinations import royal_flush, straight_flush, four_of_a_kind, full_house, flush, straight, three_of_a_kind, two_pair
 
 
 @pytest.mark.run(order=1)
@@ -93,3 +93,18 @@ def test_three_of_a_kind():
     cards = [Card('hearts', 'jack'), Card('diamonds', 'ace'), Card('diamonds', 'jack'), Card('spades', 'deuce'), Card('spades', 'five'), Card('clubs', 'ten'), Card('hearts', 'ace')]
 
     assert not three_of_a_kind(cards), "This shouldn't be a three of a kind!"
+
+
+@pytest.mark.run(order=8)
+def test_two_pair():
+    cards = [Card('hearts', 'jack'), Card('diamonds', 'five'), Card('diamonds', 'jack'), Card('spades', 'three'), Card('spades', 'five'), Card('clubs', 'deuce'), Card('hearts', 'ace')]
+
+    assert two_pair(cards), 'This should be a two pair!'
+
+    cards = [Card('hearts', 'jack'), Card('diamonds', 'five'), Card('diamonds', 'jack'), Card('spades', 'three'), Card('spades', 'five'), Card('clubs', 'three'), Card('hearts', 'ace')]
+
+    assert two_pair(cards), 'This should also be a two pair!'
+
+    cards = [Card('hearts', 'jack'), Card('diamonds', 'five'), Card('diamonds', 'jack'), Card('spades', 'ace'), Card('spades', 'deuce'), Card('clubs', 'three'), Card('hearts', 'four')]
+
+    assert not two_pair(cards), "This shouldn't be a two pair!"
