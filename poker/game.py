@@ -1,3 +1,5 @@
+from random import choice
+
 import discord
 
 from poker.constants import game_states
@@ -18,11 +20,10 @@ class Game:
         self.state = game_states["Playing"]
 
     def add_player(self, player: discord.User) -> str:
-        self.players.append((player.id, player.display_name))
+        if (player.id, player.display_name) not in self.players:
+            self.players.append((player.id, player.display_name))
         return "Current players: \n>" + '\n'.join(list(map(lambda player: player[1], self.players)))
 
     def remove_player(self, player: discord.User) -> str:
         self.players.remove((player.id, player.display_name))
         return "Current players: \n>" + '\n'.join(list(map(lambda player: player[1], self.players)))
-
-    #def rotate_turn(self):

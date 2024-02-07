@@ -2,7 +2,7 @@ import datetime
 import os
 import pickle
 import re
-from typing import List, Tuple
+from typing import List, Union
 
 import discord
 import pytz as pytz
@@ -86,21 +86,18 @@ class Poker(commands.Cog):
             ctx.reply("The start amount has to be higher than 100!")
             return
 
-        try:
-            poker_start_embed = discord.Embed(title="A poker game has started!", description=f"Current players: \n>{ctx.author.display_name}")
-            poker_start_message = await ctx.send(embed=poker_start_embed)
+        poker_start_embed = discord.Embed(title="A poker game has started!", description=f"Current players: \n>{ctx.author.display_name}")
+        poker_start_message = await ctx.send(embed=poker_start_embed)
 
-            new_game = Game(ctx.author, small_blind, start_amount, poker_start_message.id)
-            games_obj.add_game(new_game)
-            write_poker_games_to_file(self.filename, games_obj)
+        new_game = Game(ctx.author, small_blind, start_amount, poker_start_message.id)
+        games_obj.add_game(new_game)
+        write_poker_games_to_file(self.filename, games_obj)
 
-            await poker_start_message.add_reaction('✋')
-            await poker_start_message.add_reaction('▶')
-        except Exception as e:
-            print(e)
+        await poker_start_message.add_reaction('✋')
+        await poker_start_message.add_reaction('▶')
 
     @commands.Cog.listener("on_reaction_add")
-    async def on_reaction_add_poker(self, reaction: discord.Reaction, user: discord.User):
+    async def on_reaction_add_poker(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
         if user.bot:
             return
         current_game = None
@@ -119,7 +116,7 @@ class Poker(commands.Cog):
             write_poker_games_to_file(self.filename, games_obj)
 
     @commands.Cog.listener("on_reaction_remove")
-    async def on_reaction_remove_poker(self, reaction: discord.Reaction, user: discord.User):
+    async def on_reaction_remove_poker(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
         if user.bot:
             return
         current_game = None
@@ -131,6 +128,7 @@ class Poker(commands.Cog):
         if reaction.emoji == '✋' and current_game is not None:
             if len(current_game.players) == 1 and user.id == current_game.players[0][0]:
                 games_obj.remove_game(current_game)
+                write_poker_games_to_file(self.filename, games_obj)
                 await reaction.message.delete()
                 return
 
