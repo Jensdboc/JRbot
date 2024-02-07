@@ -72,7 +72,7 @@ class Poker(commands.Cog):
         games_obj = load_poker_games_from_file(self.filename)
 
         for game in games_obj.games:
-            if ctx.author.id in game.players:
+            if (ctx.author.id, ctx.author.display_name) in list(map(lambda x: (x.player_id, x.name), game.players)):
                 ctx.reply("You are already in a game!")
                 return
 
@@ -111,9 +111,10 @@ class Poker(commands.Cog):
             embed.description = current_game.add_player(user)
             await reaction.message.edit(embed=embed)
             write_poker_games_to_file(self.filename, games_obj)
-        elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0][0]:
+        elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0].player_id:
             current_game.on_game_start()
             write_poker_games_to_file(self.filename, games_obj)
+            await reaction.message.delete()
 
     @commands.Cog.listener("on_reaction_remove")
     async def on_reaction_remove_poker(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
@@ -126,7 +127,7 @@ class Poker(commands.Cog):
             current_game = filtered_list_of_games[0]
 
         if reaction.emoji == '✋' and current_game is not None:
-            if len(current_game.players) == 1 and user.id == current_game.players[0][0]:
+            if len(current_game.players) == 1 and user.id == current_game.players[0].player_id:
                 games_obj.remove_game(current_game)
                 write_poker_games_to_file(self.filename, games_obj)
                 await reaction.message.delete()
