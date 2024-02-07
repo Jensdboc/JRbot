@@ -1,16 +1,10 @@
-import datetime
-import os
 import pickle
-import re
 from typing import List, Union
 
 import discord
-import pytz as pytz
-from discord.ext import commands, tasks
+from discord.ext import commands
 
 from poker.game import Game
-
-utc = datetime.timezone.utc
 
 
 class Games:
@@ -112,9 +106,22 @@ class Poker(commands.Cog):
             await reaction.message.edit(embed=embed)
             write_poker_games_to_file(self.filename, games_obj)
         elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0].player_id:
+            channels_to_delete = []
+
             current_game.on_game_start()
             write_poker_games_to_file(self.filename, games_obj)
             await reaction.message.delete()
+
+            for player in current_game.players:
+                overwrites = {
+                    reaction.message.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    reaction.message.guild.get_member(player.player_id): discord.PermissionOverwrite(read_messages=True)
+                }
+                channels_to_delete.append(await reaction.message.guild.create_text_channel(f'poker-{player.name}', overwrites=overwrites))
+
+            # TODO remove all channels after the game
+            '''for channel in channels_to_delete:
+                await channel.delete()'''
 
     @commands.Cog.listener("on_reaction_remove")
     async def on_reaction_remove_poker(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):

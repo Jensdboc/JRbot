@@ -1,3 +1,5 @@
+import random
+
 from poker.constants import map_card_value_to_integer, suits
 
 
@@ -11,3 +13,14 @@ class Card:
 
     def get_card_integer_value(self):
         return map_card_value_to_integer[self.value]
+
+
+class PlayingCards:
+    def __init__(self):
+        self.cards = []
+
+        for suit in suits:
+            for card_value in list(map_card_value_to_integer.keys()):
+                self.cards.append(Card(suit, card_value))
+
+        random.shuffle(self.cards)
