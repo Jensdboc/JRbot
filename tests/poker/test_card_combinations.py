@@ -1,7 +1,7 @@
 import pytest
 
 from cogs.poker.card import Card
-from cogs.poker.card_combinations import royal_flush, straight_flush, four_of_a_kind
+from cogs.poker.card_combinations import royal_flush, straight_flush, four_of_a_kind, full_house
 
 
 @pytest.mark.run(order=1)
@@ -39,3 +39,18 @@ def test_four_of_a_kind():
     cards = [Card('hearts', 'jack'), Card('diamonds', 'ace'), Card('diamonds', 'jack'), Card('spades', 'jack'), Card('spades', 'five'), Card('clubs', 'ten'), Card('hearts', 'ace')]
 
     assert not four_of_a_kind(cards), "This shouldn't be a four of a kind!"
+
+
+@pytest.mark.run(order=4)
+def test_full_house():
+    cards = [Card('hearts', 'jack'), Card('diamonds', 'five'), Card('diamonds', 'jack'), Card('spades', 'jack'), Card('spades', 'five'), Card('clubs', 'deuce'), Card('hearts', 'ace')]
+
+    assert full_house(cards), 'This should be a full house!'
+
+    cards = [Card('hearts', 'jack'), Card('diamonds', 'five'), Card('diamonds', 'jack'), Card('spades', 'jack'), Card('spades', 'five'), Card('clubs', 'five'), Card('hearts', 'ace')]
+
+    assert full_house(cards), 'This should also be a full house!'
+
+    cards = [Card('hearts', 'jack'), Card('diamonds', 'five'), Card('diamonds', 'jack'), Card('spades', 'ace'), Card('spades', 'five'), Card('clubs', 'deuce'), Card('hearts', 'ace')]
+
+    assert not four_of_a_kind(cards), "This shouldn't be a full house!"

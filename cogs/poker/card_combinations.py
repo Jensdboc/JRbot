@@ -47,3 +47,13 @@ def four_of_a_kind(cards: List[Card]):
         card_values_to_occurrences[card.value] += 1
 
     return 4 in list(card_values_to_occurrences.values())
+
+
+def full_house(cards: List[Card]):
+    card_values_to_occurrences = {value: 0 for value in list(map_card_value_to_integer.keys())}
+    for card in cards:
+        card_values_to_occurrences[card.value] += 1
+
+    occurrences = list(card_values_to_occurrences.values())
+
+    return occurrences.count(3) == 2 or (3 in occurrences and 2 in occurrences)
