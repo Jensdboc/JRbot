@@ -1,7 +1,7 @@
 import pytest
 
 from cogs.poker.card import Card
-from cogs.poker.card_combinations import royal_flush, straight_flush, four_of_a_kind, full_house, flush, straight, three_of_a_kind, two_pair
+from cogs.poker.card_combinations import royal_flush, straight_flush, four_of_a_kind, full_house, flush, straight, three_of_a_kind, two_pair, one_pair
 
 
 @pytest.mark.run(order=1)
@@ -108,3 +108,14 @@ def test_two_pair():
     cards = [Card('hearts', 'jack'), Card('diamonds', 'five'), Card('diamonds', 'jack'), Card('spades', 'ace'), Card('spades', 'deuce'), Card('clubs', 'three'), Card('hearts', 'four')]
 
     assert not two_pair(cards), "This shouldn't be a two pair!"
+
+
+@pytest.mark.run(order=9)
+def test_one_pair():
+    cards = [Card('hearts', 'jack'), Card('diamonds', 'five'), Card('diamonds', 'jack'), Card('spades', 'ace'), Card('spades', 'deuce'), Card('clubs', 'three'), Card('hearts', 'four')]
+
+    assert one_pair(cards), 'This should be a one pair!'
+
+    cards = [Card('hearts', 'jack'), Card('diamonds', 'five'), Card('diamonds', 'king'), Card('spades', 'ace'), Card('spades', 'deuce'), Card('clubs', 'three'), Card('hearts', 'four')]
+
+    assert not one_pair(cards), "This shouldn't be a one pair!"

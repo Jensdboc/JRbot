@@ -93,11 +93,19 @@ def three_of_a_kind(cards: List[Card]):
     return x_of_a_kind(cards, 3)
 
 
-def two_pair(cards: List[Card]):
+def x_pair(cards: List[Card], n: int):
     card_values_to_occurrences = {value: 0 for value in list(map_card_value_to_integer.keys())}
     for card in cards:
         card_values_to_occurrences[card.value] += 1
 
     occurrences = list(card_values_to_occurrences.values())
 
-    return len(list(filter(lambda x: x >= 2, occurrences))) > 1
+    return len(list(filter(lambda x: x >= 2, occurrences))) >= n
+
+
+def two_pair(cards: List[Card]):
+    return x_pair(cards, 2)
+
+
+def one_pair(cards: List[Card]):
+    return x_pair(cards, 1)
