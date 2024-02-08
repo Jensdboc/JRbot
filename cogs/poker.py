@@ -103,12 +103,12 @@ class Poker(commands.Cog):
         if len(filtered_list_of_games) > 0:
             current_game = filtered_list_of_games[0]
 
-        if reaction.emoji == '✋' and current_game is not None:
+        if reaction.emoji == '✋' and current_game is not None and len(current_game.players) < 10:
             embed = reaction.message.embeds[0]
             embed.description = current_game.add_player(user)
             await reaction.message.edit(embed=embed)
             write_poker_games_to_file(self.filename, games_obj)
-        elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0].player_id:
+        elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0].player_id and 2 <= len(current_game.players) <= 10:
             channels_to_delete = []
 
             current_game.on_game_start()
@@ -147,8 +147,10 @@ class Poker(commands.Cog):
                 # Clean up temporary file
                 concatenated_image.close()
 
+            await self.betting_round1(current_game, channels_to_delete)
+
             # TODO remove all channels after the game
-            await asyncio.sleep(10)
+            #await asyncio.sleep(10)
             for channel in channels_to_delete:
                 await channel.delete()
 
@@ -173,6 +175,10 @@ class Poker(commands.Cog):
             embed.description = current_game.remove_player(user)
             await reaction.message.edit(embed=embed)
             write_poker_games_to_file(self.filename, games_obj)
+
+    async def betting_round1(self, current_game: Game, channels: List[discord.channel.TextChannel]):
+        while len(set(filter(lambda bet: bet != -1, list(map(lambda x: x.current_bet, current_game.players))))) != 1:
+            await channels[current_game.current_player_index].send('It is your turn!')
 
 
 async def setup(client):
