@@ -1,3 +1,4 @@
+import asyncio
 import os
 import pickle
 from typing import List, Union
@@ -147,8 +148,9 @@ class Poker(commands.Cog):
                 concatenated_image.close()
 
             # TODO remove all channels after the game
-            '''for channel in channels_to_delete:
-                await channel.delete()'''
+            await asyncio.sleep(10)
+            for channel in channels_to_delete:
+                await channel.delete()
 
     @commands.Cog.listener("on_reaction_remove")
     async def on_reaction_remove_poker(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
