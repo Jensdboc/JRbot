@@ -6,7 +6,7 @@ on:
 
 jobs:
   run-tests:
-    strategry:
+    strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
