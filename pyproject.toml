@@ -6,11 +6,3 @@ build-backend = "setuptools.build_meta"
 testpaths = [
     "tests",
 ]
-
-[tool.setuptools]
-packages = [
-    { include = "cogs" },
-    { include = "poker" },
-    { include = "data_pictures" },
-    { include = "othello_files" }
-]
