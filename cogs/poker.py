@@ -1,3 +1,4 @@
+import os
 import pickle
 from typing import List, Union
 
@@ -117,7 +118,17 @@ class Poker(commands.Cog):
                     reaction.message.guild.default_role: discord.PermissionOverwrite(read_messages=False),
                     reaction.message.guild.get_member(player.player_id): discord.PermissionOverwrite(read_messages=True)
                 }
-                channels_to_delete.append(await reaction.message.guild.create_text_channel(f'poker-{player.name}', overwrites=overwrites))
+
+                channel = await reaction.message.guild.create_text_channel(f'poker-{player.name}', overwrites=overwrites)
+                channels_to_delete.append(channel)
+
+                for card in player.cards:
+                    # Open the file and create a discord.File object
+                    card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+                    with open(os.path.dirname(os.path.abspath(__file__)) + f'/../data_pictures/playing_cards/{card_value}_{card.card_suit}.png', 'rb') as f:
+                        file = discord.File(f)
+                        # Send the file as an attachment
+                        await channel.send(file=file)
 
             # TODO remove all channels after the game
             '''for channel in channels_to_delete:
