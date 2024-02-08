@@ -1,6 +1,7 @@
 import os
 import pickle
 from typing import List, Union
+from PIL import Image
 
 import discord
 from discord.ext import commands
@@ -122,13 +123,28 @@ class Poker(commands.Cog):
                 channel = await reaction.message.guild.create_text_channel(f'poker-{player.name}', overwrites=overwrites)
                 channels_to_delete.append(channel)
 
+                card_images = []
+
                 for card in player.cards:
                     # Open the file and create a discord.File object
                     card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
-                    with open(os.path.dirname(os.path.abspath(__file__)) + f'/../data_pictures/playing_cards/{card_value}_{card.card_suit}.png', 'rb') as f:
-                        file = discord.File(f)
-                        # Send the file as an attachment
-                        await channel.send(file=file)
+                    card_images.append(Image.open(os.path.dirname(os.path.abspath(__file__)) + f'/../data_pictures/playing_cards/{card_value}_{card.card_suit}.png'))
+
+                concatenated_image = Image.new('RGBA', (sum(img.width for img in card_images), card_images[0].height))
+                x_offset = 0
+                for img in card_images:
+                    concatenated_image.paste(img, (x_offset, 0))
+                    x_offset += img.width
+
+                # Save concatenated image to a temporary file
+                temp_file = 'concatenated_cards.png'
+                concatenated_image.save(temp_file)
+
+                # Send the file as an attachment
+                await channel.send(file=discord.File(temp_file))
+
+                # Clean up temporary file
+                concatenated_image.close()
 
             # TODO remove all channels after the game
             '''for channel in channels_to_delete:
