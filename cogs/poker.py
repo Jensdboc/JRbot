@@ -1,7 +1,7 @@
 import os
 import pickle
 from typing import List, Union
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 import discord
 from discord.ext import commands
@@ -52,6 +52,7 @@ class Poker(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.filename = 'poker.pkl'
+        self.font_path = "data/cowboy-junk.ttf"
 
     @commands.Cog.listener()
     async def on_ready(self) -> None:
@@ -64,7 +65,7 @@ class Poker(commands.Cog):
     @commands.command(usage="!poker small_blind start_amount",
                       description="Start a poker game and wait for players to join.",
                       help="!poker 5 1000")
-    async def poker(self, ctx: discord.ext.commands.context.Context, small_blind: int = 5, start_amount: int = 1000) -> None:
+    async def poker(self, ctx: commands.Context, small_blind: int = 5, start_amount: int = 1000) -> None:
         games_obj = load_poker_games_from_file(self.filename)
 
         for game in games_obj.games:
@@ -113,27 +114,40 @@ class Poker(commands.Cog):
             write_poker_games_to_file(self.filename, games_obj)
             await reaction.message.delete()
 
-            try:
-                for player in current_game.players:
-                    poker_background = Image.open("data_pictures/poker/poker_background_10.png").resize((3840, 2162))
+            # Display general stats
+            poker_background = Image.open("data_pictures/poker/poker_background_10.png").resize((3840, 2162))
 
-                    player_cards = []
-                    for card in player.cards:
-                        card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
-                        player_card_image = Image.open(os.path.dirname(os.path.abspath(__file__)) + f'/../data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-                        player_card_image = player_card_image.resize((359, 427))
-                        player_cards.append(player_card_image)
+            font = ImageFont.truetype(self.font_path, 120)
+            draw = ImageDraw.Draw(poker_background)
+            text_position = (2750, 120)
+            text = f"Players: {len(current_game.players)}\n\nBlind: {current_game.small_blind}\n\nPot: None"
+            text_color = (255, 255, 255)
+            draw.text(text_position, text, fill=text_color, font=font)
 
-                    poker_background.paste(player_cards[0], (992, 1212), player_cards[0])
-                    poker_background.paste(player_cards[1], (992 + player_card_image.size[0], 1212), player_cards[1])
-                    poker_background.save("data_pictures/temp/final_image.png")
+            # Display player credits
+            font = ImageFont.truetype(self.font_path, 85)
+            text = ""
+            text_position = (2750, 666)
+            text += "\n\n".join([f"{player.name[:10]}: {player.amount_of_credits}" for player in current_game.players])
+            draw.text(text_position, text, fill=text_color, font=font)
 
-                    user = await self.client.fetch_user(player.player_id)
-                    await user.send(file=discord.File("data_pictures/temp/final_image.png"))
-                    poker_background.close()
-                    os.remove("data_pictures/temp/final_image.png")
-            except Exception as e:
-                print(e)
+            # Display player cards
+            for player in current_game.players:
+                player_background = poker_background.copy()
+
+                for index, card in enumerate(player.cards):
+                    card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+                    player_card_image = Image.open(os.path.dirname(os.path.abspath(__file__)) + f'/../data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+                    player_card_image = player_card_image.resize((359, 427))
+                    player_background.paste(player_card_image, (992 + index * player_card_image.size[0], 1212), player_card_image)
+
+                player_background.save("data_pictures/temp/final_image.png")
+
+                user = await self.client.fetch_user(player.player_id)
+                await user.send(file=discord.File("data_pictures/temp/final_image.png"))
+                player_background.close()
+                os.remove("data_pictures/temp/final_image.png")
+            poker_background.close()
 
     @commands.Cog.listener("on_reaction_remove")
     async def on_reaction_remove_poker(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
