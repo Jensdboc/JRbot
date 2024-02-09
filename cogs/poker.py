@@ -118,18 +118,17 @@ class Poker(commands.Cog):
 
                     # poker_background = Image.new("RGB", (800, 400), "white")
                     # poker_png.save("data_pictures/poker/poker_background800x600.png")
-                    poker_background = Image.open("data_pictures/poker/poker_background800x600.png")
+                    poker_background = Image.open("data_pictures/poker/poker_background_10_2.png").resize((3840, 2162))
 
                     player_cards = []
                     for card in player.cards:
                         card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
                         player_card_image = Image.open(os.path.dirname(os.path.abspath(__file__)) + f'/../data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-                        card_size = tuple(int(ti / 4) for ti in player_card_image.size)
-                        player_card_image = player_card_image.resize(card_size)
+                        player_card_image = player_card_image.resize((359, 427))
                         player_cards.append(player_card_image)
 
-                    poker_background.paste(player_cards[0], (30, 30), player_cards[0])
-                    poker_background.paste(player_cards[1], (30 + card_size[0], 30), player_cards[1])
+                    poker_background.paste(player_cards[0], (992, 1212), player_cards[0])
+                    poker_background.paste(player_cards[1], (992 + player_card_image.size[0], 1212), player_cards[1])
                     poker_background.save("data_pictures/temp/final_image.png")
 
                     user = await self.client.fetch_user(player.player_id)
