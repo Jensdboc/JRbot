@@ -1,11 +1,14 @@
 import os
 import pickle
 from typing import List, Union
-from PIL import Image, ImageDraw, ImageFont
+
+import requests
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 import discord
 from discord.ext import commands
 
+from poker.constants import player_places
 from poker.game import Game
 
 
@@ -43,6 +46,15 @@ def load_poker_games_from_file(input_file: str) -> Games:
         games = pickle.load(file)
 
     return games
+
+
+def circular_avatar(image, size):
+    mask = Image.new("L", size, 0)
+    draw = ImageDraw.Draw(mask)
+    draw.ellipse((0, 0) + size, fill=255)
+    output = ImageOps.fit(image, mask.size, centering=(0.5, 0.5))
+    output.putalpha(mask)
+    return output
 
 
 class Poker(commands.Cog):
@@ -142,6 +154,35 @@ class Poker(commands.Cog):
                     player_card_image = Image.open(os.path.dirname(os.path.abspath(__file__)) + f'/../data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
                     player_card_image = player_card_image.resize((359, 427))
                     player_background.paste(player_card_image, (992 + index * player_card_image.size[0], 1212), player_card_image)
+
+                if not os.path.exists('data_pictures/avatars'):
+                    os.mkdir('data_pictures/avatars')
+
+                avatar_size = (210, 200)
+
+                for p, player_place in zip(current_game.players[current_game.get_player_index(player.player_id) + 1:] + current_game.players[:current_game.get_player_index(player.player_id)], player_places):
+                    discord_user = reaction.message.guild.get_member(p.player_id)
+                    if not os.path.exists(f"data_pictures/avatars/{discord_user.id}.png"):
+                        avatar = discord_user.display_avatar
+                        if avatar is None:
+                            avatar = discord_user.default_avatar
+
+                        with requests.get(avatar.url) as r:
+                            img_data = r.content
+                        with open(f"data_pictures/avatars/{discord_user.id}.png", 'wb') as handler:
+                            handler.write(img_data)
+
+                        player_avatar = Image.open(f"data_pictures/avatars/{discord_user.id}.png").convert('RGBA')
+                        # await user.send(player_avatar)
+                        player_avatar = player_avatar.resize(avatar_size)
+                        player_avatar = circular_avatar(player_avatar, avatar_size)
+                        player_avatar.save(f"data_pictures/avatars/{discord_user.id}.png")
+
+                    player_avatar = Image.open(f"data_pictures/avatars/{discord_user.id}.png")
+                    player_background.paste(player_avatar, player_place, player_avatar)
+
+                if not os.path.exists('data_pictures/temp'):
+                    os.mkdir('data_pictures/temp')
 
                 player_background.save("data_pictures/temp/final_image.png")
 
