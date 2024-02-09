@@ -73,14 +73,16 @@ class Poker(commands.Cog):
                 ctx.reply("You are already in a game!")
                 return
 
-        if small_blind <= 0:
-            ctx.reply("The small blind has to be bigger than 0!")
+        if small_blind <= 0 or small_blind > 500000:
+            ctx.reply("The small blind must be greater than 0 and less than 500000!")
             return
+
+        if start_amount < 100 or start_amount > 10000000:
+            ctx.reply("The start amount must be greater than 100 and less than 10000000!")
+            return
+
         if small_blind > start_amount / 20:
             ctx.reply(f"The max small blind for a start amount of {start_amount} is {start_amount / 20}!")
-            return
-        if start_amount < 100:
-            ctx.reply("The start amount has to be higher than 100!")
             return
 
         poker_start_embed = discord.Embed(title="A poker game has started!", description=f"Current players: \n>{ctx.author.display_name}")
