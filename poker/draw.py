@@ -1,7 +1,7 @@
 import os
 
 import requests
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageOps
 
 from poker.constants import player_places
 
