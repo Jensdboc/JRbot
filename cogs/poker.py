@@ -118,7 +118,7 @@ class Poker(commands.Cog):
 
                     # poker_background = Image.new("RGB", (800, 400), "white")
                     # poker_png.save("data_pictures/poker/poker_background800x600.png")
-                    poker_background = Image.open("data_pictures/poker/poker_background800x600.png")
+                    poker_background = Image.open("data_pictures/poker/poker_background_10.png")
 
                     player_cards = []
                     for card in player.cards:
@@ -130,6 +130,8 @@ class Poker(commands.Cog):
 
                     poker_background.paste(player_cards[0], (30, 30), player_cards[0])
                     poker_background.paste(player_cards[1], (30 + card_size[0], 30), player_cards[1])
+                    if not os.path.exists('data_pictures/temp'):
+                        os.mkdir('data_pictures/temp')
                     poker_background.save("data_pictures/temp/final_image.png")
 
                     user = await self.client.fetch_user(player.player_id)
