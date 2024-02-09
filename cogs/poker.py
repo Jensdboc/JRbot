@@ -1,4 +1,3 @@
-import asyncio
 import os
 import pickle
 from typing import List, Union
@@ -108,51 +107,37 @@ class Poker(commands.Cog):
             embed.description = current_game.add_player(user)
             await reaction.message.edit(embed=embed)
             write_poker_games_to_file(self.filename, games_obj)
-        elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0].player_id and 2 <= len(current_game.players) <= 10:
-            channels_to_delete = []
+        elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0].player_id and 1 <= len(current_game.players) <= 10:
 
             current_game.on_game_start()
             write_poker_games_to_file(self.filename, games_obj)
             await reaction.message.delete()
 
-            for player in current_game.players:
-                overwrites = {
-                    reaction.message.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                    reaction.message.guild.get_member(player.player_id): discord.PermissionOverwrite(read_messages=True)
-                }
+            try:
+                for player in current_game.players:
 
-                channel = await reaction.message.guild.create_text_channel(f'poker-{player.name}', overwrites=overwrites)
-                channels_to_delete.append(channel)
+                    # poker_background = Image.new("RGB", (800, 400), "white")
+                    # poker_png.save("data_pictures/poker/poker_background800x600.png")
+                    poker_background = Image.open("data_pictures/poker/poker_background800x600.png")
 
-                card_images = []
+                    player_cards = []
+                    for card in player.cards:
+                        card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+                        player_card_image = Image.open(os.path.dirname(os.path.abspath(__file__)) + f'/../data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+                        card_size = tuple(int(ti / 4) for ti in player_card_image.size)
+                        player_card_image = player_card_image.resize(card_size)
+                        player_cards.append(player_card_image)
 
-                for card in player.cards:
-                    # Open the file and create a discord.File object
-                    card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
-                    card_images.append(Image.open(os.path.dirname(os.path.abspath(__file__)) + f'/../data_pictures/playing_cards/{card_value}_{card.card_suit}.png'))
+                    poker_background.paste(player_cards[0], (30, 30), player_cards[0])
+                    poker_background.paste(player_cards[1], (30 + card_size[0], 30), player_cards[1])
+                    poker_background.save("data_pictures/temp/final_image.png")
 
-                concatenated_image = Image.new('RGBA', (sum(img.width for img in card_images), card_images[0].height))
-                x_offset = 0
-                for img in card_images:
-                    concatenated_image.paste(img, (x_offset, 0))
-                    x_offset += img.width
-
-                # Save concatenated image to a temporary file
-                temp_file = 'concatenated_cards.png'
-                concatenated_image.save(temp_file)
-
-                # Send the file as an attachment
-                await channel.send(file=discord.File(temp_file))
-
-                # Clean up temporary file
-                concatenated_image.close()
-
-            await self.betting_round1(current_game, channels_to_delete)
-
-            # TODO remove all channels after the game
-            #await asyncio.sleep(10)
-            for channel in channels_to_delete:
-                await channel.delete()
+                    user = await self.client.fetch_user(player.player_id)
+                    await user.send(file=discord.File("data_pictures/temp/final_image.png"))
+                    poker_background.close()
+                    os.remove("data_pictures/temp/final_image.png")
+            except Exception as e:
+                print(e)
 
     @commands.Cog.listener("on_reaction_remove")
     async def on_reaction_remove_poker(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):

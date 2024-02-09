@@ -31,6 +31,7 @@ class Game:
         self.poker_start_message_id = poker_start_message_id
 
         self.state = game_states["Starting"]
+        self.open_cards = []
         self.deck = Deck()
         self.current_player_index = 0
 
@@ -67,10 +68,15 @@ class Game:
         small_blind, big_blind = self.players[self.current_player_index], self.players[(self.current_player_index + 1) % len(self.players)]
         small_blind.current_bet, big_blind.current_bet = self.small_blind, self.big_blind
 
-        # deal cards
+        # deal player cards
         for _ in range(2):
             for player in self.players[self.current_player_index:] + self.players[:self.current_player_index]:
                 player.cards.append(self.deck.cards[0])
                 del self.deck.cards[0]
+
+        # deal open cards
+        for _ in range(5):
+            self.open_cards.append(self.deck.cards[0])
+            del self.deck.cards[0]
 
         self.current_player_index = (self.current_player_index + 2) % len(self.players)
