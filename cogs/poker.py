@@ -172,9 +172,6 @@ class Poker(commands.Cog):
             if not os.path.exists('data_pictures/avatars'):
                 os.mkdir('data_pictures/avatars')
 
-            if not os.path.exists('data_pictures/temp'):
-                os.mkdir('data_pictures/temp')
-
             # Display player cards
             for player in current_game.players:
                 player_background = poker_background.copy()
@@ -187,12 +184,11 @@ class Poker(commands.Cog):
 
                 player_background = create_avatars_for_player(reaction, player, current_game, player_background)
 
-                player_background.save("data_pictures/temp/final_image.png")
+                player_background.save(f"data_pictures/poker/message_{player.player_id}.png")
 
                 user = await self.client.fetch_user(player.player_id)
-                await user.send(file=discord.File("data_pictures/temp/final_image.png"))
+                await user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"))
                 player_background.close()
-                os.remove("data_pictures/temp/final_image.png")
             poker_background.close()
 
     @commands.Cog.listener("on_reaction_remove")
