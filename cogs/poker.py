@@ -72,10 +72,7 @@ def create_avatars_for_player(reaction, player, current_game, player_background)
             with open(f"data_pictures/avatars/{discord_user.id}.png", 'wb') as handler:
                 handler.write(img_data)
 
-            player_avatar = Image.open(f"data_pictures/avatars/{discord_user.id}.png").convert('RGBA')
-            # await user.send(player_avatar)
-            player_avatar = player_avatar.resize(avatar_size)
-            player_avatar = circular_avatar(player_avatar, avatar_size)
+            player_avatar = circular_avatar(Image.open(f"data_pictures/avatars/{discord_user.id}.png").convert('RGBA').resize(avatar_size), avatar_size)
             player_avatar.save(f"data_pictures/avatars/{discord_user.id}.png")
 
         player_avatar = Image.open(f"data_pictures/avatars/{discord_user.id}.png")
