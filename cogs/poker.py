@@ -118,7 +118,7 @@ class Poker(commands.Cog):
 
                     # poker_background = Image.new("RGB", (800, 400), "white")
                     # poker_png.save("data_pictures/poker/poker_background800x600.png")
-                    poker_background = Image.open("data_pictures/poker/poker_background_10.png")
+                    poker_background = Image.open("data_pictures/poker/poker_background_10.png").resize((3840, 2162))
 
                     player_cards = []
                     for card in player.cards:
