@@ -7,7 +7,8 @@ from PIL import Image, ImageDraw, ImageFont
 import discord
 from discord.ext import commands
 
-from poker.draw import create_avatars_for_player
+from poker.constants import cross_places
+from poker.draw import create_avatars_for_player, draw_cross
 from poker.game import Game
 
 
@@ -150,12 +151,16 @@ class Poker(commands.Cog):
 
                 player_background = create_avatars_for_player(reaction, player, current_game, player_background)
 
+                player_background.save(f"data_pictures/poker/start_picture_{player.player_id}.png")
                 player_background.save(f"data_pictures/poker/message_{player.player_id}.png")
 
                 discord_user = await self.client.fetch_user(player.player_id)
-                await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"))
+                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(current_game, player.player_id, reaction))
+                current_game.last_messages_to_players.append(player_message)
                 player_background.close()
             poker_background.close()
+
+            write_poker_games_to_file(self.filename, games_obj)
 
     @commands.Cog.listener("on_reaction_remove")
     async def on_reaction_remove_poker(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
@@ -182,6 +187,56 @@ class Poker(commands.Cog):
     async def betting_round1(self, current_game: Game, channels: List[discord.channel.TextChannel]):
         while len(set(filter(lambda bet: bet != -1, list(map(lambda x: x.current_bet, current_game.players))))) != 1:
             await channels[current_game.current_player_index].send('It is your turn!')
+
+
+class ButtonsMenu(discord.ui.View):
+    """
+    This class represents the view. It contains the filename in which the data is stored and the buttons.
+    """
+    def __init__(self, current_game: Game, user_id: int, reaction):
+        super().__init__()
+
+        self.current_game = current_game
+        self.user_id = user_id
+        self.reaction = reaction
+
+        if self.current_game.current_player_index == self.current_game.get_player_index(self.user_id):
+            self.enable_and_disable_button('fold')
+
+    @discord.ui.button(label="fold", style=discord.ButtonStyle.blurple, custom_id="fold", disabled=True)
+    async def fold(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        """
+        Fold
+
+        :param interaction: Used to handle the button interaction.
+        :param button: The button object.
+        """
+        for index, player in enumerate(self.current_game.players):
+            if player.player_id != self.user_id:
+                user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
+                cross_place = cross_places[user_index_in_game - 1]
+                player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
+                draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
+                player_image.save(f'data_pictures/poker/message_{player.player_id}.png')
+                player_image.close()
+
+                discord_user = self.reaction.message.guild.get_member(player.player_id)
+                await self.current_game.last_messages_to_players[index].delete()
+                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.current_game, player.player_id, self.reaction))
+                self.current_game.last_messages_to_players[index] = player_message
+
+    def enable_and_disable_button(self, custom_id: str, disabled: bool = False) -> None:
+        """
+        Enable or disable the button with a certain custom id.
+
+        :param custom_id: The custom id of the button to enable or disable.
+        :param disabled: True if the button needs to be disabled, else False.
+        """
+        child_index = 0
+        while child_index < len(self.children) and self.children[child_index].custom_id != custom_id:
+            child_index += 1
+
+        self.children[child_index].disabled = disabled
 
 
 async def setup(client):

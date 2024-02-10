@@ -32,8 +32,18 @@ def create_avatars_for_player(reaction, player, current_game, player_background)
 
             player_avatar = circular_avatar(Image.open(f"data_pictures/avatars/{discord_user.id}.png").convert('RGBA').resize(avatar_size), avatar_size)
             player_avatar.save(f"data_pictures/avatars/{discord_user.id}.png")
+            player_avatar.close()
 
         player_avatar = Image.open(f"data_pictures/avatars/{discord_user.id}.png")
         player_background.paste(player_avatar, player_place, player_avatar)
+        player_avatar.close()
 
     return player_background
+
+
+def draw_cross(image, cross_upper_left_position, cross_upper_right_position, cross_bottom_right_position, cross_bottom_left_position):
+        draw = ImageDraw.Draw(image)
+        draw.line([cross_upper_left_position, cross_bottom_right_position], fill="black", width=40)
+
+        # Draw the vertical line of the cross
+        draw.line([cross_upper_right_position, cross_bottom_left_position], fill="black", width=40)
