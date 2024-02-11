@@ -76,19 +76,19 @@ class Poker(commands.Cog):
 
         for game in games_obj.games:
             if (ctx.author.id, ctx.author.display_name) in list(map(lambda x: (x.player_id, x.name), game.players)):
-                ctx.reply("You are already in a game!")
+                await ctx.reply("You are already in a game!")
                 return
 
         if small_blind <= 0 or small_blind > 500000:
-            ctx.reply("The small blind must be greater than 0 and less than 500000!")
+            await ctx.reply("The small blind must be greater than 0 and less than 500000!")
             return
 
         if start_amount < 100 or start_amount > 10000000:
-            ctx.reply("The start amount must be greater than 100 and less than 10000000!")
+            await ctx.reply("The start amount must be greater than 100 and less than 10000000!")
             return
 
         if small_blind > start_amount / 20:
-            ctx.reply(f"The max small blind for a start amount of {start_amount} is {start_amount / 20}!")
+            await ctx.reply(f"The max small blind for a start amount of {start_amount} is {start_amount / 20}!")
             return
 
         poker_start_embed = discord.Embed(title="A poker game has started!", description=f"Current players: \n>{ctx.author.display_name}")
