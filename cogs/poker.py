@@ -12,6 +12,9 @@ from poker.draw import create_avatars_for_player, draw_cross
 from poker.game import Game
 
 
+last_messages_to_players = []
+
+
 class Games:
     def __init__(self):
         self.games = []
@@ -156,7 +159,7 @@ class Poker(commands.Cog):
 
                 discord_user = await self.client.fetch_user(player.player_id)
                 player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(current_game, player.player_id, reaction))
-                current_game.last_messages_to_players.append(player_message)
+                last_messages_to_players.append(player_message)
                 player_background.close()
             poker_background.close()
 
@@ -221,9 +224,9 @@ class ButtonsMenu(discord.ui.View):
                 player_image.close()
 
                 discord_user = self.reaction.message.guild.get_member(player.player_id)
-                await self.current_game.last_messages_to_players[index].delete()
+                await last_messages_to_players[index].delete()
                 player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.current_game, player.player_id, self.reaction))
-                self.current_game.last_messages_to_players[index] = player_message
+                last_messages_to_players[index] = player_message
 
     def enable_and_disable_button(self, custom_id: str, disabled: bool = False) -> None:
         """
