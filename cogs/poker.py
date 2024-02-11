@@ -154,7 +154,6 @@ class Poker(commands.Cog):
 
                 player_background = create_avatars_for_player(reaction, player, current_game, player_background)
 
-                player_background.save(f"data_pictures/poker/start_picture_{player.player_id}.png")
                 player_background.save(f"data_pictures/poker/message_{player.player_id}.png")
 
                 discord_user = await self.client.fetch_user(player.player_id)
