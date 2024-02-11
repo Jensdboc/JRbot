@@ -1,9 +1,28 @@
 import os
 
 import requests
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageDraw, ImageOps, ImageFont
 
 from poker.constants import player_places
+
+
+def draw_text_on_image(current_game, poker_background, font_path):
+    # Display general stats
+    font = ImageFont.truetype(font_path, 120)
+    draw = ImageDraw.Draw(poker_background)
+    text_position = (2750, 120)
+    text = f"Players: {len(current_game.players)}\n\nBlind: {current_game.small_blind}\n\nPot: {current_game.pot}"
+    text_color = (255, 255, 255)
+    draw.text(text_position, text, fill=text_color, font=font)
+
+    # Display player credits
+    font = ImageFont.truetype(font_path, 85)
+    text = ""
+    text_position = (2750, 666)
+    text += "\n\n".join([f"{player.name[:10]}: {player.amount_of_credits}" for player in current_game.players])
+    draw.text(text_position, text, fill=text_color, font=font)
+
+    return poker_background
 
 
 def circular_avatar(image, size):
@@ -15,11 +34,11 @@ def circular_avatar(image, size):
     return output
 
 
-def create_avatars_for_player(reaction, player, current_game, player_background):
+async def create_avatars_for_player(client, player, current_game, player_background):
     avatar_size = (42, 40)
 
     for p, player_place in zip(current_game.players[current_game.get_player_index(player.player_id) + 1:] + current_game.players[:current_game.get_player_index(player.player_id)], player_places):
-        discord_user = reaction.message.guild.get_member(p.player_id)
+        discord_user = await client.fetch_user(p.player_id)
         if not os.path.exists(f"data_pictures/avatars/{discord_user.id}.png"):
             avatar = discord_user.display_avatar
             if avatar is None:

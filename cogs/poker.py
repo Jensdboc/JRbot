@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 
 from poker.constants import cross_places
-from poker.draw import create_avatars_for_player, draw_cross
+from poker.draw import create_avatars_for_player, draw_cross, draw_text_on_image
 from poker.game import Game
 
 
@@ -125,41 +125,15 @@ class Poker(commands.Cog):
             # Display general stats
             poker_background = Image.open("data_pictures/poker/poker_background_10.png").resize((768, 432))
 
-            font = ImageFont.truetype(self.font_path, 120)
-            draw = ImageDraw.Draw(poker_background)
-            text_position = (2750, 120)
-            text = f"Players: {len(current_game.players)}\n\nBlind: {current_game.small_blind}\n\nPot: None"
-            text_color = (255, 255, 255)
-            draw.text(text_position, text, fill=text_color, font=font)
+            poker_background = draw_text_on_image(current_game, poker_background, self.font_path)
 
-            # Display player credits
-            font = ImageFont.truetype(self.font_path, 85)
-            text = ""
-            text_position = (2750, 666)
-            text += "\n\n".join([f"{player.name[:10]}: {player.amount_of_credits}" for player in current_game.players])
-            draw.text(text_position, text, fill=text_color, font=font)
+            poker_background.save(f"data_pictures/poker/test.png")
 
             if not os.path.exists('data_pictures/avatars'):
                 os.mkdir('data_pictures/avatars')
 
             # Display player cards
-            for player in current_game.players:
-                player_background = poker_background.copy()
-
-                for index, card in enumerate(player.cards):
-                    card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
-                    player_card_image = Image.open(os.path.dirname(os.path.abspath(__file__)) + f'/../data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-                    player_card_image = player_card_image.resize((72, 85))
-                    player_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
-
-                player_background = create_avatars_for_player(reaction, player, current_game, player_background)
-
-                player_background.save(f"data_pictures/poker/message_{player.player_id}.png")
-
-                discord_user = await self.client.fetch_user(player.player_id)
-                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.filename, current_game, player.player_id, reaction))
-                last_messages_to_players.append(player_message)
-                player_background.close()
+            await self.display_player_cards_and_avatars(current_game, poker_background, self.client)
             poker_background.close()
 
             write_poker_games_to_file(self.filename, games_obj)
@@ -190,19 +164,38 @@ class Poker(commands.Cog):
         while len(set(filter(lambda bet: bet != -1, list(map(lambda x: x.current_bet, current_game.players))))) != 1:
             await channels[current_game.current_player_index].send('It is your turn!')
 
+    async def display_player_cards_and_avatars(self, current_game, poker_background, client):
+        for player in current_game.players:
+            player_background = poker_background.copy()
+
+            for index, card in enumerate(player.cards):
+                card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+                player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+                player_card_image = player_card_image.resize((72, 85))
+                player_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
+
+            player_background = await create_avatars_for_player(client, player, current_game, player_background)
+
+            player_background.save(f"data_pictures/poker/message_{player.player_id}.png")
+
+            discord_user = await self.client.fetch_user(player.player_id)
+            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.filename, current_game, player.player_id, self.client))
+            last_messages_to_players.append(player_message)
+            player_background.close()
+
 
 class ButtonsMenu(discord.ui.View):
     """
     This class represents the view. It contains the filename in which the data is stored and the buttons.
     """
-    def __init__(self, filename, current_game: Game, user_id: int, reaction):
+    def __init__(self, filename, current_game: Game, user_id: int, client):
         super().__init__()
 
         self.filename = filename
         self.games_obj = load_poker_games_from_file(filename)
         self.current_game = current_game
         self.user_id = user_id
-        self.reaction = reaction
+        self.client = client
 
         if self.current_game.current_player_index == self.current_game.get_player_index(self.user_id):
             self.enable_and_disable_button('fold')
@@ -223,9 +216,9 @@ class ButtonsMenu(discord.ui.View):
             player_image.save(f'data_pictures/poker/message_{player.player_id}.png')
             player_image.close()
 
-            discord_user = self.reaction.message.guild.get_member(player.player_id)
+            discord_user = await self.client.fetch_user(player.player_id)
             await last_messages_to_players[index].delete()
-            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.reaction))
+            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client))
             last_messages_to_players[index] = player_message
 
         self.current_game.fold()
