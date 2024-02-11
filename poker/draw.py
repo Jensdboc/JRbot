@@ -43,7 +43,7 @@ def create_avatars_for_player(reaction, player, current_game, player_background)
 
 def draw_cross(image, cross_upper_left_position, cross_upper_right_position, cross_bottom_right_position, cross_bottom_left_position):
     draw = ImageDraw.Draw(image)
-    draw.line([cross_upper_left_position, cross_bottom_right_position], fill="black", width=40)
+    draw.line([cross_upper_left_position, cross_bottom_right_position], fill="black", width=8)
 
     # Draw the vertical line of the cross
-    draw.line([cross_upper_right_position, cross_bottom_left_position], fill="black", width=40)
+    draw.line([cross_upper_right_position, cross_bottom_left_position], fill="black", width=8)
