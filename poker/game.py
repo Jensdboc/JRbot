@@ -34,6 +34,7 @@ class Game:
         self.open_cards = []
         self.deck = Deck()
         self.current_player_index = 0
+        self.pot = self.small_blind + self.big_blind
 
     def add_player(self, player: discord.User) -> str:
         """
@@ -55,6 +56,29 @@ class Game:
         """
         self.players = list(filter(lambda x: x.player_id != player.id or x.name != player.display_name, self.players))
         return "Current players: \n>" + '\n'.join(list(map(lambda x: x.name, self.players)))
+
+    def next_player(self):
+        # TODO
+        self.current_player_index = (self.current_player_index + 1) % len(self.players)
+
+    def get_player_index(self, user_id: int) -> int:
+        for index, player in enumerate(self.players):
+            if user_id == player.player_id:
+                return index
+
+    def get_player_index_relative_to_other_player(self, player_id: int, other_player_id: int) -> int:
+        other_player_index_in_current_game = self.get_player_index(other_player_id)
+        players = self.players[other_player_index_in_current_game:] + self.players[:other_player_index_in_current_game]
+
+        for index, player in enumerate(players):
+            if player.player_id == player_id:
+                return index
+
+    def fold(self):
+        # TODO
+        self.pot += self.players[self.current_player_index].current_bet
+        self.players[self.current_player_index].current_bet = -1
+        self.next_player()
 
     def on_game_start(self):
         """
