@@ -116,14 +116,14 @@ class Poker(commands.Cog):
             embed.description = current_game.add_player(user)
             await reaction.message.edit(embed=embed)
             write_poker_games_to_file(self.filename, games_obj)
-        elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0].player_id and 1 <= len(current_game.players) <= 10:
+        elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0].player_id and 2 <= len(current_game.players) <= 10:
 
             current_game.on_game_start()
             write_poker_games_to_file(self.filename, games_obj)
             await reaction.message.delete()
 
             # Display general stats
-            poker_background = Image.open("data_pictures/poker/poker_background_10.png").resize((int(3840 / 5), int(2162 / 5)))
+            poker_background = Image.open("data_pictures/poker/poker_background_10.png").resize((768, 432))
 
             font = ImageFont.truetype(self.font_path, 120)
             draw = ImageDraw.Draw(poker_background)
@@ -149,8 +149,8 @@ class Poker(commands.Cog):
                 for index, card in enumerate(player.cards):
                     card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
                     player_card_image = Image.open(os.path.dirname(os.path.abspath(__file__)) + f'/../data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-                    player_card_image = player_card_image.resize((359, 427))
-                    player_background.paste(player_card_image, (992 + index * player_card_image.size[0], 1212), player_card_image)
+                    player_card_image = player_card_image.resize((72, 85))
+                    player_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
 
                 player_background = create_avatars_for_player(reaction, player, current_game, player_background)
 
