@@ -123,7 +123,7 @@ class Poker(commands.Cog):
             await reaction.message.delete()
 
             # Display general stats
-            poker_background = Image.open("data_pictures/poker/poker_background_10.png").resize((3840, 2162))
+            poker_background = Image.open("data_pictures/poker/poker_background_10.png").resize((int(1.5 * 3840 / 10), int(1.5 * 2162 / 10)))
 
             font = ImageFont.truetype(self.font_path, 120)
             draw = ImageDraw.Draw(poker_background)
