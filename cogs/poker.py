@@ -228,6 +228,8 @@ class ButtonsMenu(discord.ui.View):
                 player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.current_game, player.player_id, self.reaction))
                 last_messages_to_players[index] = player_message
 
+        await interaction.response.defer()
+
     def enable_and_disable_button(self, custom_id: str, disabled: bool = False) -> None:
         """
         Enable or disable the button with a certain custom id.
