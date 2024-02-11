@@ -16,7 +16,7 @@ def circular_avatar(image, size):
 
 
 def create_avatars_for_player(reaction, player, current_game, player_background):
-    avatar_size = (210, 200)
+    avatar_size = (42, 40)
 
     for p, player_place in zip(current_game.players[current_game.get_player_index(player.player_id) + 1:] + current_game.players[:current_game.get_player_index(player.player_id)], player_places):
         discord_user = reaction.message.guild.get_member(p.player_id)
