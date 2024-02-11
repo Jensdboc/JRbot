@@ -76,9 +76,24 @@ class Game:
 
     def fold(self):
         # TODO
+        players_in_game = []
+
+        this_player_index = self.current_player_index
         self.pot += self.players[self.current_player_index].current_bet
         self.players[self.current_player_index].current_bet = -1
         self.next_player()
+        while this_player_index != self.current_player_index:
+            if self.players[self.current_player_index].current_bet != -1:
+                players_in_game.append(self.current_player_index)
+                if len(players_in_game) > 1:
+                    self.current_player_index = players_in_game[0]
+                    break
+            self.next_player()
+
+        if self.current_player_index == this_player_index:
+            # TODO end game
+            print('end round')
+            self.start_new_round()
 
     def on_game_start(self):
         """
@@ -104,3 +119,7 @@ class Game:
             del self.deck.cards[0]
 
         self.current_player_index = (self.current_player_index + 2) % len(self.players)
+
+    def start_new_round(self):
+        # TODO
+        print('start new round')

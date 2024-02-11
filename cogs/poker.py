@@ -157,7 +157,7 @@ class Poker(commands.Cog):
                 player_background.save(f"data_pictures/poker/message_{player.player_id}.png")
 
                 discord_user = await self.client.fetch_user(player.player_id)
-                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(current_game, player.player_id, reaction))
+                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.filename, current_game, player.player_id, reaction))
                 last_messages_to_players.append(player_message)
                 player_background.close()
             poker_background.close()
@@ -195,9 +195,11 @@ class ButtonsMenu(discord.ui.View):
     """
     This class represents the view. It contains the filename in which the data is stored and the buttons.
     """
-    def __init__(self, current_game: Game, user_id: int, reaction):
+    def __init__(self, filename, current_game: Game, user_id: int, reaction):
         super().__init__()
 
+        self.filename = filename
+        self.games_obj = load_poker_games_from_file(filename)
         self.current_game = current_game
         self.user_id = user_id
         self.reaction = reaction
@@ -214,18 +216,20 @@ class ButtonsMenu(discord.ui.View):
         :param button: The button object.
         """
         for index, player in enumerate(self.current_game.players):
-            if player.player_id != self.user_id:
-                user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
-                cross_place = cross_places[user_index_in_game - 1]
-                player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
-                draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
-                player_image.save(f'data_pictures/poker/message_{player.player_id}.png')
-                player_image.close()
+            user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
+            cross_place = cross_places[user_index_in_game]
+            player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
+            draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
+            player_image.save(f'data_pictures/poker/message_{player.player_id}.png')
+            player_image.close()
 
-                discord_user = self.reaction.message.guild.get_member(player.player_id)
-                await last_messages_to_players[index].delete()
-                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.current_game, player.player_id, self.reaction))
-                last_messages_to_players[index] = player_message
+            discord_user = self.reaction.message.guild.get_member(player.player_id)
+            await last_messages_to_players[index].delete()
+            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.reaction))
+            last_messages_to_players[index] = player_message
+
+        self.current_game.fold()
+        write_poker_games_to_file(self.filename, self.games_obj)
 
         await interaction.response.defer()
 
