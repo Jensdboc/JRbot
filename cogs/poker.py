@@ -1,5 +1,6 @@
 import os
 import pickle
+import traceback
 from typing import List, Union
 
 from PIL import Image, ImageDraw, ImageFont
@@ -10,9 +11,34 @@ from discord.ext import commands
 from poker.constants import cross_places
 from poker.draw import create_avatars_for_player, draw_cross, draw_text_on_image, draw_player_action_on_image
 from poker.game import Game
-
+from poker.utils import contains_number
 
 last_messages_to_players = []
+
+
+class RaiseAmount(discord.ui.Modal, title='raise_amount'):
+    def __init__(self, current_game: Game, **kwargs):
+        super().__init__(**kwargs)
+
+        self.current_game = current_game
+
+    rai = discord.ui.TextInput(label="raise", style=discord.TextStyle.short, placeholder="Provide your bet:")
+
+    async def on_submit(self, interaction: discord.Interaction):
+        if contains_number(self.rai.value) and self.current_game.raise_lower_bound <= int(self.rai.value):
+            self.current_game.raise_func(int(self.rai.value))
+        elif contains_number(self.rai.value):
+            await interaction.response.send_message(f'You must raise by more than {self.current_game.raise_lower_bound} credits!', ephemeral=True)
+        else:
+            await interaction.response.send_message('This value has to be a number!', ephemeral=True)
+
+        await interaction.response.defer()
+
+    async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
+        await interaction.response.send_message('Oops! Something went wrong.', ephemeral=True)
+
+        # Make sure we know what the error actually is
+        traceback.print_exception(type(error), error, error.__traceback__)
 
 
 class Games:
@@ -200,17 +226,19 @@ class ButtonsMenu(discord.ui.View):
         if self.current_game.current_player_index == self.current_game.get_player_index(self.user_id):
             self.enable_and_disable_button('fold')
             self.enable_and_disable_button('call')
+            self.enable_and_disable_button('raise')
 
     @discord.ui.button(label="fold", style=discord.ButtonStyle.blurple, custom_id="fold", disabled=True)
     async def fold(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """
-        Fold
+        Fold.
 
         :param interaction: Used to handle the button interaction.
         :param button: The button object.
         """
-
         global last_messages_to_players
+
+        current_player = self.current_game.players[self.current_game.current_player_index]
 
         fold_result = self.current_game.fold()
         write_poker_games_to_file(self.filename, self.games_obj)
@@ -225,6 +253,10 @@ class ButtonsMenu(discord.ui.View):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
+                if player.player_id != current_player.player_id:
+                    draw_player_action_on_image(player_image, self.font_path, f'{current_player.name} folded.')
+                else:
+                    draw_player_action_on_image(player_image, self.font_path, f'You folded.')
                 draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
                 player_image.save(f'data_pictures/poker/message_{player.player_id}.png')
                 player_image.close()
@@ -266,6 +298,31 @@ class ButtonsMenu(discord.ui.View):
             last_messages_to_players[index] = player_message
 
         await interaction.response.defer()
+
+    @discord.ui.button(label="raise", style=discord.ButtonStyle.blurple, custom_id="raise", disabled=True)
+    async def raise_func(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        games_obj: Games = load_poker_games_from_file(self.filename)
+        current_player = self.current_game.players[self.current_game.current_player_index]
+
+        await interaction.response.send_modal(RaiseAmount(self.current_game))
+
+        for index, player in enumerate(self.current_game.players):
+            player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
+            if player.player_id != current_player.player_id:
+                draw_player_action_on_image(player_image, self.font_path, f'{current_player.name} raised to {current_player.current_bet}.')
+            else:
+                draw_player_action_on_image(player_image, self.font_path, f'You raised to {current_player.current_bet}.')
+
+            player_image.save(f'data_pictures/poker/message_action_{player.player_id}.png')
+            player_image.close()
+
+            discord_user = await self.client.fetch_user(player.player_id)
+            await last_messages_to_players[index].delete()
+            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
+                                                     view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
+            last_messages_to_players[index] = player_message
+
+        write_poker_games_to_file(self.filename, games_obj)
 
     def enable_and_disable_button(self, custom_id: str, disabled: bool = False) -> None:
         """

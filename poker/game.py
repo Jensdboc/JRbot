@@ -27,6 +27,7 @@ class Game:
         self.players = [Player(player.id, player.display_name, amount_of_credits=start_amount)]
         self.small_blind = small_blind
         self.big_blind = 2 * self.small_blind
+        self.raise_lower_bound = int(start_amount / 100)
         self.start_amount = start_amount
         self.poker_start_message_id = poker_start_message_id
 
@@ -100,6 +101,16 @@ class Game:
     def call(self):
         # TODO check if all players have the same amount of credits
         self.players[self.current_player_index].current_bet = max(list(map(lambda x: x.current_bet, self.players)))
+
+        self.next_player()
+        while self.players[self.current_player_index].current_bet == -1:
+            self.next_player()
+
+    def raise_func(self, value):
+        print(value)
+        self.players[self.current_player_index].current_bet = value
+
+        self.raise_lower_bound = value * 2
 
         self.next_player()
         while self.players[self.current_player_index].current_bet == -1:
