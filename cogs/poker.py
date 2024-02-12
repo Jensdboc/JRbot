@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 
 from poker.constants import cross_places
-from poker.draw import create_avatars_for_player, draw_cross, draw_text_on_image
+from poker.draw import create_avatars_for_player, draw_cross, draw_text_on_image, draw_player_action_on_image
 from poker.game import Game
 
 
@@ -199,6 +199,7 @@ class ButtonsMenu(discord.ui.View):
 
         if self.current_game.current_player_index == self.current_game.get_player_index(self.user_id):
             self.enable_and_disable_button('fold')
+            self.enable_and_disable_button('call')
 
     @discord.ui.button(label="fold", style=discord.ButtonStyle.blurple, custom_id="fold", disabled=True)
     async def fold(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
@@ -232,6 +233,37 @@ class ButtonsMenu(discord.ui.View):
                 await last_messages_to_players[index].delete()
                 player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
                 last_messages_to_players[index] = player_message
+
+        await interaction.response.defer()
+
+    @discord.ui.button(label="call", style=discord.ButtonStyle.blurple, custom_id="call", disabled=True)
+    async def call(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        """
+        Call.
+
+        :param interaction: Used to handle the button interaction.
+        :param button: The button object.
+        """
+        current_player = self.current_game.players[self.current_game.current_player_index]
+
+        self.current_game.call()
+        write_poker_games_to_file(self.filename, self.games_obj)
+
+        for index, player in enumerate(self.current_game.players):
+            player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
+            if player.player_id != current_player.player_id:
+                draw_player_action_on_image(player_image, self.font_path, f'{current_player.name} called.')
+            else:
+                draw_player_action_on_image(player_image, self.font_path, f'You called.')
+
+            player_image.save(f'data_pictures/poker/message_action_{player.player_id}.png')
+            player_image.close()
+
+            discord_user = await self.client.fetch_user(player.player_id)
+            await last_messages_to_players[index].delete()
+            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
+                                                     view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
+            last_messages_to_players[index] = player_message
 
         await interaction.response.defer()
 

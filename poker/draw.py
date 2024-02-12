@@ -25,6 +25,16 @@ def draw_text_on_image(current_game, poker_background, font_path):
     return poker_background
 
 
+def draw_player_action_on_image(poker_background, font_path, action):
+    font = ImageFont.truetype(font_path, 24)
+    draw = ImageDraw.Draw(poker_background)
+    text_position = (54, 354)
+    text_color = (255, 255, 255)
+    draw.text(text_position, action, fill=text_color, font=font)
+
+    return poker_background
+
+
 def circular_avatar(image, size):
     mask = Image.new("L", size, 0)
     draw = ImageDraw.Draw(mask)

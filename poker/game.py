@@ -76,7 +76,7 @@ class Game:
                 return index
 
     def fold(self):
-        # TODO
+        # TODO check if all players have the same amount of credits
         players_in_game = []
 
         this_player_index = self.current_player_index
@@ -93,11 +93,17 @@ class Game:
             self.next_player()
 
         if self.current_player_index == this_player_index:
-            # TODO end game
-            print('end round')
             return 'start_new_round'
 
         return 'continue_round'
+
+    def call(self):
+        # TODO check if all players have the same amount of credits
+        self.players[self.current_player_index].current_bet = max(list(map(lambda x: x.current_bet, self.players)))
+
+        self.next_player()
+        while self.players[self.current_player_index].current_bet == -1:
+            self.next_player()
 
     def deal_player_cards(self):
         for _ in range(2):
@@ -132,12 +138,11 @@ class Game:
         self.reset_game_logic()
 
     def start_new_round(self):
-        # TODO
-        print('start new round')
         # player logic
-        player_that_won_previous_round = list(filter(lambda player: player.current_bet != -1, self.players))[0]
+        player_with_bet = list(filter(lambda player: player.current_bet != -1, self.players))
+        player_that_won_previous_round = player_with_bet[0]
         player_that_won_previous_round.current_bet = 0
-        player_that_won_previous_round.amount_of_credits += self.pot
+        player_that_won_previous_round.amount_of_credits += (self.pot + sum(list(map(lambda x: x.current_bet, player_with_bet))))
 
         # game logic
         for player in self.players:
