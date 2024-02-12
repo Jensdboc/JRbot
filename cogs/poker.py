@@ -272,7 +272,7 @@ class ButtonsMenu(discord.ui.View):
                 await last_messages_to_players[index].delete()
             last_messages_to_players = []
             await self.start_new_round(self.current_game)
-        else:
+        elif not self.current_game.check_same_bets():
             for index, player in enumerate(self.current_game.players):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
@@ -305,21 +305,22 @@ class ButtonsMenu(discord.ui.View):
         self.current_game.call()
         write_poker_games_to_file(self.filename, self.games_obj)
 
-        for index, player in enumerate(self.current_game.players):
-            player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
-            if player.player_id != current_player.player_id:
-                draw_player_action_on_image(player_image, self.font_path, f'{current_player.name} called.')
-            else:
-                draw_player_action_on_image(player_image, self.font_path, f'You called.')
+        if not self.current_game.check_same_bets():
+            for index, player in enumerate(self.current_game.players):
+                player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
+                if player.player_id != current_player.player_id:
+                    draw_player_action_on_image(player_image, self.font_path, f'{current_player.name} called.')
+                else:
+                    draw_player_action_on_image(player_image, self.font_path, f'You called.')
 
-            player_image.save(f'data_pictures/poker/message_action_{player.player_id}.png')
-            player_image.close()
+                player_image.save(f'data_pictures/poker/message_action_{player.player_id}.png')
+                player_image.close()
 
-            discord_user = await self.client.fetch_user(player.player_id)
-            await last_messages_to_players[index].delete()
-            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
-                                                     view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
-            last_messages_to_players[index] = player_message
+                discord_user = await self.client.fetch_user(player.player_id)
+                await last_messages_to_players[index].delete()
+                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
+                                                         view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
+                last_messages_to_players[index] = player_message
 
         await interaction.response.defer()
 
@@ -351,6 +352,8 @@ class ButtonsMenu(discord.ui.View):
         poker_background = Image.open("data_pictures/poker/poker_background_10.png").resize((768, 432))
 
         poker_background = draw_text_on_image(current_game, poker_background, self.font_path)
+
+        draw_player_action_on_image(poker_background, self.font_path, f'A new round started!')
 
         if not os.path.exists('data_pictures/avatars'):
             os.mkdir('data_pictures/avatars')
