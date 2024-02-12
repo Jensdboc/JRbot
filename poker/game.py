@@ -35,6 +35,7 @@ class Game:
         self.deck = Deck()
         self.current_player_index = 0
         self.pot = self.small_blind + self.big_blind
+        self.dealer: Player = self.players[0]
 
     def add_player(self, player: discord.User) -> str:
         """
@@ -80,6 +81,7 @@ class Game:
 
         this_player_index = self.current_player_index
         self.pot += self.players[self.current_player_index].current_bet
+        self.players[self.current_player_index].amount_of_credits -= self.players[self.current_player_index].current_bet
         self.players[self.current_player_index].current_bet = -1
         self.next_player()
         while this_player_index != self.current_player_index:
@@ -93,33 +95,59 @@ class Game:
         if self.current_player_index == this_player_index:
             # TODO end game
             print('end round')
-            self.start_new_round()
+            return 'start_new_round'
 
-    def on_game_start(self):
-        """
-        Start the poker game with the selected settings and players.
-        """
-        dealer = choice(self.players)
-        self.state = game_states["Playing"]
+        return 'continue_round'
 
-        # blinds
-        self.current_player_index = (self.players.index(dealer) + 1) % len(self.players)
-        small_blind, big_blind = self.players[self.current_player_index], self.players[(self.current_player_index + 1) % len(self.players)]
-        small_blind.current_bet, big_blind.current_bet = self.small_blind, self.big_blind
-
-        # deal player cards
+    def deal_player_cards(self):
         for _ in range(2):
             for player in self.players[self.current_player_index:] + self.players[:self.current_player_index]:
                 player.cards.append(self.deck.cards[0])
                 del self.deck.cards[0]
 
+    def deal_open_cards(self):
+        self.open_cards.extend(self.deck.cards[:5])
+
+    def reset_game_logic(self):
+        # blinds
+        self.current_player_index = (self.players.index(self.dealer) + 1) % len(self.players)
+        small_blind, big_blind = self.players[self.current_player_index], self.players[(self.current_player_index + 1) % len(self.players)]
+        small_blind.current_bet, big_blind.current_bet = self.small_blind, self.big_blind
+
+        # deal player cards
+        self.deal_player_cards()
+
         # deal open cards
-        for _ in range(5):
-            self.open_cards.append(self.deck.cards[0])
-            del self.deck.cards[0]
+        self.deal_open_cards()
 
         self.current_player_index = (self.current_player_index + 2) % len(self.players)
+
+    def on_game_start(self):
+        """
+        Start the poker game with the selected settings and players.
+        """
+        self.dealer = choice(self.players)
+        self.state = game_states["Playing"]
+
+        self.reset_game_logic()
 
     def start_new_round(self):
         # TODO
         print('start new round')
+        # player logic
+        player_that_won_previous_round = list(filter(lambda player: player.current_bet != -1, self.players))[0]
+        player_that_won_previous_round.current_bet = 0
+        player_that_won_previous_round.amount_of_credits += self.pot
+
+        # game logic
+        for player in self.players:
+            player.cards = []
+            player.current_bet = 0
+
+        self.open_cards = []
+        self.deck = Deck()
+        self.current_player_index = 0
+        self.pot = self.small_blind + self.big_blind
+
+        self.dealer = self.players[(self.get_player_index(self.dealer.player_id) + 1) % len(self.players)]
+        self.reset_game_logic()

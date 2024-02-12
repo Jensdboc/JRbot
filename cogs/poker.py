@@ -51,6 +51,26 @@ def load_poker_games_from_file(input_file: str) -> Games:
     return games
 
 
+async def display_player_cards_and_avatars(filename, current_game, poker_background, client, font_path):
+    for player in current_game.players:
+        player_background = poker_background.copy()
+
+        for index, card in enumerate(player.cards):
+            card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+            player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+            player_card_image = player_card_image.resize((72, 85))
+            player_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
+
+        player_background = await create_avatars_for_player(client, player, current_game, player_background)
+
+        player_background.save(f"data_pictures/poker/message_{player.player_id}.png")
+
+        discord_user = await client.fetch_user(player.player_id)
+        player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(filename, current_game, player.player_id, client, font_path))
+        last_messages_to_players.append(player_message)
+        player_background.close()
+
+
 class Poker(commands.Cog):
     """
     This class contains the filename in which the data is stored and the commands.
@@ -127,13 +147,11 @@ class Poker(commands.Cog):
 
             poker_background = draw_text_on_image(current_game, poker_background, self.font_path)
 
-            poker_background.save(f"data_pictures/poker/test.png")
-
             if not os.path.exists('data_pictures/avatars'):
                 os.mkdir('data_pictures/avatars')
 
             # Display player cards
-            await self.display_player_cards_and_avatars(current_game, poker_background, self.client)
+            await display_player_cards_and_avatars(self.filename, current_game, poker_background, self.client, self.font_path)
             poker_background.close()
 
             write_poker_games_to_file(self.filename, games_obj)
@@ -164,31 +182,12 @@ class Poker(commands.Cog):
         while len(set(filter(lambda bet: bet != -1, list(map(lambda x: x.current_bet, current_game.players))))) != 1:
             await channels[current_game.current_player_index].send('It is your turn!')
 
-    async def display_player_cards_and_avatars(self, current_game, poker_background, client):
-        for player in current_game.players:
-            player_background = poker_background.copy()
-
-            for index, card in enumerate(player.cards):
-                card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
-                player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-                player_card_image = player_card_image.resize((72, 85))
-                player_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
-
-            player_background = await create_avatars_for_player(client, player, current_game, player_background)
-
-            player_background.save(f"data_pictures/poker/message_{player.player_id}.png")
-
-            discord_user = await self.client.fetch_user(player.player_id)
-            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.filename, current_game, player.player_id, self.client))
-            last_messages_to_players.append(player_message)
-            player_background.close()
-
 
 class ButtonsMenu(discord.ui.View):
     """
     This class represents the view. It contains the filename in which the data is stored and the buttons.
     """
-    def __init__(self, filename, current_game: Game, user_id: int, client):
+    def __init__(self, filename, current_game: Game, user_id: int, client, font_path):
         super().__init__()
 
         self.filename = filename
@@ -196,6 +195,7 @@ class ButtonsMenu(discord.ui.View):
         self.current_game = current_game
         self.user_id = user_id
         self.client = client
+        self.font_path = font_path
 
         if self.current_game.current_player_index == self.current_game.get_player_index(self.user_id):
             self.enable_and_disable_button('fold')
@@ -208,21 +208,30 @@ class ButtonsMenu(discord.ui.View):
         :param interaction: Used to handle the button interaction.
         :param button: The button object.
         """
-        for index, player in enumerate(self.current_game.players):
-            user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
-            cross_place = cross_places[user_index_in_game]
-            player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
-            draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
-            player_image.save(f'data_pictures/poker/message_{player.player_id}.png')
-            player_image.close()
 
-            discord_user = await self.client.fetch_user(player.player_id)
-            await last_messages_to_players[index].delete()
-            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client))
-            last_messages_to_players[index] = player_message
+        global last_messages_to_players
 
-        self.current_game.fold()
+        fold_result = self.current_game.fold()
         write_poker_games_to_file(self.filename, self.games_obj)
+
+        if fold_result == 'start_new_round':
+            for index, player in enumerate(self.current_game.players):
+                await last_messages_to_players[index].delete()
+            last_messages_to_players = []
+            await self.start_new_round(self.current_game)
+        else:
+            for index, player in enumerate(self.current_game.players):
+                user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
+                cross_place = cross_places[user_index_in_game]
+                player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
+                draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
+                player_image.save(f'data_pictures/poker/message_{player.player_id}.png')
+                player_image.close()
+
+                discord_user = await self.client.fetch_user(player.player_id)
+                await last_messages_to_players[index].delete()
+                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
+                last_messages_to_players[index] = player_message
 
         await interaction.response.defer()
 
@@ -238,6 +247,25 @@ class ButtonsMenu(discord.ui.View):
             child_index += 1
 
         self.children[child_index].disabled = disabled
+
+    async def start_new_round(self, current_game: Game):
+        games_obj: Games = load_poker_games_from_file(self.filename)
+
+        current_game.start_new_round()
+
+        # Display general stats
+        poker_background = Image.open("data_pictures/poker/poker_background_10.png").resize((768, 432))
+
+        poker_background = draw_text_on_image(current_game, poker_background, self.font_path)
+
+        if not os.path.exists('data_pictures/avatars'):
+            os.mkdir('data_pictures/avatars')
+
+        # Display player cards
+        await display_player_cards_and_avatars(self.filename, current_game, poker_background, self.client, self.font_path)
+        poker_background.close()
+
+        write_poker_games_to_file(self.filename, games_obj)
 
 
 async def setup(client):
