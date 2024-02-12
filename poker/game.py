@@ -107,7 +107,6 @@ class Game:
             self.next_player()
 
     def raise_func(self, value):
-        print(value)
         self.players[self.current_player_index].current_bet = value
 
         self.raise_lower_bound = value * 2
