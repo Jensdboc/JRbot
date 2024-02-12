@@ -10,23 +10,47 @@ from discord.ext import commands
 
 from poker.constants import cross_places
 from poker.draw import create_avatars_for_player, draw_cross, draw_text_on_image, draw_player_action_on_image
-from poker.game import Game
+from poker.game import Game, Player
 from poker.utils import contains_number
 
 last_messages_to_players = []
 
 
 class RaiseAmount(discord.ui.Modal, title='raise_amount'):
-    def __init__(self, current_game: Game, **kwargs):
+    def __init__(self, current_game: Game, current_player: Player, font_path, client, filename, games_obj, **kwargs):
         super().__init__(**kwargs)
 
         self.current_game = current_game
+        self.current_player = current_player
+        self.font_path = font_path
+        self.client = client
+        self.filename = filename
+        self.games_obj = games_obj
 
     rai = discord.ui.TextInput(label="raise", style=discord.TextStyle.short, placeholder="Provide your bet:")
 
     async def on_submit(self, interaction: discord.Interaction):
         if contains_number(self.rai.value) and self.current_game.raise_lower_bound <= int(self.rai.value):
             self.current_game.raise_func(int(self.rai.value))
+
+            for index, player in enumerate(self.current_game.players):
+                player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
+                if player.player_id != self.current_player.player_id:
+                    draw_player_action_on_image(player_image, self.font_path, f'{self.current_player.name} raised to {self.current_player.current_bet}.')
+                else:
+                    draw_player_action_on_image(player_image, self.font_path, f'You raised to {self.current_player.current_bet}.')
+
+                player_image.save(f'data_pictures/poker/message_action_{player.player_id}.png')
+                player_image.close()
+
+                discord_user = await self.client.fetch_user(player.player_id)
+                await last_messages_to_players[index].delete()
+                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
+                                                         view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
+                last_messages_to_players[index] = player_message
+
+            write_poker_games_to_file(self.filename, self.games_obj)
+
         elif contains_number(self.rai.value):
             await interaction.response.send_message(f'You must raise by more than {self.current_game.raise_lower_bound} credits!', ephemeral=True)
         else:
@@ -301,28 +325,9 @@ class ButtonsMenu(discord.ui.View):
 
     @discord.ui.button(label="raise", style=discord.ButtonStyle.blurple, custom_id="raise", disabled=True)
     async def raise_func(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        games_obj: Games = load_poker_games_from_file(self.filename)
         current_player = self.current_game.players[self.current_game.current_player_index]
 
-        await interaction.response.send_modal(RaiseAmount(self.current_game))
-
-        for index, player in enumerate(self.current_game.players):
-            player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
-            if player.player_id != current_player.player_id:
-                draw_player_action_on_image(player_image, self.font_path, f'{current_player.name} raised to {current_player.current_bet}.')
-            else:
-                draw_player_action_on_image(player_image, self.font_path, f'You raised to {current_player.current_bet}.')
-
-            player_image.save(f'data_pictures/poker/message_action_{player.player_id}.png')
-            player_image.close()
-
-            discord_user = await self.client.fetch_user(player.player_id)
-            await last_messages_to_players[index].delete()
-            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
-                                                     view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
-            last_messages_to_players[index] = player_message
-
-        write_poker_games_to_file(self.filename, games_obj)
+        await interaction.response.send_modal(RaiseAmount(self.current_game, current_player, self.font_path, self.client, self.filename, self.games_obj))
 
     def enable_and_disable_button(self, custom_id: str, disabled: bool = False) -> None:
         """
