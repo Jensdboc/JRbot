@@ -117,7 +117,7 @@ class Game:
 
     def check_same_bets(self):
         undead_players = list(filter(lambda x: x.current_bet != -1, self.players))
-        return all(list(map(lambda player: player.current_bet, undead_players))) == undead_players[0].current_bet
+        return len(set(map(lambda player: player.current_bet, undead_players))) == 1
 
     def deal_player_cards(self):
         for _ in range(2):

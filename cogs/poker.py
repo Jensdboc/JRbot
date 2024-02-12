@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw, ImageFont
 import discord
 from discord.ext import commands
 
-from poker.constants import cross_places
+from poker.constants import cross_places, card_places_center
 from poker.draw import create_avatars_for_player, draw_cross, draw_text_on_image, draw_player_action_on_image
 from poker.game import Game, Player
 from poker.utils import contains_number
@@ -277,18 +277,22 @@ class ButtonsMenu(discord.ui.View):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
+                draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
+                player_image.save(f'data_pictures/poker/message_{player.player_id}.png')
+
                 if player.player_id != current_player.player_id:
                     draw_player_action_on_image(player_image, self.font_path, f'{current_player.name} folded.')
                 else:
                     draw_player_action_on_image(player_image, self.font_path, f'You folded.')
-                draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
-                player_image.save(f'data_pictures/poker/message_{player.player_id}.png')
+                player_image.save(f'data_pictures/poker/message_action_{player.player_id}.png')
                 player_image.close()
 
                 discord_user = await self.client.fetch_user(player.player_id)
                 await last_messages_to_players[index].delete()
-                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
+                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"), view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
                 last_messages_to_players[index] = player_message
+        elif self.current_game.players[self.current_game.current_player_index].current_bet == max(list(map(lambda x: x.current_bet, self.current_game.players))):
+            await self.flop()
 
         await interaction.response.defer()
 
@@ -321,6 +325,8 @@ class ButtonsMenu(discord.ui.View):
                 player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
                                                          view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
                 last_messages_to_players[index] = player_message
+        else:
+            await self.flop()
 
         await interaction.response.defer()
 
@@ -329,6 +335,24 @@ class ButtonsMenu(discord.ui.View):
         current_player = self.current_game.players[self.current_game.current_player_index]
 
         await interaction.response.send_modal(RaiseAmount(self.current_game, current_player, self.font_path, self.client, self.filename, self.games_obj))
+
+    async def flop(self):
+        for player in self.current_game.players:
+            player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
+
+            for index, card in enumerate(self.current_game.open_cards[:3]):
+                card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+                player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+                player_card_image = player_card_image.resize((57, 66))
+                x_coord, y_coord = card_places_center[index]
+                player_image.paste(player_card_image, (x_coord, y_coord), player_card_image)
+
+            player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
+
+            discord_user = await self.client.fetch_user(player.player_id)
+            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
+            last_messages_to_players.append(player_message)
+            player_image.close()
 
     def enable_and_disable_button(self, custom_id: str, disabled: bool = False) -> None:
         """
