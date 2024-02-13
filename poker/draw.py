@@ -3,10 +3,10 @@ import os
 import requests
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 
-from poker.constants import player_places, right_panel_start, avatar_size, right_panel_avatar_size
+from poker.constants import player_places, right_panel_start, avatar_size, right_panel_avatar_size, right_panel_credit_places
 
 
-def draw_text_on_image(current_game, poker_background, font_path):
+def draw_text_on_image(player, current_game, poker_background, font_path):
     # Display general stats
     font = ImageFont.truetype(font_path, 32)
     draw = ImageDraw.Draw(poker_background)
@@ -15,10 +15,10 @@ def draw_text_on_image(current_game, poker_background, font_path):
     draw.text(right_panel_start, text, fill=text_color, font=font)
 
     # Display player credits
-    # font = ImageFont.truetype(font_path, 85)
-    # text = ""
-    # text += "\n".join([f"{player.name[:10]}: {player.amount_of_credits}" for player in current_game.players])
-    # draw.text(text_position, text, fill=text_color, font=font)
+    font = ImageFont.truetype(font_path, 32)
+    for p, player_place in zip(current_game.players[current_game.get_player_index(player.player_id):] + current_game.players[:current_game.get_player_index(player.player_id)],
+                               right_panel_credit_places):
+        draw.text(player_place, str(p.amount_of_credits), fill=text_color, font=font)
 
     return poker_background
 
