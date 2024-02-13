@@ -3,7 +3,7 @@ import pickle
 import traceback
 from typing import List, Union
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 
 import discord
 from discord.ext import commands
@@ -116,7 +116,8 @@ async def display_player_cards_and_avatars(filename, current_game, poker_backgro
         player_background.save(f"data_pictures/poker/message_{player.player_id}.png")
 
         discord_user = await client.fetch_user(player.player_id)
-        player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(filename, current_game, player.player_id, client, font_path))
+        player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"),
+                                                 view=ButtonsMenu(filename, current_game, player.player_id, client, font_path))
         last_messages_to_players.append(player_message)
         player_background.close()
 
@@ -283,13 +284,14 @@ class ButtonsMenu(discord.ui.View):
                 if player.player_id != current_player.player_id:
                     draw_player_action_on_image(player_image, self.font_path, f'{current_player.name} folded.')
                 else:
-                    draw_player_action_on_image(player_image, self.font_path, f'You folded.')
+                    draw_player_action_on_image(player_image, self.font_path, 'You folded.')
                 player_image.save(f'data_pictures/poker/message_action_{player.player_id}.png')
                 player_image.close()
 
                 discord_user = await self.client.fetch_user(player.player_id)
                 await last_messages_to_players[index].delete()
-                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"), view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
+                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
+                                                         view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
                 last_messages_to_players[index] = player_message
         elif self.current_game.players[self.current_game.current_player_index].current_bet == max(list(map(lambda x: x.current_bet, self.current_game.players))):
             await self.flop()
@@ -315,7 +317,7 @@ class ButtonsMenu(discord.ui.View):
                 if player.player_id != current_player.player_id:
                     draw_player_action_on_image(player_image, self.font_path, f'{current_player.name} called.')
                 else:
-                    draw_player_action_on_image(player_image, self.font_path, f'You called.')
+                    draw_player_action_on_image(player_image, self.font_path, 'You called.')
 
                 player_image.save(f'data_pictures/poker/message_action_{player.player_id}.png')
                 player_image.close()
@@ -350,7 +352,8 @@ class ButtonsMenu(discord.ui.View):
             player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
 
             discord_user = await self.client.fetch_user(player.player_id)
-            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"), view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
+            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"),
+                                                     view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
             last_messages_to_players.append(player_message)
             player_image.close()
 

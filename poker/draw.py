@@ -3,24 +3,22 @@ import os
 import requests
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 
-from poker.constants import player_places
+from poker.constants import player_places, right_panel_start, avatar_size, right_panel_avatar_size
 
 
 def draw_text_on_image(current_game, poker_background, font_path):
     # Display general stats
-    font = ImageFont.truetype(font_path, 120)
+    font = ImageFont.truetype(font_path, 32)
     draw = ImageDraw.Draw(poker_background)
-    text_position = (2750, 120)
-    text = f"Players: {len(current_game.players)}\n\nBlind: {current_game.small_blind}\n\nPot: {current_game.pot}"
+    text = f"Players: {len(current_game.players)}\nBlind: {current_game.small_blind}\nPot: {current_game.pot}"
     text_color = (255, 255, 255)
-    draw.text(text_position, text, fill=text_color, font=font)
+    draw.text(right_panel_start, text, fill=text_color, font=font)
 
     # Display player credits
-    font = ImageFont.truetype(font_path, 85)
-    text = ""
-    text_position = (2750, 666)
-    text += "\n\n".join([f"{player.name[:10]}: {player.amount_of_credits}" for player in current_game.players])
-    draw.text(text_position, text, fill=text_color, font=font)
+    # font = ImageFont.truetype(font_path, 85)
+    # text = ""
+    # text += "\n".join([f"{player.name[:10]}: {player.amount_of_credits}" for player in current_game.players])
+    # draw.text(text_position, text, fill=text_color, font=font)
 
     return poker_background
 
@@ -45,11 +43,9 @@ def circular_avatar(image, size):
 
 
 async def create_avatars_for_player(client, player, current_game, player_background):
-    avatar_size = (42, 40)
-
-    for p, player_place in zip(current_game.players[current_game.get_player_index(player.player_id) + 1:] + current_game.players[:current_game.get_player_index(player.player_id)], player_places):
+    for p, player_place in zip(current_game.players[current_game.get_player_index(player.player_id):] + current_game.players[:current_game.get_player_index(player.player_id)], player_places):
         discord_user = await client.fetch_user(p.player_id)
-        if not os.path.exists(f"data_pictures/avatars/{discord_user.id}.png"):
+        if not os.path.exists(f"data_pictures/avatars/{discord_user.id}.png") or not os.path.exists(f"data_pictures/avatars/{discord_user.id}_right_panel.png"):
             avatar = discord_user.display_avatar
             if avatar is None:
                 avatar = discord_user.default_avatar
@@ -61,10 +57,16 @@ async def create_avatars_for_player(client, player, current_game, player_backgro
 
             player_avatar = circular_avatar(Image.open(f"data_pictures/avatars/{discord_user.id}.png").convert('RGBA').resize(avatar_size), avatar_size)
             player_avatar.save(f"data_pictures/avatars/{discord_user.id}.png")
+            player_avatar_right_panel = player_avatar.resize(right_panel_avatar_size)
+            player_avatar_right_panel.save(f"data_pictures/avatars/{discord_user.id}_right_panel.png")
             player_avatar.close()
+            player_avatar_right_panel.close()
 
         player_avatar = Image.open(f"data_pictures/avatars/{discord_user.id}.png")
-        player_background.paste(player_avatar, player_place, player_avatar)
+        player_avatar_right_panel = Image.open(f"data_pictures/avatars/{discord_user.id}_right_panel.png")
+        if p.player_id != player.player_id:
+            player_background.paste(player_avatar, player_place[0], player_avatar)
+        player_background.paste(player_avatar_right_panel, player_place[1], player_avatar_right_panel)
         player_avatar.close()
 
     return player_background
