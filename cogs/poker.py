@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw, ImageFont
 import discord
 from discord.ext import commands
 
-from poker.constants import cross_places, card_places_center
+from poker.constants import cross_places, card_places_center, open_card_size, background_size, own_card_size
 from poker.draw import create_avatars_for_player, draw_cross, draw_text_on_image, draw_player_action_on_image
 from poker.game import Game, Player
 from poker.utils import contains_number
@@ -108,7 +108,7 @@ async def display_player_cards_and_avatars(filename, current_game, poker_backgro
         for index, card in enumerate(player.cards):
             card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
             player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-            player_card_image = player_card_image.resize((72, 85))
+            player_card_image = player_card_image.resize(own_card_size)
             player_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
 
         player_background = await create_avatars_for_player(client, player, current_game, player_background)
@@ -193,7 +193,7 @@ class Poker(commands.Cog):
             await reaction.message.delete()
 
             # Display general stats
-            poker_background = Image.open("data_pictures/poker/poker_background_10.png").resize((768, 432))
+            poker_background = Image.open("data_pictures/poker/poker_background_10_2.png").resize(background_size)
 
             poker_background = draw_text_on_image(current_game, poker_background, self.font_path)
 
@@ -343,7 +343,7 @@ class ButtonsMenu(discord.ui.View):
             for index, card in enumerate(self.current_game.open_cards[:3]):
                 card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
                 player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-                player_card_image = player_card_image.resize((57, 66))
+                player_card_image = player_card_image.resize(open_card_size)
                 x_coord, y_coord = card_places_center[index]
                 player_image.paste(player_card_image, (x_coord, y_coord), player_card_image)
 
@@ -373,11 +373,11 @@ class ButtonsMenu(discord.ui.View):
         current_game.start_new_round()
 
         # Display general stats
-        poker_background = Image.open("data_pictures/poker/poker_background_10.png").resize((768, 432))
+        poker_background = Image.open("data_pictures/poker/poker_background_10_2.png").resize(background_size)
 
         poker_background = draw_text_on_image(current_game, poker_background, self.font_path)
 
-        draw_player_action_on_image(poker_background, self.font_path, f'A new round started!')
+        draw_player_action_on_image(poker_background, self.font_path, 'A new round started!')
 
         if not os.path.exists('data_pictures/avatars'):
             os.mkdir('data_pictures/avatars')
