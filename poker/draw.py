@@ -3,10 +3,30 @@ import os
 import requests
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 
-from poker.constants import player_places, right_panel_start, avatar_size, right_panel_avatar_size, right_panel_credit_places
+from poker.constants import player_places, right_panel_player_places, right_panel_start, avatar_size, right_panel_avatar_size, right_panel_credit_places
 
 
-def draw_text_on_image(player, current_game, poker_background, font_path):
+async def create_and_save_avatar(client, player):
+    if not os.path.exists(f"data_pictures/avatars/{player.player_id}.png") or not os.path.exists(f"data_pictures/avatars/{player.player_id}_right_panel.png"):
+        discord_user = await client.fetch_user(player.player_id)
+        avatar = discord_user.display_avatar
+        if avatar is None:
+            avatar = discord_user.default_avatar
+
+        with requests.get(avatar.url) as r:
+            img_data = r.content
+        with open(f"data_pictures/avatars/{discord_user.id}.png", 'wb') as handler:
+            handler.write(img_data)
+
+        player_avatar = circular_avatar(Image.open(f"data_pictures/avatars/{discord_user.id}.png").convert('RGBA').resize(avatar_size), avatar_size)
+        player_avatar.save(f"data_pictures/avatars/{discord_user.id}.png")
+        player_avatar_right_panel = player_avatar.resize(right_panel_avatar_size)
+        player_avatar_right_panel.save(f"data_pictures/avatars/{discord_user.id}_right_panel.png")
+        player_avatar.close()
+        player_avatar_right_panel.close()
+
+
+async def draw_right_panel_on_image(client, current_game, poker_background, font_path):
     # Display general stats
     font = ImageFont.truetype(font_path, 32)
     draw = ImageDraw.Draw(poker_background)
@@ -14,11 +34,13 @@ def draw_text_on_image(player, current_game, poker_background, font_path):
     text_color = (255, 255, 255)
     draw.text(right_panel_start, text, fill=text_color, font=font)
 
-    # Display player credits
+    # Display player credits and icon
     font = ImageFont.truetype(font_path, 32)
-    for p, player_place in zip(current_game.players[current_game.get_player_index(player.player_id):] + current_game.players[:current_game.get_player_index(player.player_id)],
-                               right_panel_credit_places):
-        draw.text(player_place, str(p.amount_of_credits), fill=text_color, font=font)
+    for p, player_place, text_place in zip(current_game.players, right_panel_player_places, right_panel_credit_places):
+        await create_and_save_avatar(client, p)
+        player_avatar_right_panel = Image.open(f"data_pictures/avatars/{p.player_id}_right_panel.png")
+        poker_background.paste(player_avatar_right_panel, player_place, player_avatar_right_panel)
+        draw.text(text_place, str(p.amount_of_credits), fill=text_color, font=font)
 
     return poker_background
 
@@ -43,30 +65,12 @@ def circular_avatar(image, size):
 
 
 async def create_avatars_for_player(client, player, current_game, player_background):
-    for p, player_place in zip(current_game.players[current_game.get_player_index(player.player_id):] + current_game.players[:current_game.get_player_index(player.player_id)], player_places):
+    for p, player_place in zip(current_game.players[current_game.get_player_index(player.player_id) + 1:] + current_game.players[:current_game.get_player_index(player.player_id)], player_places):
         discord_user = await client.fetch_user(p.player_id)
-        if not os.path.exists(f"data_pictures/avatars/{discord_user.id}.png") or not os.path.exists(f"data_pictures/avatars/{discord_user.id}_right_panel.png"):
-            avatar = discord_user.display_avatar
-            if avatar is None:
-                avatar = discord_user.default_avatar
-
-            with requests.get(avatar.url) as r:
-                img_data = r.content
-            with open(f"data_pictures/avatars/{discord_user.id}.png", 'wb') as handler:
-                handler.write(img_data)
-
-            player_avatar = circular_avatar(Image.open(f"data_pictures/avatars/{discord_user.id}.png").convert('RGBA').resize(avatar_size), avatar_size)
-            player_avatar.save(f"data_pictures/avatars/{discord_user.id}.png")
-            player_avatar_right_panel = player_avatar.resize(right_panel_avatar_size)
-            player_avatar_right_panel.save(f"data_pictures/avatars/{discord_user.id}_right_panel.png")
-            player_avatar.close()
-            player_avatar_right_panel.close()
+        await create_and_save_avatar(client, p)
 
         player_avatar = Image.open(f"data_pictures/avatars/{discord_user.id}.png")
-        player_avatar_right_panel = Image.open(f"data_pictures/avatars/{discord_user.id}_right_panel.png")
-        if p.player_id != player.player_id:
-            player_background.paste(player_avatar, player_place[0], player_avatar)
-        player_background.paste(player_avatar_right_panel, player_place[1], player_avatar_right_panel)
+        player_background.paste(player_avatar, player_place, player_avatar)
         player_avatar.close()
 
     return player_background
