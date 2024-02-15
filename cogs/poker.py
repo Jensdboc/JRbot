@@ -275,7 +275,7 @@ class ButtonsMenu(discord.ui.View):
                 await last_messages_to_players[index].delete()
             last_messages_to_players = []
             await self.start_new_round(self.current_game)
-        elif not self.current_game.check_same_bets():
+        elif not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise, list(filter(lambda x: x.current_bet != -1, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
