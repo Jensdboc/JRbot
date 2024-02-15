@@ -5,7 +5,7 @@ import requests
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 
 from poker.constants import player_places, right_panel_player_places, right_panel_start, avatar_size, right_panel_avatar_size, right_panel_credit_places
-from game import Game, Player
+from poker.game import Game, Player
 
 
 async def create_and_save_avatar(client: discord.Client, player: Player) -> None:
