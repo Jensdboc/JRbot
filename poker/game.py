@@ -99,7 +99,10 @@ class Game:
 
     def call(self):
         # TODO check if all players have the same amount of credits
-        self.players[self.current_player_index].current_bet = max(list(map(lambda x: x.current_bet, self.players)))
+        # TODO als een speler meteen op call duwt mag het niet direct overgaan naar de volgende fase, iedere speler moet een kan krijgen om te raisen
+        max_bet = max(list(map(lambda x: x.current_bet, self.players)))
+        self.pot += (max_bet - self.players[self.current_player_index].current_bet)
+        self.players[self.current_player_index].current_bet = max_bet
 
         self.next_player()
         while self.players[self.current_player_index].current_bet == -1:
@@ -153,10 +156,10 @@ class Game:
 
     def start_new_round(self):
         # player logic
-        player_with_bet = list(filter(lambda player: player.current_bet != -1, self.players))
-        player_that_won_previous_round = player_with_bet[0]
+        players_with_bet = list(filter(lambda player: player.current_bet != -1, self.players))
+        player_that_won_previous_round = players_with_bet[0]
+        player_that_won_previous_round.amount_of_credits += (self.pot - player_that_won_previous_round.current_bet)
         player_that_won_previous_round.current_bet = 0
-        player_that_won_previous_round.amount_of_credits += self.pot
 
         # game logic
         for player in self.players:
