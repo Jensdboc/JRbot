@@ -353,6 +353,37 @@ class ButtonsMenu(discord.ui.View):
                 x_coord, y_coord = card_places_center[index]
                 player_image.paste(player_card_image, (x_coord, y_coord), player_card_image)
 
+            for dead_player in list(filter(lambda p: p.current_bet == -1, self.current_game.players)):
+                user_index_in_game = self.current_game.get_player_index_relative_to_other_player(dead_player.player_id, player.player_id)
+                cross_place = cross_places[user_index_in_game]
+                draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
+
+            player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
+
+            draw_pot(player_image, self.current_game, self.font_path, player)
+
+            discord_user = await self.client.fetch_user(player.player_id)
+            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
+                                                     view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
+            last_messages_to_players.append(player_message)
+            player_image.close()
+
+    async def turn_or_river(self, index=3):
+        for player in self.current_game.players:
+            player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
+
+            card = self.current_game.open_cards[index]
+            card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+            player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+            player_card_image = player_card_image.resize(open_card_size)
+            x_coord, y_coord = card_places_center[index]
+            player_image.paste(player_card_image, (x_coord, y_coord), player_card_image)
+
+            for dead_player in list(filter(lambda p: p.current_bet == -1, self.current_game.players)):
+                user_index_in_game = self.current_game.get_player_index_relative_to_other_player(dead_player.player_id, player.player_id)
+                cross_place = cross_places[user_index_in_game]
+                draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
+
             player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
 
             draw_pot(player_image, self.current_game, self.font_path, player)
