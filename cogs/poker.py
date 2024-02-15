@@ -296,8 +296,12 @@ class ButtonsMenu(discord.ui.View):
                 player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
                                                          view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
                 last_messages_to_players[index] = player_message
-        elif self.current_game.players[self.current_game.current_player_index].current_bet == max(list(map(lambda x: x.current_bet, self.current_game.players))):
+        elif self.current_game.players[self.current_game.current_player_index].current_bet == max(list(map(lambda x: x.current_bet, self.current_game.players))) and self.current_game.poker_round == 0:
             await self.flop()
+        elif self.current_game.players[self.current_game.current_player_index].current_bet == max(list(map(lambda x: x.current_bet, self.current_game.players))) and self.current_game.poker_round == 1:
+            await self.turn_or_river()
+        else:
+            await self.turn_or_river(4)
 
         await interaction.response.defer()
 
@@ -331,8 +335,12 @@ class ButtonsMenu(discord.ui.View):
                 player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
                                                          view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
                 last_messages_to_players[index] = player_message
-        else:
+        elif self.current_game.poker_round == 0:
             await self.flop()
+        elif self.current_game.poker_round == 1:
+            await self.turn_or_river()
+        else:
+            await self.turn_or_river(4)
 
         await interaction.response.defer()
 
@@ -343,6 +351,8 @@ class ButtonsMenu(discord.ui.View):
         await interaction.response.send_modal(RaiseAmount(self.current_game, current_player, self.font_path, self.client, self.filename, self.games_obj))
 
     async def flop(self):
+        self.current_game.poker_round += 1
+
         for player in self.current_game.players:
             player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
 
@@ -369,6 +379,8 @@ class ButtonsMenu(discord.ui.View):
             player_image.close()
 
     async def turn_or_river(self, index=3):
+        self.current_game.poker_round += 1
+
         for player in self.current_game.players:
             player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
 

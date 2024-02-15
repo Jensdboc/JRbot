@@ -38,6 +38,8 @@ class Game:
         self.pot = self.small_blind + self.big_blind
         self.dealer: Player = self.players[0]
 
+        self.poker_round = 0
+
     def add_player(self, player: discord.User) -> str:
         """
         Add a player to the starting poker game.
@@ -143,6 +145,8 @@ class Game:
         self.deal_open_cards()
 
         self.current_player_index = (self.current_player_index + 2) % len(self.players)
+
+        self.poker_round = 0
 
     def on_game_start(self):
         """
