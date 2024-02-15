@@ -3,13 +3,13 @@ import pickle
 import traceback
 from typing import List, Union
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 import discord
 from discord.ext import commands
 
 from poker.constants import cross_places, card_places_center, open_card_size, background_size, own_card_size
-from poker.draw import create_avatars_for_player, draw_cross, draw_right_panel_on_image, draw_player_action_on_image
+from poker.draw import create_avatars_for_player, draw_cross, draw_right_panel_on_image, draw_player_action_on_image, draw_pot
 from poker.game import Game, Player
 from poker.utils import contains_number
 
@@ -40,7 +40,7 @@ class RaiseAmount(discord.ui.Modal, title='raise_amount'):
                 else:
                     draw_player_action_on_image(player_image, self.font_path, f'You raised to {self.current_player.current_bet}.')
 
-                player_image.save(f'data_pictures/poker/message_action_{player.player_id}.png')
+                draw_pot(player_image, self.current_game, self.font_path, player)
                 player_image.close()
 
                 discord_user = await self.client.fetch_user(player.player_id)
@@ -101,7 +101,7 @@ def load_poker_games_from_file(input_file: str) -> Games:
     return games
 
 
-async def display_player_cards_and_avatars(filename, current_game, poker_background, client, font_path):
+async def display_player_cards_and_avatars(filename, current_game, poker_background, client, font_path, draw_player_action=False):
     for player in current_game.players:
         player_background = poker_background.copy()
 
@@ -115,8 +115,10 @@ async def display_player_cards_and_avatars(filename, current_game, poker_backgro
 
         player_background.save(f"data_pictures/poker/message_{player.player_id}.png")
 
+        draw_pot(player_background, current_game, font_path, player, draw_player_action=draw_player_action)
+
         discord_user = await client.fetch_user(player.player_id)
-        player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"),
+        player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
                                                  view=ButtonsMenu(filename, current_game, player.player_id, client, font_path))
         last_messages_to_players.append(player_message)
         player_background.close()
@@ -285,7 +287,8 @@ class ButtonsMenu(discord.ui.View):
                     draw_player_action_on_image(player_image, self.font_path, f'{current_player.name} folded.')
                 else:
                     draw_player_action_on_image(player_image, self.font_path, 'You folded.')
-                player_image.save(f'data_pictures/poker/message_action_{player.player_id}.png')
+
+                draw_pot(player_image, self.current_game, self.font_path, player)
                 player_image.close()
 
                 discord_user = await self.client.fetch_user(player.player_id)
@@ -319,7 +322,7 @@ class ButtonsMenu(discord.ui.View):
                 else:
                     draw_player_action_on_image(player_image, self.font_path, 'You called.')
 
-                player_image.save(f'data_pictures/poker/message_action_{player.player_id}.png')
+                draw_pot(player_image, self.current_game, self.font_path, player)
                 player_image.close()
 
                 discord_user = await self.client.fetch_user(player.player_id)
@@ -351,8 +354,10 @@ class ButtonsMenu(discord.ui.View):
 
             player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
 
+            draw_pot(player_image, self.current_game, self.font_path, player)
+
             discord_user = await self.client.fetch_user(player.player_id)
-            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_{player.player_id}.png"),
+            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
                                                      view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path))
             last_messages_to_players.append(player_message)
             player_image.close()
@@ -383,10 +388,8 @@ class ButtonsMenu(discord.ui.View):
 
         poker_background = await draw_right_panel_on_image(self.client, current_game, poker_background, self.font_path)
 
-        draw_player_action_on_image(poker_background, self.font_path, 'A new round started!')
-
         # Display player cards
-        await display_player_cards_and_avatars(self.filename, current_game, poker_background, self.client, self.font_path)
+        await display_player_cards_and_avatars(self.filename, current_game, poker_background, self.client, self.font_path, draw_player_action=True)
         poker_background.close()
 
         write_poker_games_to_file(self.filename, games_obj)

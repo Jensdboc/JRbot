@@ -47,7 +47,7 @@ async def draw_right_panel_on_image(client: discord.Client, current_game: Game, 
     # Display general stats
     font = ImageFont.truetype(font_path, 32)
     draw = ImageDraw.Draw(poker_background)
-    text = f"Players: {len(current_game.players)}\nBlind: {current_game.small_blind}\nPot: {current_game.pot}"
+    text = f"Players: {len(current_game.players)}\nBlind: {current_game.small_blind}\n"
     text_color = (255, 255, 255)
     draw.text(right_panel_start, text, fill=text_color, font=font)
 
@@ -130,3 +130,15 @@ def draw_cross(image: Image, cross_upper_left_position: int, cross_upper_right_p
     draw = ImageDraw.Draw(image)
     draw.line([cross_upper_left_position, cross_bottom_right_position], fill="black", width=8)
     draw.line([cross_upper_right_position, cross_bottom_left_position], fill="black", width=8)
+
+
+def draw_pot(background, current_game, font_path, player, draw_player_action=False):
+    draw = ImageDraw.Draw(background)
+    text = f"Pot: {current_game.pot}"
+    text_color = (255, 255, 255)
+    draw.text((545, 88), text, fill=text_color, font=ImageFont.truetype(font_path, 32))
+
+    if draw_player_action:
+        draw_player_action_on_image(background, font_path, 'A new round started!')
+
+    background.save(f"data_pictures/poker/message_action_{player.player_id}.png")

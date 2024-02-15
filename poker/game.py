@@ -81,7 +81,6 @@ class Game:
         players_in_game = []
 
         this_player_index = self.current_player_index
-        self.pot += self.players[self.current_player_index].current_bet
         self.players[self.current_player_index].amount_of_credits -= self.players[self.current_player_index].current_bet
         self.players[self.current_player_index].current_bet = -1
         self.next_player()
@@ -107,6 +106,7 @@ class Game:
             self.next_player()
 
     def raise_func(self, value):
+        self.pot += (value - self.players[self.current_player_index].current_bet)
         self.players[self.current_player_index].current_bet = value
 
         self.raise_lower_bound = value * 2
@@ -156,7 +156,7 @@ class Game:
         player_with_bet = list(filter(lambda player: player.current_bet != -1, self.players))
         player_that_won_previous_round = player_with_bet[0]
         player_that_won_previous_round.current_bet = 0
-        player_that_won_previous_round.amount_of_credits += (self.pot + sum(list(map(lambda x: x.current_bet, player_with_bet))))
+        player_that_won_previous_round.amount_of_credits += self.pot
 
         # game logic
         for player in self.players:
