@@ -18,6 +18,8 @@ class Player:
         self.current_bet = 0
         self.amount_of_credits = amount_of_credits
 
+        self.had_possibility_to_raise = False
+
 
 class Game:
     """
@@ -104,6 +106,7 @@ class Game:
         max_bet = max(list(map(lambda x: x.current_bet, self.players)))
         self.pot += (max_bet - self.players[self.current_player_index].current_bet)
         self.players[self.current_player_index].current_bet = max_bet
+        self.players[self.current_player_index].had_possibility_to_raise = True
 
         self.next_player()
         while self.players[self.current_player_index].current_bet == -1:
@@ -112,6 +115,7 @@ class Game:
     def raise_func(self, value):
         self.pot += (value - self.players[self.current_player_index].current_bet)
         self.players[self.current_player_index].current_bet = value
+        self.players[self.current_player_index].had_possibility_to_raise = True
 
         self.raise_lower_bound = value * 2
 
@@ -132,6 +136,10 @@ class Game:
     def deal_open_cards(self):
         self.open_cards.extend(self.deck.cards[:5])
 
+    def reset_possibility_to_raise(self):
+        for player in self.players:
+            player.had_possibility_to_raise = False
+
     def reset_game_logic(self):
         # blinds
         self.current_player_index = (self.players.index(self.dealer) + 1) % len(self.players)
@@ -147,6 +155,8 @@ class Game:
         self.current_player_index = (self.current_player_index + 2) % len(self.players)
 
         self.poker_round = 0
+
+        self.reset_possibility_to_raise()
 
     def on_game_start(self):
         """

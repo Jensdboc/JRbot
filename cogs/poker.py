@@ -319,7 +319,7 @@ class ButtonsMenu(discord.ui.View):
         self.current_game.call()
         write_poker_games_to_file(self.filename, self.games_obj)
 
-        if not self.current_game.check_same_bets() or current_player_bet == 5:
+        if not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise, list(filter(lambda x: x.current_bet != -1, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 if player.player_id != current_player.player_id:
@@ -351,6 +351,7 @@ class ButtonsMenu(discord.ui.View):
         await interaction.response.send_modal(RaiseAmount(self.current_game, current_player, self.font_path, self.client, self.filename, self.games_obj))
 
     async def flop(self):
+        self.current_game.reset_possibility_to_raise()
         self.current_game.poker_round += 1
 
         for player in self.current_game.players:
@@ -379,6 +380,7 @@ class ButtonsMenu(discord.ui.View):
             player_image.close()
 
     async def turn_or_river(self, index=3):
+        self.current_game.reset_possibility_to_raise()
         self.current_game.poker_round += 1
 
         for player in self.current_game.players:
