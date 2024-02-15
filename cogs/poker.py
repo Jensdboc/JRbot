@@ -310,11 +310,12 @@ class ButtonsMenu(discord.ui.View):
         :param button: The button object.
         """
         current_player = self.current_game.players[self.current_game.current_player_index]
+        current_player_bet = current_player.current_bet
 
         self.current_game.call()
         write_poker_games_to_file(self.filename, self.games_obj)
 
-        if not self.current_game.check_same_bets():
+        if not self.current_game.check_same_bets() or current_player_bet == 5:
             for index, player in enumerate(self.current_game.players):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 if player.player_id != current_player.player_id:

@@ -99,7 +99,6 @@ class Game:
 
     def call(self):
         # TODO check if all players have the same amount of credits
-        # TODO als een speler meteen op call duwt mag het niet direct overgaan naar de volgende fase, iedere speler moet een kan krijgen om te raisen
         max_bet = max(list(map(lambda x: x.current_bet, self.players)))
         self.pot += (max_bet - self.players[self.current_player_index].current_bet)
         self.players[self.current_player_index].current_bet = max_bet
