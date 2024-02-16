@@ -18,7 +18,7 @@ class Player:
         self.current_bet = 0
         self.amount_of_credits = amount_of_credits
 
-        self.had_possibility_to_raise = False
+        self.had_possibility_to_raise_or_bet = False
 
 
 class Game:
@@ -67,6 +67,11 @@ class Game:
         # TODO
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
 
+    def next_player_who_is_not_dead(self):
+        self.next_player()
+        while self.players[self.current_player_index].current_bet == -1:
+            self.next_player()
+
     def get_player_index(self, user_id: int) -> int:
         for index, player in enumerate(self.players):
             if user_id == player.player_id:
@@ -106,7 +111,7 @@ class Game:
         max_bet = max(list(map(lambda x: x.current_bet, self.players)))
         self.pot += (max_bet - self.players[self.current_player_index].current_bet)
         self.players[self.current_player_index].current_bet = max_bet
-        self.players[self.current_player_index].had_possibility_to_raise = True
+        self.players[self.current_player_index].had_possibility_to_raise_or_bet = True
 
         self.next_player()
         while self.players[self.current_player_index].current_bet == -1:
@@ -115,9 +120,16 @@ class Game:
     def raise_func(self, value):
         self.pot += (value - self.players[self.current_player_index].current_bet)
         self.players[self.current_player_index].current_bet = value
-        self.players[self.current_player_index].had_possibility_to_raise = True
+        self.players[self.current_player_index].had_possibility_to_raise_or_bet = True
 
         self.raise_lower_bound = value * 2
+
+        self.next_player()
+        while self.players[self.current_player_index].current_bet == -1:
+            self.next_player()
+
+    def check_func(self):
+        self.players[self.current_player_index].had_possibility_to_raise_or_bet = True
 
         self.next_player()
         while self.players[self.current_player_index].current_bet == -1:
@@ -138,7 +150,7 @@ class Game:
 
     def reset_possibility_to_raise(self):
         for player in self.players:
-            player.had_possibility_to_raise = False
+            player.had_possibility_to_raise_or_bet = False
 
     def reset_game_logic(self):
         # blinds
