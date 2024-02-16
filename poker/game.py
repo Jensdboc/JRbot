@@ -135,6 +135,10 @@ class Game:
         while self.players[self.current_player_index].current_bet == -1:
             self.next_player()
 
+    def showdown(self):
+        # TODO implement
+        print('showdown')
+
     def check_same_bets(self):
         undead_players = list(filter(lambda x: x.current_bet != -1, self.players))
         return len(set(map(lambda player: player.current_bet, undead_players))) == 1

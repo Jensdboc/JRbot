@@ -503,7 +503,7 @@ class ButtonsMenu(discord.ui.View):
             player_image.close()
 
     async def showdown(self):
-        print('showdown')
+        self.current_game.showdown()
 
     def enable_and_disable_button(self, custom_id: str, disabled: bool = False) -> None:
         """
