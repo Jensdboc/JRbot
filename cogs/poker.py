@@ -314,7 +314,6 @@ class ButtonsMenu(discord.ui.View):
         :param button: The button object.
         """
         current_player = self.current_game.players[self.current_game.current_player_index]
-        current_player_bet = current_player.current_bet
 
         self.current_game.call()
         write_poker_games_to_file(self.filename, self.games_obj)
