@@ -191,7 +191,7 @@ class Daycounter(commands.Cog):
                       description="Displays the days that have passed sinc the last reset of a counter.",
                       help="!showcounter goose",
                       aliases=["printcounter", "displaycounter", "sc"])
-    async def showcounter(self, ctx: commands.Context, name: str = None) -> NotImplemented:
+    async def showcounter(self, ctx: commands.Context, name: str = None) -> None:
         """
         Display the counter.
 
