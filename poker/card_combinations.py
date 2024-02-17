@@ -32,12 +32,10 @@ def compare_card_combinations_of_players(cards_player_one: List[Card], cards_pla
     print(card_combination_player_one)
     print(card_combination_player_two)
 
-    if order_of_card_combinations.index(card_combination_player_one[2]) > order_of_card_combinations.index(card_combination_player_two[2]):
-        print('player_one')
+    if order_of_card_combinations.index(card_combination_player_one[2]) < order_of_card_combinations.index(card_combination_player_two[2]):
         return 'player_one'
 
-    if order_of_card_combinations.index(card_combination_player_one[2]) < order_of_card_combinations.index(card_combination_player_two[2]):
-        print('player_two')
+    if order_of_card_combinations.index(card_combination_player_one[2]) > order_of_card_combinations.index(card_combination_player_two[2]):
         return 'player_two'
 
     if card_combination_player_one[2] in ['straight_flush', 'four_of_a_kind', 'straight', 'three_of_a_kind']:
