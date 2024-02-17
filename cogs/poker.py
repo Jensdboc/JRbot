@@ -281,10 +281,6 @@ class Poker(commands.Cog):
             await reaction.message.edit(embed=embed)
             write_poker_games_to_file(self.filename, games_obj)
 
-    async def betting_round1(self, current_game: Game, channels: List[discord.channel.TextChannel]):
-        while len(set(filter(lambda bet: bet != -1, list(map(lambda x: x.current_bet, current_game.players))))) != 1:
-            await channels[current_game.current_player_index].send('It is your turn!')
-
 
 class ButtonsMenu(discord.ui.View):
     """
