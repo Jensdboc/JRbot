@@ -166,8 +166,6 @@ class Game:
 
         best_players = [undead_players[0]]
 
-        print(best_players[0].name)
-
         for player in undead_players[1:]:
             card_comparison = compare_card_combinations_of_players(best_players[0].cards + self.open_cards, player.cards + self.open_cards)
 
