@@ -320,7 +320,7 @@ class ButtonsMenu(discord.ui.View):
         write_poker_games_to_file(self.filename, self.games_obj)
 
         if fold_result == 'start_new_round':
-            await self.showdown()
+            await self.showdown(draw_open_cards=True)
         elif not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
@@ -508,7 +508,7 @@ class ButtonsMenu(discord.ui.View):
             last_messages_to_players[player_index] = player_message
             player_image.close()
 
-    async def showdown(self):
+    async def showdown(self, draw_open_cards=False):
         round_winners = self.current_game.showdown()
         winner_names = ', '.join(list(map(lambda p: p.name, round_winners)))
 
@@ -520,6 +520,15 @@ class ButtonsMenu(discord.ui.View):
             draw_player_action_on_image(player_image, self.font_path, f'{winner_names} won the round!')
 
             draw_pot(player_image, self.current_game, self.font_path, player)
+
+            # draw_open_cards
+            if draw_open_cards:
+                for card_index, card in enumerate(self.current_game.open_cards):
+                    card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+                    player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+                    player_card_image = player_card_image.resize(open_card_size)
+                    x_coord, y_coord = card_places_center[card_index]
+                    player_image.paste(player_card_image, (x_coord, y_coord), player_card_image)
 
             for other_player_index, other_player in enumerate(self.current_game.players):
                 if other_player_index != player_index:
