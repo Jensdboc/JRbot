@@ -515,11 +515,14 @@ class ButtonsMenu(discord.ui.View):
         write_poker_games_to_file(self.filename, self.games_obj)
 
         for player_index, player in enumerate(self.current_game.players):
-            player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
+            poker_background = Image.open("data_pictures/poker/poker_background_big_768x432.png")
 
-            draw_player_action_on_image(player_image, self.font_path, f'{winner_names} won the round!')
+            if not os.path.exists('data_pictures/avatars'):
+                os.mkdir('data_pictures/avatars')
 
-            draw_pot(player_image, self.current_game, self.font_path, player)
+            poker_background = await draw_right_panel_on_image(self.client, self.current_game, poker_background, self.font_path)
+
+            draw_player_action_on_image(poker_background, self.font_path, f'{winner_names} won the round!')
 
             # draw_open_cards
             if draw_open_cards:
@@ -528,7 +531,7 @@ class ButtonsMenu(discord.ui.View):
                     player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
                     player_card_image = player_card_image.resize(open_card_size)
                     x_coord, y_coord = card_places_center[card_index]
-                    player_image.paste(player_card_image, (x_coord, y_coord), player_card_image)
+                    poker_background.paste(player_card_image, (x_coord, y_coord), player_card_image)
 
             for other_player_index, other_player in enumerate(self.current_game.players):
                 if other_player_index != player_index:
@@ -540,12 +543,11 @@ class ButtonsMenu(discord.ui.View):
                         player_card_image = player_card_image.rotate(other_players_card_rotations[index_relative_to_player], expand=True)
                         other_players_cards_place_x = other_players_card_places[index_relative_to_player][0] + card_index * other_players_card_places_offsets[index_relative_to_player][0]
                         other_players_cards_place_y = other_players_card_places[index_relative_to_player][1] + card_index * other_players_card_places_offsets[index_relative_to_player][1]
-                        player_image.paste(player_card_image, (other_players_cards_place_x, other_players_cards_place_y), player_card_image)
+                        poker_background.paste(player_card_image, (other_players_cards_place_x, other_players_cards_place_y), player_card_image)
 
-            player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
+            draw_pot(poker_background, self.current_game, self.font_path, player)
 
-            draw_pot(player_image, self.current_game, self.font_path, player)
-            player_image.close()
+            poker_background.close()
 
             discord_user = await self.client.fetch_user(player.player_id)
             await last_messages_to_players[player_index].delete()
@@ -555,7 +557,6 @@ class ButtonsMenu(discord.ui.View):
             player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
                                                      view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, buttons_to_enable_after_showdown))
             last_messages_to_players[player_index] = player_message
-            player_image.close()
 
     def enable_and_disable_button(self, custom_id: str, disabled: bool = False) -> None:
         """
