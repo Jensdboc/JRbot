@@ -88,3 +88,31 @@ background_size = (768, 432)
 avatar_size = (42, 40)
 right_panel_avatar_size = (32, 27)
 right_panel_start = (545, 29)
+
+order_of_card_combinations = ['royal_flush', 'straight_flush', 'four_of_a_kind', 'full_house', 'flush', 'straight', 'three_of_a_kind', 'two_pair', 'one_pair', 'high_card']
+
+other_players_card_size = (47, 58)
+other_players_card_rotations = [0, 0, 90, 90, 0, 0, 0, 270, 270, 0]
+other_players_card_places_offsets = [
+    (0, 0),
+    (other_players_card_size[0], 0),
+    (0, -other_players_card_size[0]),
+    (0, -other_players_card_size[0]),
+    (other_players_card_size[0], 0),
+    (other_players_card_size[0], 0),
+    (other_players_card_size[0], 0),
+    (0, other_players_card_size[0]),
+    (0, other_players_card_size[0]),
+    (other_players_card_size[0], 0)
+]
+other_players_card_places = [
+    (0, 0),
+    (97, 270),
+    (15, 220),
+    (144, 18),
+    (270, 18),
+    (406, 18),
+    (477, 118),
+    (477, 222),
+    (361, 280)
+]

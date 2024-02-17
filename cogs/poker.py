@@ -8,7 +8,8 @@ from PIL import Image, ImageDraw, ImageFont
 import discord
 from discord.ext import commands
 
-from poker.constants import cross_places, card_places_center, open_card_size, background_size, own_card_size
+from poker.constants import cross_places, card_places_center, open_card_size, background_size, own_card_size, other_players_card_size, other_players_card_rotations, other_players_card_places, \
+    other_players_card_places_offsets
 from poker.draw import create_avatars_for_player, draw_cross, draw_right_panel_on_image, draw_player_action_on_image, draw_pot
 from poker.game import Game, Player
 from poker.utils import contains_number
@@ -192,11 +193,12 @@ class Poker(commands.Cog):
         write_poker_games_to_file(self.filename, Games())
         print(f"{self.filename} created")
 
-    @commands.command(usage="!poker small_blind start_amount",
+    @commands.command(usage="!poker small_blind",
                       description="Start a poker game and wait for players to join.",
-                      help="!poker 5 1000")
-    async def poker(self, ctx: commands.Context, small_blind: int = 5, start_amount: int = 1000) -> None:
+                      help="!poker 5")
+    async def poker(self, ctx: commands.Context, small_blind: int = 5) -> None:
         games_obj = load_poker_games_from_file(self.filename)
+        start_amount = 1000
 
         for game in games_obj.games:
             if (ctx.author.id, ctx.author.display_name) in list(map(lambda x: (x.player_id, x.name), game.players)):
@@ -205,10 +207,6 @@ class Poker(commands.Cog):
 
         if small_blind <= 0 or small_blind > 500000:
             await ctx.reply("The small blind must be greater than 0 and less than 500000!")
-            return
-
-        if start_amount < 100 or start_amount > 10000000:
-            await ctx.reply("The start amount must be greater than 100 and less than 10000000!")
             return
 
         if small_blind > start_amount / 20:
@@ -402,6 +400,8 @@ class ButtonsMenu(discord.ui.View):
     async def raise_func(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         current_player = self.current_game.players[self.current_game.current_player_index]
 
+        self.current_game.last_player_who_raised = self.current_game.players[self.current_game.current_player_index]
+
         await interaction.response.send_modal(RaiseAmount(self.current_game, current_player, self.font_path, self.client, self.filename, self.games_obj, self.buttons_to_enable))
 
     @discord.ui.button(label="check", style=discord.ButtonStyle.blurple, custom_id="check", disabled=True)
@@ -439,6 +439,8 @@ class ButtonsMenu(discord.ui.View):
     @discord.ui.button(label="bet", style=discord.ButtonStyle.blurple, custom_id="bet", disabled=True)
     async def bet_func(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         current_player = self.current_game.players[self.current_game.current_player_index]
+
+        self.current_game.last_player_who_raised = self.current_game.players[self.current_game.current_player_index]
 
         await interaction.response.send_modal(BetAmount(self.current_game, current_player, self.font_path, self.client, self.filename, self.games_obj, ['fold', 'call', 'raise']))
 
@@ -503,7 +505,38 @@ class ButtonsMenu(discord.ui.View):
             player_image.close()
 
     async def showdown(self):
-        self.current_game.showdown()
+        round_winners = self.current_game.showdown()
+        winner_names = ', '.join(list(map(lambda p: p.name, round_winners)))
+
+        for player_index, player in enumerate(self.current_game.players):
+            player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
+
+            draw_player_action_on_image(player_image, self.font_path, f'{winner_names} won the round!')
+
+            draw_pot(player_image, self.current_game, self.font_path, player)
+            
+            for other_player_index, other_player in enumerate(self.current_game.players):
+                if other_player_index != player_index:
+                    index_relative_to_player = self.current_game.get_player_index_relative_to_other_player(other_player.player_id, player.player_id)
+                    for card_index, card in enumerate(other_player.cards):
+                        card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+                        player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+                        player_card_image = player_card_image.resize(other_players_card_size)
+                        player_card_image = player_card_image.rotate(other_players_card_rotations[index_relative_to_player], expand=True)
+                        other_players_cards_place_x = other_players_card_places[index_relative_to_player][0] + card_index * other_players_card_places_offsets[index_relative_to_player][0]
+                        other_players_cards_place_y = other_players_card_places[index_relative_to_player][1] + card_index * other_players_card_places_offsets[index_relative_to_player][1]
+                        player_image.paste(player_card_image, (other_players_cards_place_x, other_players_cards_place_y), player_card_image)
+
+            player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
+
+            draw_pot(player_image, self.current_game, self.font_path, player)
+            player_image.close()
+
+            discord_user = await self.client.fetch_user(player.player_id)
+            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
+                                                     view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, []))
+            last_messages_to_players.append(player_message)
+            player_image.close()
 
     def enable_and_disable_button(self, custom_id: str, disabled: bool = False) -> None:
         """
