@@ -447,7 +447,7 @@ class ButtonsMenu(discord.ui.View):
         self.current_game.current_player_index = self.current_game.get_player_index(self.current_game.dealer.player_id)
         self.current_game.next_player_who_is_not_dead()
 
-        for player in self.current_game.players:
+        for player_index, player in enumerate(self.current_game.players):
             player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
 
             for index, card in enumerate(self.current_game.open_cards[:3]):
@@ -467,6 +467,7 @@ class ButtonsMenu(discord.ui.View):
             draw_pot(player_image, self.current_game, self.font_path, player)
 
             discord_user = await self.client.fetch_user(player.player_id)
+            await last_messages_to_players[player_index].delete()
             player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
                                                      view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, ['fold', 'bet', 'check']))
             last_messages_to_players.append(player_message)
@@ -476,7 +477,7 @@ class ButtonsMenu(discord.ui.View):
         self.current_game.reset_possibility_to_raise()
         self.current_game.poker_round += 1
 
-        for player in self.current_game.players:
+        for player_index, player in enumerate(self.current_game.players):
             player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
 
             card = self.current_game.open_cards[index]
@@ -496,6 +497,7 @@ class ButtonsMenu(discord.ui.View):
             draw_pot(player_image, self.current_game, self.font_path, player)
 
             discord_user = await self.client.fetch_user(player.player_id)
+            await last_messages_to_players[player_index].delete()
             player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
                                                      view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, ['fold', 'bet', 'check']))
             last_messages_to_players.append(player_message)
@@ -530,6 +532,7 @@ class ButtonsMenu(discord.ui.View):
             player_image.close()
 
             discord_user = await self.client.fetch_user(player.player_id)
+            await last_messages_to_players[player_index].delete()
             player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
                                                      view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, []))
             last_messages_to_players.append(player_message)
