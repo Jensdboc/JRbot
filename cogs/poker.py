@@ -470,7 +470,7 @@ class ButtonsMenu(discord.ui.View):
             await last_messages_to_players[player_index].delete()
             player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
                                                      view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, ['fold', 'bet', 'check']))
-            last_messages_to_players.append(player_message)
+            last_messages_to_players[player_index] = player_message
             player_image.close()
 
     async def turn_or_river(self, index=3):
@@ -500,7 +500,7 @@ class ButtonsMenu(discord.ui.View):
             await last_messages_to_players[player_index].delete()
             player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
                                                      view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, ['fold', 'bet', 'check']))
-            last_messages_to_players.append(player_message)
+            last_messages_to_players[player_index] = player_message
             player_image.close()
 
     async def showdown(self):
@@ -535,7 +535,7 @@ class ButtonsMenu(discord.ui.View):
             await last_messages_to_players[player_index].delete()
             player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
                                                      view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, []))
-            last_messages_to_players.append(player_message)
+            last_messages_to_players[player_index] = player_message
             player_image.close()
 
     def enable_and_disable_button(self, custom_id: str, disabled: bool = False) -> None:
