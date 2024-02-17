@@ -205,6 +205,7 @@ class Game:
 
     def reset_game_logic(self):
         # blinds
+        # TODO check if a player has enough credits
         self.current_player_index = (self.players.index(self.dealer) + 1) % len(self.players)
         small_blind, big_blind = self.players[self.current_player_index], self.players[(self.current_player_index + 1) % len(self.players)]
         self.last_player_who_raised = small_blind

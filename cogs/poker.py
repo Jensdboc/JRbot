@@ -317,6 +317,7 @@ class ButtonsMenu(discord.ui.View):
         write_poker_games_to_file(self.filename, self.games_obj)
 
         if fold_result == 'start_new_round':
+            # TODO
             for index, player in enumerate(self.current_game.players):
                 await last_messages_to_players[index].delete()
             last_messages_to_players = []
