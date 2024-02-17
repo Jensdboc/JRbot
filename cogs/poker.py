@@ -3,7 +3,7 @@ import pickle
 import traceback
 from typing import List, Union
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 
 import discord
 from discord.ext import commands
@@ -104,7 +104,8 @@ class BetAmount(discord.ui.Modal, title='bet_amount'):
             write_poker_games_to_file(self.filename, self.games_obj)
 
         elif contains_number(self.bet.value):
-            await interaction.response.send_message(f'You must bet at least {self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players)))} credits!', ephemeral=True)
+            minimum_credits = self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players)))
+            await interaction.response.send_message(f'You must bet at least {minimum_credits} credits!', ephemeral=True)
         else:
             await interaction.response.send_message('This value has to be a number!', ephemeral=True)
 
@@ -514,7 +515,7 @@ class ButtonsMenu(discord.ui.View):
             draw_player_action_on_image(player_image, self.font_path, f'{winner_names} won the round!')
 
             draw_pot(player_image, self.current_game, self.font_path, player)
-            
+
             for other_player_index, other_player in enumerate(self.current_game.players):
                 if other_player_index != player_index:
                     index_relative_to_player = self.current_game.get_player_index_relative_to_other_player(other_player.player_id, player.player_id)
