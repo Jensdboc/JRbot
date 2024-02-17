@@ -297,6 +297,9 @@ class ButtonsMenu(discord.ui.View):
         self.font_path = font_path
         self.buttons_to_enable = buttons_to_enable
 
+        if 'start_new_round' in buttons_to_enable:
+            self.enable_and_disable_button('start_new_round')
+
         if self.current_game.current_player_index == self.current_game.get_player_index(self.user_id):
             for button_to_enable in buttons_to_enable:
                 self.enable_and_disable_button(button_to_enable)
@@ -442,6 +445,11 @@ class ButtonsMenu(discord.ui.View):
 
         await interaction.response.send_modal(BetAmount(self.current_game, current_player, self.font_path, self.client, self.filename, self.games_obj, ['fold', 'call', 'raise']))
 
+    @discord.ui.button(label="start new round", style=discord.ButtonStyle.blurple, custom_id="start_new_round", disabled=True)
+    async def start_new_round_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        await self.start_new_round(self.current_game)
+        await interaction.response.defer()
+
     async def flop(self):
         self.current_game.reset_possibility_to_raise()
         self.current_game.poker_round += 1
@@ -508,6 +516,8 @@ class ButtonsMenu(discord.ui.View):
         round_winners = self.current_game.showdown()
         winner_names = ', '.join(list(map(lambda p: p.name, round_winners)))
 
+        write_poker_games_to_file(self.filename, self.games_obj)
+
         for player_index, player in enumerate(self.current_game.players):
             player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
 
@@ -534,8 +544,11 @@ class ButtonsMenu(discord.ui.View):
 
             discord_user = await self.client.fetch_user(player.player_id)
             await last_messages_to_players[player_index].delete()
+
+            buttons_to_enable_after_showdown = ['start_new_round'] if player.player_id == self.current_game.game_author_id else []
+
             player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
-                                                     view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, []))
+                                                     view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, buttons_to_enable_after_showdown))
             last_messages_to_players[player_index] = player_message
             player_image.close()
 

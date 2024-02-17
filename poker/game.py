@@ -51,6 +51,7 @@ class Game:
     Class representing a poker game.
     """
     def __init__(self, player: discord.User, small_blind: int, start_amount: int, poker_start_message_id: int):
+        self.game_author_id = player.id
         self.players: List[Player] = [Player(player.id, player.display_name, amount_of_credits=start_amount)]
         self.small_blind = small_blind
         self.big_blind = 2 * self.small_blind
@@ -176,11 +177,11 @@ class Game:
 
         pot_split, unused_credits = math.floor(self.pot / len(best_players)), self.pot % len(best_players)
 
-        print(pot_split)
-        print(unused_credits)
-
         for player in best_players:
-            player.amount_of_credits += pot_split
+            player.amount_of_credits += (pot_split - player.current_bet)
+
+        for player in list(filter(lambda p: p.player_id not in list(map(lambda x: x.player_id, best_players)), undead_players)):
+            player.amount_of_credits -= player.current_bet
 
         self.last_player_who_raised.amount_of_credits += unused_credits
 
@@ -233,12 +234,6 @@ class Game:
         self.reset_game_logic()
 
     def start_new_round(self):
-        # player logic
-        players_with_bet = list(filter(lambda player: player.current_bet != -1, self.players))
-        player_that_won_previous_round = players_with_bet[0]
-        player_that_won_previous_round.amount_of_credits += (self.pot - player_that_won_previous_round.current_bet)
-        player_that_won_previous_round.current_bet = 0
-
         # game logic
         for player in self.players:
             player.cards = []
