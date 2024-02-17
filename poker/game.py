@@ -1,10 +1,13 @@
+import math
 from random import choice
+from typing import List
 
 import os
 import discord
 
-from card import Deck
-from constants import game_states
+from poker.card import Deck
+from poker.card_combinations import compare_card_combinations_of_players
+from poker.constants import game_states
 
 
 class Player:
@@ -48,7 +51,7 @@ class Game:
     Class representing a poker game.
     """
     def __init__(self, player: discord.User, small_blind: int, start_amount: int, poker_start_message_id: int):
-        self.players = [Player(player.id, player.display_name, amount_of_credits=start_amount)]
+        self.players: List[Player] = [Player(player.id, player.display_name, amount_of_credits=start_amount)]
         self.small_blind = small_blind
         self.big_blind = 2 * self.small_blind
         self.raise_lower_bound = int(start_amount / 100)
@@ -59,6 +62,7 @@ class Game:
         self.open_cards = []
         self.deck = Deck()
         self.current_player_index = 0
+        self.last_player_who_raised = None
         self.pot = self.small_blind + self.big_blind
         self.dealer: Player = self.players[0]
 
@@ -157,9 +161,32 @@ class Game:
         while self.players[self.current_player_index].current_bet == -1:
             self.next_player()
 
-    def showdown(self):
-        # TODO implement
-        print('showdown')
+    def showdown(self) -> List[Player]:
+        undead_players = list(filter(lambda p: p.current_bet != -1, self.players))
+
+        best_players = [undead_players[0]]
+
+        print(best_players[0].name)
+
+        for player in undead_players[1:]:
+            card_comparison = compare_card_combinations_of_players(best_players[0].cards + self.open_cards, player.cards + self.open_cards)
+
+            if card_comparison == 'player_two':
+                best_players = [player]
+            elif card_comparison == 'tie':
+                best_players.append(player)
+
+        pot_split, unused_credits = math.floor(self.pot / len(best_players)), self.pot % len(best_players)
+
+        print(pot_split)
+        print(unused_credits)
+
+        for player in best_players:
+            player.amount_of_credits += pot_split
+
+        self.last_player_who_raised.amount_of_credits += unused_credits
+
+        return best_players
 
     def check_same_bets(self):
         undead_players = list(filter(lambda x: x.current_bet != -1, self.players))
@@ -182,6 +209,7 @@ class Game:
         # blinds
         self.current_player_index = (self.players.index(self.dealer) + 1) % len(self.players)
         small_blind, big_blind = self.players[self.current_player_index], self.players[(self.current_player_index + 1) % len(self.players)]
+        self.last_player_who_raised = small_blind
         small_blind.current_bet, big_blind.current_bet = self.small_blind, self.big_blind
 
         # deal player cards
