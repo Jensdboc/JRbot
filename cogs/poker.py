@@ -320,11 +320,7 @@ class ButtonsMenu(discord.ui.View):
         write_poker_games_to_file(self.filename, self.games_obj)
 
         if fold_result == 'start_new_round':
-            # TODO
-            for index, player in enumerate(self.current_game.players):
-                await last_messages_to_players[index].delete()
-            last_messages_to_players = []
-            await self.start_new_round(self.current_game)
+            await self.showdown()
         elif not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
