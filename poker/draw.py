@@ -35,34 +35,6 @@ async def create_and_save_avatar(client: discord.Client, player: Player) -> None
         player_avatar_right_panel.close()
 
 
-async def draw_right_panel_on_image(client: discord.Client, current_game: Game, poker_background: Image, font_path: str) -> Image:
-    """
-    Draw the right panel on the poker background.
-
-    :param client: The discord client.
-    :param current_game: The poker game.
-    :param poker_background: The display background.
-    :param font_path: The path to the font file.
-    :return: The edited poker background.
-    """
-    # Display general stats
-    font = ImageFont.truetype(font_path, 32)
-    draw = ImageDraw.Draw(poker_background)
-    text = f"Players: {len(current_game.players)}\nBlind: {current_game.small_blind}\n"
-    text_color = (255, 255, 255)
-    draw.text(right_panel_start, text, fill=text_color, font=font)
-
-    # Display player credits and icon
-    font = ImageFont.truetype(font_path, 32)
-    for p, player_place, text_place in zip(current_game.players, right_panel_player_places, right_panel_credit_places):
-        await create_and_save_avatar(client, p)
-        player_avatar_right_panel = Image.open(f"data_pictures/avatars/{p.player_id}_right_panel.png")
-        poker_background.paste(player_avatar_right_panel, player_place, player_avatar_right_panel)
-        draw.text(text_place, str(p.amount_of_credits), fill=text_color, font=font)
-
-    return poker_background
-
-
 def draw_player_action_on_image(poker_background: Image, players: List[Player], font_path: str, action: str) -> Image:
     """
     Display current action on the poker background.
@@ -152,13 +124,26 @@ def draw_cross(image: Image, cross_upper_left_position: int, cross_upper_right_p
     draw.line([cross_upper_right_position, cross_bottom_left_position], fill="black", width=8)
 
 
-def draw_pot(background, current_game, font_path, player, draw_player_action=False):
+async def draw_right_panel_on_image(client, background, current_game, font_path, player, draw_player_action=False):
+    font = ImageFont.truetype(font_path, 32)
     draw = ImageDraw.Draw(background)
+    text = f"Players: {len(current_game.players)}\nBlind: {current_game.small_blind}\n"
+    text_color = (255, 255, 255)
+    draw.text(right_panel_start, text, fill=text_color, font=font)
+
     text = f"Pot: {current_game.pot}"
     text_color = (255, 255, 255)
     draw.text((545, 88), text, fill=text_color, font=ImageFont.truetype(font_path, 32))
+
+    font = ImageFont.truetype(font_path, 30)
+    for p, player_place, text_place in zip(current_game.players, right_panel_player_places, right_panel_credit_places):
+        await create_and_save_avatar(client, p)
+        player_avatar_right_panel = Image.open(f"data_pictures/avatars/{p.player_id}_right_panel.png")
+        background.paste(player_avatar_right_panel, player_place, player_avatar_right_panel)
+        draw.text(text_place, f"{p.amount_of_credits}~{p.current_bet}", fill=text_color, font=font)
 
     if draw_player_action:
         draw_player_action_on_image(background, [], font_path, 'A new round started!')
 
     background.save(f"data_pictures/poker/message_action_{player.player_id}.png")
+    return background
