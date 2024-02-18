@@ -91,6 +91,14 @@ class Game:
         self.players = list(filter(lambda x: x.player_id != player.id or x.name != player.display_name, self.players))
         return "Current players: \n>" + '\n'.join(list(map(lambda x: x.name, self.players)))
 
+    def get_player_from_id(self, player_id: int) -> Player:
+        index = 0
+        p = self.players[index]
+        while p.player_id != player_id:
+            index += 1
+            p = self.players[index]
+        return p
+
     def next_player(self):
         # TODO
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
@@ -135,10 +143,13 @@ class Game:
         return 'continue_round'
 
     def call(self):
-        # TODO check if all players have the same amount of credits
         max_bet = max(list(map(lambda x: x.current_bet, self.players)))
-        self.pot += (max_bet - self.players[self.current_player_index].current_bet)
-        self.players[self.current_player_index].current_bet = max_bet
+        if max_bet <= self.players[self.current_player_index].amount_of_credits:
+            self.pot += (max_bet - self.players[self.current_player_index].current_bet)
+            self.players[self.current_player_index].current_bet = max_bet
+        elif self.players[self.current_player_index].current_bet != self.players[self.current_player_index].amount_of_credits:
+            self.pot += (self.players[self.current_player_index].amount_of_credits - self.players[self.current_player_index].current_bet)
+            self.players[self.current_player_index].current_bet = self.players[self.current_player_index].amount_of_credits
         self.players[self.current_player_index].had_possibility_to_raise_or_bet = True
 
         self.next_player()
@@ -192,7 +203,7 @@ class Game:
 
     def check_same_bets(self):
         undead_players = list(filter(lambda x: x.current_bet != -1, self.players))
-        return len(set(map(lambda player: player.current_bet, undead_players))) == 1
+        return len(set(map(lambda player: player.current_bet, list(filter(lambda p: p.amount_of_credits != p.current_bet, undead_players))))) in [0, 1]
 
     def deal_player_cards(self):
         for _ in range(2):
@@ -214,6 +225,8 @@ class Game:
         small_blind, big_blind = self.players[self.current_player_index], self.players[(self.current_player_index + 1) % len(self.players)]
         self.last_player_who_raised = small_blind
         small_blind.current_bet, big_blind.current_bet = self.small_blind, self.big_blind
+
+        self.raise_lower_bound = int(self.start_amount / 100)
 
         # deal player cards
         self.deal_player_cards()

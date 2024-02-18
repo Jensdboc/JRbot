@@ -29,11 +29,12 @@ class RaiseAmount(discord.ui.Modal, title='raise_amount'):
         self.games_obj = games_obj
         self.buttons_to_enable = buttons_to_enable
 
-    rai = discord.ui.TextInput(label="raise", style=discord.TextStyle.short, placeholder="Provide your bet:")
+    rai = discord.ui.TextInput(label="raise", style=discord.TextStyle.short, placeholder="Provide your bet or type 'all-in':")
 
     async def on_submit(self, interaction: discord.Interaction):
-        if contains_number(self.rai.value) and self.current_game.raise_lower_bound <= int(self.rai.value) <= self.current_player.amount_of_credits:
-            self.current_game.raise_func(int(self.rai.value))
+        if (contains_number(self.rai.value) and self.current_game.raise_lower_bound <= int(self.rai.value) <= self.current_player.amount_of_credits) or self.rai.value == 'all-in':
+            raised_value = int(self.rai.value) if contains_number(self.rai.value) else self.current_player.amount_of_credits
+            self.current_game.raise_func(raised_value)
 
             for index, player in enumerate(self.current_game.players):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
@@ -58,7 +59,7 @@ class RaiseAmount(discord.ui.Modal, title='raise_amount'):
         elif contains_number(self.rai.value):
             await interaction.response.send_message(f"You don't have that amount of credits!", ephemeral=True)
         else:
-            await interaction.response.send_message('This value has to be a number!', ephemeral=True)
+            await interaction.response.send_message("This value has to be a number or 'all-in'!", ephemeral=True)
 
         await interaction.response.defer()
 
@@ -81,11 +82,12 @@ class BetAmount(discord.ui.Modal, title='bet_amount'):
         self.games_obj = games_obj
         self.buttons_to_enable = buttons_to_enable
 
-    bet = discord.ui.TextInput(label="bet", style=discord.TextStyle.short, placeholder="Provide your bet:")
+    bet = discord.ui.TextInput(label="bet", style=discord.TextStyle.short, placeholder="Provide your bet or type 'all-in':")
 
     async def on_submit(self, interaction: discord.Interaction):
-        if contains_number(self.bet.value) and self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players))) <= int(self.bet.value) <= self.current_player.amount_of_credits:
-            self.current_game.raise_func(int(self.bet.value))
+        if (contains_number(self.bet.value) and self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players))) <= int(self.bet.value) <= self.current_player.amount_of_credits) or self.bet.value == 'all-in':
+            raised_value = int(self.bet.value) if contains_number(self.bet.value) else self.current_player.amount_of_credits
+            self.current_game.raise_func(raised_value)
 
             for index, player in enumerate(self.current_game.players):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
@@ -111,7 +113,7 @@ class BetAmount(discord.ui.Modal, title='bet_amount'):
         elif contains_number(self.bet.value):
             await interaction.response.send_message(f"You don't have that amount of credits!", ephemeral=True)
         else:
-            await interaction.response.send_message('This value has to be a number!', ephemeral=True)
+            await interaction.response.send_message("This value has to be a number or 'all-in'!", ephemeral=True)
 
         await interaction.response.defer()
 
@@ -308,8 +310,14 @@ class ButtonsMenu(discord.ui.View):
             self.enable_and_disable_button('end_game')
 
         if self.current_game.current_player_index == self.current_game.get_player_index(self.user_id):
+            current_player = self.current_game.players[self.current_game.current_player_index]
             for button_to_enable in buttons_to_enable:
-                self.enable_and_disable_button(button_to_enable)
+                max_bet = max(list(map(lambda x: x.current_bet, self.current_game.players)))
+                if not((current_player.current_bet == current_player.amount_of_credits and button_to_enable in ['fold', 'raise', 'bet']) or
+                       (current_player.current_bet != current_player.amount_of_credits and max_bet > self.current_game.players[self.current_game.current_player_index].amount_of_credits and button_to_enable in ['raise', 'bet']) or
+                       (current_player.current_bet != current_player.amount_of_credits and self.current_game.raise_lower_bound > self.current_game.players[self.current_game.current_player_index].amount_of_credits and button_to_enable in ['raise']) or
+                       (current_player.current_bet != current_player.amount_of_credits and self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players))) > self.current_game.players[self.current_game.current_player_index].amount_of_credits and button_to_enable in ['bet'])):
+                    self.enable_and_disable_button(button_to_enable)
 
     @discord.ui.button(label="fold", style=discord.ButtonStyle.blurple, custom_id="fold", disabled=True)
     async def fold(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
@@ -327,7 +335,7 @@ class ButtonsMenu(discord.ui.View):
         write_poker_games_to_file(self.filename, self.games_obj)
 
         if fold_result == 'start_new_round':
-            await self.showdown(draw_open_cards=True)
+            await self.showdown()
         elif not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
@@ -520,7 +528,7 @@ class ButtonsMenu(discord.ui.View):
             last_messages_to_players[player_index] = player_message
             player_image.close()
 
-    async def showdown(self, draw_open_cards=False):
+    async def showdown(self):
         round_winners = self.current_game.showdown()
         winner_names = ', '.join(list(map(lambda p: p.name, round_winners)))
 
@@ -545,13 +553,12 @@ class ButtonsMenu(discord.ui.View):
                 poker_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
 
             # draw_open_cards
-            if draw_open_cards:
-                for card_index, card in enumerate(self.current_game.open_cards):
-                    card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
-                    player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-                    player_card_image = player_card_image.resize(open_card_size)
-                    x_coord, y_coord = card_places_center[card_index]
-                    poker_background.paste(player_card_image, (x_coord, y_coord), player_card_image)
+            for card_index, card in enumerate(self.current_game.open_cards):
+                card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+                player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+                player_card_image = player_card_image.resize(open_card_size)
+                x_coord, y_coord = card_places_center[card_index]
+                poker_background.paste(player_card_image, (x_coord, y_coord), player_card_image)
 
             for other_player_index, other_player in enumerate(self.current_game.players):
                 if other_player_index != player_index:
@@ -600,9 +607,16 @@ class ButtonsMenu(discord.ui.View):
         self.children[child_index].disabled = disabled
 
     async def start_new_round(self, current_game: Game):
+        global last_messages_to_players
+
         games_obj: Games = load_poker_games_from_file(self.filename)
 
         current_game.start_new_round()
+
+        for index, player in enumerate(self.current_game.players):
+            await last_messages_to_players[index].delete()
+
+        last_messages_to_players = []
 
         # Display general stats
         poker_background = Image.open("data_pictures/poker/poker_background_big_768x432.png")
