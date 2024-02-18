@@ -32,7 +32,7 @@ class RaiseAmount(discord.ui.Modal, title='raise_amount'):
     rai = discord.ui.TextInput(label="raise", style=discord.TextStyle.short, placeholder="Provide your bet:")
 
     async def on_submit(self, interaction: discord.Interaction):
-        if contains_number(self.rai.value) and self.current_game.raise_lower_bound <= int(self.rai.value):
+        if contains_number(self.rai.value) and self.current_game.raise_lower_bound <= int(self.rai.value) <= self.current_player.amount_of_credits:
             self.current_game.raise_func(int(self.rai.value))
 
             for index, player in enumerate(self.current_game.players):
@@ -53,8 +53,10 @@ class RaiseAmount(discord.ui.Modal, title='raise_amount'):
 
             write_poker_games_to_file(self.filename, self.games_obj)
 
-        elif contains_number(self.rai.value):
+        elif contains_number(self.rai.value) and int(self.rai.value) <= self.current_player.amount_of_credits:
             await interaction.response.send_message(f'You must raise by more than {self.current_game.raise_lower_bound} credits!', ephemeral=True)
+        elif contains_number(self.rai.value):
+            await interaction.response.send_message(f"You don't have that amount of credits!", ephemeral=True)
         else:
             await interaction.response.send_message('This value has to be a number!', ephemeral=True)
 
@@ -300,6 +302,9 @@ class ButtonsMenu(discord.ui.View):
         if 'start_new_round' in buttons_to_enable:
             self.enable_and_disable_button('start_new_round')
 
+        if 'end_game' in buttons_to_enable:
+            self.enable_and_disable_button('end_game')
+
         if self.current_game.current_player_index == self.current_game.get_player_index(self.user_id):
             for button_to_enable in buttons_to_enable:
                 self.enable_and_disable_button(button_to_enable)
@@ -446,6 +451,11 @@ class ButtonsMenu(discord.ui.View):
         await self.start_new_round(self.current_game)
         await interaction.response.defer()
 
+    @discord.ui.button(label="end game", style=discord.ButtonStyle.blurple, custom_id="end_game", disabled=True)
+    async def end_game_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        await self.end_game(self.current_game.round_winners[0])
+        await interaction.response.defer()
+
     async def flop(self):
         self.current_game.reset_possibility_to_raise()
         self.current_game.poker_round += 1
@@ -512,6 +522,8 @@ class ButtonsMenu(discord.ui.View):
         round_winners = self.current_game.showdown()
         winner_names = ', '.join(list(map(lambda p: p.name, round_winners)))
 
+        game_finished = self.current_game.game_finished()
+
         write_poker_games_to_file(self.filename, self.games_obj)
 
         for player_index, player in enumerate(self.current_game.players):
@@ -523,6 +535,12 @@ class ButtonsMenu(discord.ui.View):
             poker_background = await draw_right_panel_on_image(self.client, self.current_game, poker_background, self.font_path)
 
             draw_player_action_on_image(poker_background, self.font_path, f'{winner_names} won the round!')
+
+            for index, card in enumerate(player.cards):
+                card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+                player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+                player_card_image = player_card_image.resize(own_card_size)
+                poker_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
 
             # draw_open_cards
             if draw_open_cards:
@@ -552,11 +570,19 @@ class ButtonsMenu(discord.ui.View):
             discord_user = await self.client.fetch_user(player.player_id)
             await last_messages_to_players[player_index].delete()
 
-            buttons_to_enable_after_showdown = ['start_new_round'] if player.player_id == self.current_game.game_author_id else []
-
-            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
-                                                     view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, buttons_to_enable_after_showdown))
-            last_messages_to_players[player_index] = player_message
+            if player.player_id == self.current_game.game_author_id:
+                if game_finished:
+                    player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
+                                                             view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, ['end_game']))
+                    last_messages_to_players[player_index] = player_message
+                else:
+                    player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
+                                                             view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, ['start_new_round']))
+                    last_messages_to_players[player_index] = player_message
+            else:
+                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
+                                                         view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, []))
+                last_messages_to_players[player_index] = player_message
 
     def enable_and_disable_button(self, custom_id: str, disabled: bool = False) -> None:
         """
@@ -589,6 +615,16 @@ class ButtonsMenu(discord.ui.View):
         poker_background.close()
 
         write_poker_games_to_file(self.filename, games_obj)
+
+    async def end_game(self, winner: Player):
+        for player_index, player in enumerate(self.current_game.players):
+            discord_user = await self.client.fetch_user(player.player_id)
+            await last_messages_to_players[player_index].delete()
+
+            if winner.player_id == player.player_id:
+                await discord_user.send(embed=discord.Embed(title="Game result:", description='Congrats, you won the game!'))
+            else:
+                await discord_user.send(embed=discord.Embed(title="Game result:", description=f'{winner.name} won the game!'))
 
 
 async def setup(client):

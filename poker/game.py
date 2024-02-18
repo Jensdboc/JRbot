@@ -66,6 +66,7 @@ class Game:
         self.last_player_who_raised = None
         self.pot = self.small_blind + self.big_blind
         self.dealer: Player = self.players[0]
+        self.round_winners: List[Player] = []
 
         self.poker_round = 0
 
@@ -185,6 +186,8 @@ class Game:
 
         self.last_player_who_raised.amount_of_credits += unused_credits
 
+        self.round_winners = best_players
+
         return best_players
 
     def check_same_bets(self):
@@ -246,3 +249,6 @@ class Game:
 
         self.dealer = self.players[(self.get_player_index(self.dealer.player_id) + 1) % len(self.players)]
         self.reset_game_logic()
+
+    def game_finished(self):
+        return len(list(filter(lambda p: p.amount_of_credits > 0, self.players))) == 1
