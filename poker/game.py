@@ -174,11 +174,7 @@ class Game:
             self.next_player()
 
     def showdown(self) -> List[Player]:
-        for player in self.players:
-            print(f'{player.name} has {player.amount_of_credits} credits and a bet of {player.current_bet}!')
         undead_players = list(filter(lambda p: p.current_bet != -1 and p.amount_of_credits != 0, self.players))
-
-        print(list(map(lambda x: x.name, undead_players)))
 
         best_players = [undead_players[0]]
 

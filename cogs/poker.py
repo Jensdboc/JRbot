@@ -389,9 +389,6 @@ class ButtonsMenu(discord.ui.View):
         self.current_game.call()
         write_poker_games_to_file(self.filename, self.games_obj)
 
-        print(self.current_game.check_same_bets())
-        print(list(filter(lambda x: x.current_bet != -1 and x.amount_of_credits != 0, self.current_game.players)))
-
         if not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1 and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
@@ -544,6 +541,7 @@ class ButtonsMenu(discord.ui.View):
             player_image.close()
 
     async def showdown(self):
+        player_status = list(map(lambda p: p.amount_of_credits, self.current_game.players))
         round_winners = self.current_game.showdown()
         winner_names = ', '.join(list(map(lambda p: p.name, round_winners)))
 
@@ -561,11 +559,12 @@ class ButtonsMenu(discord.ui.View):
 
             draw_player_action_on_image(poker_background, self.font_path, f'{winner_names} won the round!')
 
-            for index, card in enumerate(player.cards):
-                card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
-                player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-                player_card_image = player_card_image.resize(own_card_size)
-                poker_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
+            if player_status[player_index]:
+                for index, card in enumerate(player.cards):
+                    card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+                    player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+                    player_card_image = player_card_image.resize(own_card_size)
+                    poker_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
 
             # draw_open_cards
             for card_index, card in enumerate(self.current_game.open_cards):
@@ -576,7 +575,7 @@ class ButtonsMenu(discord.ui.View):
                 poker_background.paste(player_card_image, (x_coord, y_coord), player_card_image)
 
             for other_player_index, other_player in enumerate(self.current_game.players):
-                if other_player.amount_of_credits != 0 and other_player_index != player_index:
+                if player_status[other_player_index] != 0 and other_player_index != player_index:
                     index_relative_to_player = self.current_game.get_player_index_relative_to_other_player(other_player.player_id, player.player_id)
                     for card_index, card in enumerate(other_player.cards):
                         card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
@@ -586,6 +585,11 @@ class ButtonsMenu(discord.ui.View):
                         other_players_cards_place_x = other_players_card_places[index_relative_to_player][0] + card_index * other_players_card_places_offsets[index_relative_to_player][0]
                         other_players_cards_place_y = other_players_card_places[index_relative_to_player][1] + card_index * other_players_card_places_offsets[index_relative_to_player][1]
                         poker_background.paste(player_card_image, (other_players_cards_place_x, other_players_cards_place_y), player_card_image)
+
+                if player_status[other_player_index] == 0:
+                    user_index_in_game = self.current_game.get_player_index_relative_to_other_player(other_player.player_id, player.player_id)
+                    cross_place = cross_places[user_index_in_game]
+                    draw_cross(poker_background, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
 
             draw_pot(poker_background, self.current_game, self.font_path, player)
 
