@@ -122,7 +122,6 @@ class Game:
                 return index
 
     def fold(self):
-        # TODO check if all players have the same amount of credits
         players_in_game = []
 
         this_player_index = self.current_player_index
@@ -223,7 +222,6 @@ class Game:
 
     def reset_game_logic(self):
         # blinds
-        # TODO check if a player has enough credits
         self.current_player_index = self.players.index(self.dealer)
         self.next_player_who_is_not_dead()
         small_blind_index, big_blind_index = self.current_player_index, (self.current_player_index + 1) % len(self.players)
