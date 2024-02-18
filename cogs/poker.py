@@ -32,7 +32,7 @@ class RaiseAmount(discord.ui.Modal, title='raise_amount'):
     rai = discord.ui.TextInput(label="raise", style=discord.TextStyle.short, placeholder="Provide your bet or type 'all-in':")
 
     async def on_submit(self, interaction: discord.Interaction):
-        if (contains_number(self.rai.value) and self.current_game.raise_lower_bound <= int(self.rai.value) <= self.current_player.amount_of_credits) or self.rai.value == 'all-in':
+        if (contains_number(self.rai.value) and self.current_game.raise_lower_bound <= int(self.rai.value) <= self.current_player.amount_of_credits) or self.rai.value.lower() in ['all-in', 'all', 'all in']:
             raised_value = int(self.rai.value) if contains_number(self.rai.value) else self.current_player.amount_of_credits
             self.current_game.raise_func(raised_value)
 
@@ -85,7 +85,7 @@ class BetAmount(discord.ui.Modal, title='bet_amount'):
     bet = discord.ui.TextInput(label="bet", style=discord.TextStyle.short, placeholder="Provide your bet or type 'all-in':")
 
     async def on_submit(self, interaction: discord.Interaction):
-        if (contains_number(self.bet.value) and self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players))) <= int(self.bet.value) <= self.current_player.amount_of_credits) or self.bet.value == 'all-in':
+        if (contains_number(self.bet.value) and self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players))) <= int(self.bet.value) <= self.current_player.amount_of_credits) or self.bet.value.lower() in ['all-in', 'all', 'all in']:
             raised_value = int(self.bet.value) if contains_number(self.bet.value) else self.current_player.amount_of_credits
             self.current_game.raise_func(raised_value)
 
