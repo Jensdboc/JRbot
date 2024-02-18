@@ -17,7 +17,7 @@ from poker.utils import contains_number
 last_messages_to_players = []
 
 
-class RaiseAmount(discord.ui.Modal, title='raise_amount'):
+class RaiseAmount(discord.ui.Modal, title='raise'):
     def __init__(self, current_game: Game, current_player: Player, font_path, client, filename, games_obj, buttons_to_enable, **kwargs):
         super().__init__(**kwargs)
 
@@ -70,7 +70,7 @@ class RaiseAmount(discord.ui.Modal, title='raise_amount'):
         traceback.print_exception(type(error), error, error.__traceback__)
 
 
-class BetAmount(discord.ui.Modal, title='bet_amount'):
+class BetAmount(discord.ui.Modal, title='bet'):
     def __init__(self, current_game: Game, current_player: Player, font_path, client, filename, games_obj, buttons_to_enable, **kwargs):
         super().__init__(**kwargs)
 
