@@ -1,3 +1,4 @@
+import asyncio
 import os
 import pickle
 import traceback
@@ -15,6 +16,7 @@ from poker.game import Game, Player
 from poker.utils import contains_number
 
 last_messages_to_players = []
+number_of_bots = -1
 
 
 class RaiseAmount(discord.ui.Modal, title='raise'):
@@ -116,6 +118,26 @@ class BetAmount(discord.ui.Modal, title='bet'):
 
         # Make sure we know what the error actually is
         traceback.print_exception(type(error), error, error.__traceback__)
+
+
+class SelectNumberOfBots(discord.ui.Select):
+    def __init__(self, number_of_players):
+        options = [
+            discord.SelectOption(label=f'{x} bot') if x == 1 else discord.SelectOption(label=f'{x} bots') for x in range(11 - number_of_players)
+        ]
+        super().__init__(placeholder="Select the number of bots", max_values=1, min_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        global number_of_bots
+        number_of_bots = int(self.values[0][0])
+
+        await interaction.response.defer()
+
+
+class SelectView(discord.ui.View):
+    def __init__(self, number_of_players, *, timeout=180):
+        super().__init__(timeout=timeout)
+        self.add_item(SelectNumberOfBots(number_of_players))
 
 
 class Games:
@@ -266,6 +288,13 @@ class Poker(commands.Cog):
             write_poker_games_to_file(self.filename, games_obj)
             await reaction.message.delete()
 
+            number_of_bots_message = await user.send("Choose the number of bots please!", view=SelectView(len(current_game.players)))
+
+            while number_of_bots == -1:
+                await asyncio.sleep(0.2)
+
+            await number_of_bots_message.delete()
+
             # Display general stats
             poker_background = Image.open("data_pictures/poker/poker_background_big_768x432.png").resize(background_size)
 
@@ -323,13 +352,24 @@ class ButtonsMenu(discord.ui.View):
 
         if not player_is_dead and self.current_game.current_player_index == self.current_game.get_player_index(self.user_id):
             current_player = self.current_game.players[self.current_game.current_player_index]
-            for button_to_enable in buttons_to_enable:
-                max_bet = max(list(map(lambda x: x.current_bet, self.current_game.players)))
-                if not ((current_player.current_bet == current_player.amount_of_credits and button_to_enable in ['fold', 'raise', 'bet']) or
-                        (current_player.current_bet != current_player.amount_of_credits and max_bet > self.current_game.players[self.current_game.current_player_index].amount_of_credits and button_to_enable in ['raise', 'bet']) or
-                        (current_player.current_bet != current_player.amount_of_credits and self.current_game.raise_lower_bound > self.current_game.players[self.current_game.current_player_index].amount_of_credits and button_to_enable in ['raise']) or
-                        (current_player.current_bet != current_player.amount_of_credits and self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players))) > self.current_game.players[self.current_game.current_player_index].amount_of_credits and button_to_enable in ['bet'])):
-                    self.enable_and_disable_button(button_to_enable)
+            for move in self.check_if_moves_can_be_enabled(buttons_to_enable, current_player):
+                self.enable_and_disable_button(move)
+
+    def check_if_moves_can_be_enabled(self, moves, current_player):
+        result = []
+
+        max_bet = max(list(map(lambda x: x.current_bet, self.current_game.players)))
+        for move in moves:
+            if not ((current_player.current_bet == current_player.amount_of_credits and move in ['fold', 'raise', 'bet']) or
+                    (current_player.current_bet != current_player.amount_of_credits and max_bet > self.current_game.players[self.current_game.current_player_index].amount_of_credits and move in [
+                        'raise', 'bet']) or
+                    (current_player.current_bet != current_player.amount_of_credits and self.current_game.raise_lower_bound > self.current_game.players[
+                        self.current_game.current_player_index].amount_of_credits and move in ['raise']) or
+                    (current_player.current_bet != current_player.amount_of_credits and self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players))) >
+                     self.current_game.players[self.current_game.current_player_index].amount_of_credits and move in ['bet'])):
+                result.append(move)
+
+        return result
 
     @discord.ui.button(label="fold", style=discord.ButtonStyle.blurple, custom_id="fold", disabled=True)
     async def fold(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:

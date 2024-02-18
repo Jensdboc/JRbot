@@ -14,7 +14,7 @@ class Player:
     """
     Class representing a player object in a poker game.
     """
-    def __init__(self, player_id: int, name: str, amount_of_credits: int):
+    def __init__(self, player_id: int, name: str, amount_of_credits: int, is_bot=False):
         self.player_id = player_id
         self.name = name
 
@@ -23,6 +23,7 @@ class Player:
         self.amount_of_credits = amount_of_credits
 
         self.is_dead = False
+        self.is_bot = is_bot
 
         self.had_possibility_to_raise_or_bet = False
         self.elo = None
@@ -46,6 +47,12 @@ class Player:
                 with open("poker_elo.txt", 'a') as elo_file:
                     self.elo = 1000
                     elo_file.write(f"{player_id} {self.elo}\n")
+
+
+class Bot(Player):
+    def __init__(self, player_id: int, name: str, amount_of_credits: int):
+        super().__init__(player_id, name, amount_of_credits)
+        super().is_bot = True
 
 
 class Game:
@@ -83,6 +90,18 @@ class Game:
         if (player.id, player.display_name) not in list(map(lambda x: (x.player_id, x.name), self.players)):
             self.players.append(Player(player.id, player.display_name, amount_of_credits=self.start_amount))
         return "Current players: \n>" + '\n'.join(list(map(lambda x: x.name, self.players)))
+
+    def add_bot(self) -> None:
+        """
+        Add a bot to the starting poker game.
+
+        :param bot: The bot.
+        :return: The description of the starting embed.
+        """
+        possible_ids = set(range(10)).difference(set(map(lambda p: p.player_id, self.players)))
+        bot_id = choice(list(possible_ids))
+        bot = Bot(bot_id, f'bot_{bot_id}', self.start_amount)
+        self.players.append(bot)
 
     def remove_player(self, player: discord.User) -> str:
         """
