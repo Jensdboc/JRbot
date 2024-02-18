@@ -84,7 +84,7 @@ class BetAmount(discord.ui.Modal, title='bet_amount'):
     bet = discord.ui.TextInput(label="bet", style=discord.TextStyle.short, placeholder="Provide your bet:")
 
     async def on_submit(self, interaction: discord.Interaction):
-        if contains_number(self.bet.value) and self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players))) <= int(self.bet.value):
+        if contains_number(self.bet.value) and self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players))) <= int(self.bet.value) <= self.current_player.amount_of_credits:
             self.current_game.raise_func(int(self.bet.value))
 
             for index, player in enumerate(self.current_game.players):
@@ -105,9 +105,11 @@ class BetAmount(discord.ui.Modal, title='bet_amount'):
 
             write_poker_games_to_file(self.filename, self.games_obj)
 
-        elif contains_number(self.bet.value):
+        elif contains_number(self.bet.value) and int(self.bet.value) <= self.current_player.amount_of_credits:
             minimum_credits = self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players)))
             await interaction.response.send_message(f'You must bet at least {minimum_credits} credits!', ephemeral=True)
+        elif contains_number(self.bet.value):
+            await interaction.response.send_message(f"You don't have that amount of credits!", ephemeral=True)
         else:
             await interaction.response.send_message('This value has to be a number!', ephemeral=True)
 
