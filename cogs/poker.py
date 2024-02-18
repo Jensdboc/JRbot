@@ -647,7 +647,10 @@ class ButtonsMenu(discord.ui.View):
         # Display player cards
         await display_player_cards_and_avatars(self.filename, current_game, poker_background, self.client, self.font_path, ['fold', 'call', 'raise'], draw_player_action=True)
 
-        poker_background = await draw_right_panel_on_image(self.client, poker_background, current_game, self.font_path)
+        for player in current_game.players:
+            player_background = poker_background.copy()
+            player_background = await draw_right_panel_on_image(self.client, player_background, current_game, self.font_path, player)
+            player_background.close()
         poker_background.close()
 
         write_poker_games_to_file(self.filename, games_obj)
