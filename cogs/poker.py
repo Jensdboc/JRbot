@@ -164,11 +164,12 @@ async def display_player_cards_and_avatars(filename, current_game, poker_backgro
     for player in current_game.players:
         player_background = poker_background.copy()
 
-        for index, card in enumerate(player.cards):
-            card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
-            player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-            player_card_image = player_card_image.resize(own_card_size)
-            player_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
+        if player.amount_of_credits != 0:
+            for index, card in enumerate(player.cards):
+                card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+                player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+                player_card_image = player_card_image.resize(own_card_size)
+                player_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
 
         player_background = await create_avatars_for_player(client, player, current_game, player_background)
 
