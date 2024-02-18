@@ -100,12 +100,11 @@ class Game:
         return p
 
     def next_player(self):
-        # TODO
         self.current_player_index = (self.current_player_index + 1) % len(self.players)
 
     def next_player_who_is_not_dead(self):
         self.next_player()
-        while self.players[self.current_player_index].current_bet == -1:
+        while self.players[self.current_player_index].current_bet == -1 or self.players[self.current_player_index].amount_of_credits == 0:
             self.next_player()
 
     def get_player_index(self, user_id: int) -> int:
@@ -130,7 +129,7 @@ class Game:
         self.players[self.current_player_index].current_bet = -1
         self.next_player()
         while this_player_index != self.current_player_index:
-            if self.players[self.current_player_index].current_bet != -1:
+            if self.players[self.current_player_index].current_bet != -1 and self.players[self.current_player_index].amount_of_credits != 0:
                 players_in_game.append(self.current_player_index)
                 if len(players_in_game) > 1:
                     self.current_player_index = players_in_game[0]
@@ -153,7 +152,7 @@ class Game:
         self.players[self.current_player_index].had_possibility_to_raise_or_bet = True
 
         self.next_player()
-        while self.players[self.current_player_index].current_bet == -1:
+        while self.players[self.current_player_index].current_bet == -1 or self.players[self.current_player_index].amount_of_credits == 0:
             self.next_player()
 
     def raise_func(self, value):
@@ -164,18 +163,20 @@ class Game:
         self.raise_lower_bound = value * 2
 
         self.next_player()
-        while self.players[self.current_player_index].current_bet == -1:
+        while self.players[self.current_player_index].current_bet == -1 or self.players[self.current_player_index].amount_of_credits == 0:
             self.next_player()
 
     def check_func(self):
         self.players[self.current_player_index].had_possibility_to_raise_or_bet = True
 
         self.next_player()
-        while self.players[self.current_player_index].current_bet == -1:
+        while self.players[self.current_player_index].current_bet == -1 or self.players[self.current_player_index].amount_of_credits == 0:
             self.next_player()
 
     def showdown(self) -> List[Player]:
-        undead_players = list(filter(lambda p: p.current_bet != -1, self.players))
+        undead_players = list(filter(lambda p: p.current_bet != -1 and self.players[self.current_player_index].amount_of_credits != 0, self.players))
+
+        print(list(map(lambda x: x.name, undead_players)))
 
         best_players = [undead_players[0]]
 
@@ -192,7 +193,7 @@ class Game:
         for player in best_players:
             player.amount_of_credits += (pot_split - player.current_bet)
 
-        for player in list(filter(lambda p: p.player_id not in list(map(lambda x: x.player_id, best_players)), undead_players)):
+        for player in list(filter(lambda p: p.player_id not in list(map(lambda x: x.player_id, best_players)) and p.amount_of_credits != 0, undead_players)):
             player.amount_of_credits -= player.current_bet
 
         self.last_player_who_raised.amount_of_credits += unused_credits
@@ -202,7 +203,7 @@ class Game:
         return best_players
 
     def check_same_bets(self):
-        undead_players = list(filter(lambda x: x.current_bet != -1, self.players))
+        undead_players = list(filter(lambda x: x.current_bet != -1 and x.amount_of_credits != 0, self.players))
         return len(set(map(lambda player: player.current_bet, list(filter(lambda p: p.amount_of_credits != p.current_bet, undead_players))))) in [0, 1]
 
     def deal_player_cards(self):
@@ -221,10 +222,23 @@ class Game:
     def reset_game_logic(self):
         # blinds
         # TODO check if a player has enough credits
-        self.current_player_index = (self.players.index(self.dealer) + 1) % len(self.players)
-        small_blind, big_blind = self.players[self.current_player_index], self.players[(self.current_player_index + 1) % len(self.players)]
+        self.current_player_index = self.players.index(self.dealer)
+        self.next_player_who_is_not_dead()
+        small_blind_index, big_blind_index = self.current_player_index, (self.current_player_index + 1) % len(self.players)
+
+        small_blind, big_blind = self.players[small_blind_index], self.players[big_blind_index]
+        while small_blind.amount_of_credits == 0:
+            small_blind_index = (small_blind_index + 1) % len(self.players)
+            small_blind = self.players[small_blind_index]
+        while big_blind.amount_of_credits == 0:
+            big_blind_index = (big_blind_index + 1) % len(self.players)
+            big_blind = self.players[big_blind_index]
+
         self.last_player_who_raised = small_blind
-        small_blind.current_bet, big_blind.current_bet = self.small_blind, self.big_blind
+        small_blind.current_bet = self.small_blind if self.small_blind <= small_blind.amount_of_credits else small_blind.amount_of_credits
+        big_blind.current_bet = self.big_blind if self.big_blind <= big_blind.amount_of_credits else big_blind.amount_of_credits
+
+        self.pot = small_blind.current_bet + big_blind.current_bet
 
         self.raise_lower_bound = int(self.start_amount / 100)
 
@@ -234,7 +248,8 @@ class Game:
         # deal open cards
         self.deal_open_cards()
 
-        self.current_player_index = (self.current_player_index + 2) % len(self.players)
+        self.next_player_who_is_not_dead()
+        self.next_player_who_is_not_dead()
 
         self.poker_round = 0
 
@@ -258,9 +273,12 @@ class Game:
         self.open_cards = []
         self.deck = Deck()
         self.current_player_index = 0
-        self.pot = self.small_blind + self.big_blind
 
-        self.dealer = self.players[(self.get_player_index(self.dealer.player_id) + 1) % len(self.players)]
+        dealer_index = (self.get_player_index(self.dealer.player_id) + 1) % len(self.players)
+        self.dealer = self.players[dealer_index]
+        while self.dealer.amount_of_credits == 0:
+            dealer_index = (dealer_index + 1) % len(self.players)
+            self.dealer = self.players[dealer_index]
         self.reset_game_logic()
 
     def game_finished(self):

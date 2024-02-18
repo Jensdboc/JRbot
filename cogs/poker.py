@@ -172,13 +172,21 @@ async def display_player_cards_and_avatars(filename, current_game, poker_backgro
 
         player_background = await create_avatars_for_player(client, player, current_game, player_background)
 
+        for other_player in current_game.players:
+            if other_player.amount_of_credits == 0:
+                user_index_in_game = current_game.get_player_index_relative_to_other_player(other_player.player_id, player.player_id)
+                cross_place = cross_places[user_index_in_game]
+                draw_cross(player_background, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
+                player_background.save(f'data_pictures/poker/message_{player.player_id}.png')
+
         player_background.save(f"data_pictures/poker/message_{player.player_id}.png")
 
         draw_pot(player_background, current_game, font_path, player, draw_player_action=draw_player_action)
 
         discord_user = await client.fetch_user(player.player_id)
+        player_is_dead = player.amount_of_credits == 0
         player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
-                                                 view=ButtonsMenu(filename, current_game, player.player_id, client, font_path, buttons_to_enable))
+                                                 view=ButtonsMenu(filename, current_game, player.player_id, client, font_path, buttons_to_enable, player_is_dead=player_is_dead))
         last_messages_to_players.append(player_message)
         player_background.close()
 
@@ -292,7 +300,7 @@ class ButtonsMenu(discord.ui.View):
     """
     This class represents the view. It contains the filename in which the data is stored and the buttons.
     """
-    def __init__(self, filename, current_game: Game, user_id: int, client, font_path, buttons_to_enable):
+    def __init__(self, filename, current_game: Game, user_id: int, client, font_path, buttons_to_enable, player_is_dead=False):
         super().__init__()
 
         self.filename = filename
@@ -309,7 +317,7 @@ class ButtonsMenu(discord.ui.View):
         if 'end_game' in buttons_to_enable:
             self.enable_and_disable_button('end_game')
 
-        if self.current_game.current_player_index == self.current_game.get_player_index(self.user_id):
+        if not player_is_dead and self.current_game.current_player_index == self.current_game.get_player_index(self.user_id):
             current_player = self.current_game.players[self.current_game.current_player_index]
             for button_to_enable in buttons_to_enable:
                 max_bet = max(list(map(lambda x: x.current_bet, self.current_game.players)))
@@ -336,7 +344,7 @@ class ButtonsMenu(discord.ui.View):
 
         if fold_result == 'start_new_round':
             await self.showdown()
-        elif not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1, self.current_game.players))))):
+        elif not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1 and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
@@ -381,7 +389,10 @@ class ButtonsMenu(discord.ui.View):
         self.current_game.call()
         write_poker_games_to_file(self.filename, self.games_obj)
 
-        if not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1, self.current_game.players))))):
+        print(self.current_game.check_same_bets())
+        print(list(filter(lambda x: x.current_bet != -1 and x.amount_of_credits != 0, self.current_game.players)))
+
+        if not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1 and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 if player.player_id != current_player.player_id:
@@ -423,7 +434,7 @@ class ButtonsMenu(discord.ui.View):
         self.current_game.check_func()
         write_poker_games_to_file(self.filename, self.games_obj)
 
-        if not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1, self.current_game.players))))):
+        if not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1 and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 if player.player_id != current_player.player_id:
@@ -561,7 +572,7 @@ class ButtonsMenu(discord.ui.View):
                 poker_background.paste(player_card_image, (x_coord, y_coord), player_card_image)
 
             for other_player_index, other_player in enumerate(self.current_game.players):
-                if other_player_index != player_index:
+                if other_player.amount_of_credits != 0 and other_player_index != player_index:
                     index_relative_to_player = self.current_game.get_player_index_relative_to_other_player(other_player.player_id, player.player_id)
                     for card_index, card in enumerate(other_player.cards):
                         card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
