@@ -262,7 +262,6 @@ class Poker(commands.Cog):
             await reaction.message.edit(embed=embed)
             write_poker_games_to_file(self.filename, games_obj)
         elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0].player_id and 2 <= len(current_game.players) <= 10:
-
             current_game.on_game_start()
             write_poker_games_to_file(self.filename, games_obj)
             await reaction.message.delete()
@@ -274,12 +273,7 @@ class Poker(commands.Cog):
                 os.mkdir('data_pictures/avatars')
 
             # Display player cards
-            for player in current_game.players:
-                player_background = poker_background.copy()
-                await display_player_cards_and_avatars(self.filename, current_game, player_background, self.client, self.font_path, ['fold', 'call', 'raise'])
-                player_background = await draw_right_panel_on_image(self.client, player_background, current_game, self.font_path, player)
-                player_background.close()
-            poker_background.close()
+            await display_player_cards_and_avatars(self.filename, current_game, poker_background, self.client, self.font_path, ['fold', 'call', 'raise'])
 
             write_poker_games_to_file(self.filename, games_obj)
 
