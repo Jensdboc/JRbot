@@ -38,10 +38,7 @@ class RaiseAmount(discord.ui.Modal, title='raise'):
 
             for index, player in enumerate(self.current_game.players):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
-                if player.player_id != self.current_player.player_id:
-                    draw_player_action_on_image(player_image, self.font_path, f'{self.current_player.name} raised to {self.current_player.current_bet}.')
-                else:
-                    draw_player_action_on_image(player_image, self.font_path, f'You raised to {self.current_player.current_bet}.')
+                draw_player_action_on_image(player_image, [self.current_player], self.font_path, f'Raised to {self.current_player.current_bet}.')
 
                 draw_pot(player_image, self.current_game, self.font_path, player)
                 player_image.close()
@@ -91,10 +88,7 @@ class BetAmount(discord.ui.Modal, title='bet'):
 
             for index, player in enumerate(self.current_game.players):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
-                if player.player_id != self.current_player.player_id:
-                    draw_player_action_on_image(player_image, self.font_path, f'{self.current_player.name} has placed a bet of {self.current_player.current_bet} credits.')
-                else:
-                    draw_player_action_on_image(player_image, self.font_path, f'You have placed a bet of {self.current_player.current_bet} credits.')
+                draw_player_action_on_image(player_image, [self.current_player], self.font_path, f'Placed a bet of {self.current_player.current_bet} credits.')
 
                 draw_pot(player_image, self.current_game, self.font_path, player)
                 player_image.close()
@@ -366,10 +360,7 @@ class ButtonsMenu(discord.ui.View):
                 draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
                 player_image.save(f'data_pictures/poker/message_{player.player_id}.png')
 
-                if player.player_id != current_player.player_id:
-                    draw_player_action_on_image(player_image, self.font_path, f'{current_player.name} folded.')
-                else:
-                    draw_player_action_on_image(player_image, self.font_path, 'You folded.')
+                draw_player_action_on_image(player_image, [current_player], self.font_path, f'{current_player.name} folded.')
 
                 draw_pot(player_image, self.current_game, self.font_path, player)
                 player_image.close()
@@ -406,10 +397,7 @@ class ButtonsMenu(discord.ui.View):
         if not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1 and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
-                if player.player_id != current_player.player_id:
-                    draw_player_action_on_image(player_image, self.font_path, f'{current_player.name} called.')
-                else:
-                    draw_player_action_on_image(player_image, self.font_path, 'You called.')
+                draw_player_action_on_image(player_image, [current_player], self.font_path, f'{current_player.name} called.')
 
                 draw_pot(player_image, self.current_game, self.font_path, player)
                 player_image.close()
@@ -450,10 +438,7 @@ class ButtonsMenu(discord.ui.View):
         if not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1 and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
-                if player.player_id != current_player.player_id:
-                    draw_player_action_on_image(player_image, self.font_path, f'{current_player.name} checked.')
-                else:
-                    draw_player_action_on_image(player_image, self.font_path, 'You checked.')
+                draw_player_action_on_image(player_image, [current_player], self.font_path, f'{current_player.name} checked.')
 
                 draw_pot(player_image, self.current_game, self.font_path, player)
                 player_image.close()
@@ -557,7 +542,6 @@ class ButtonsMenu(discord.ui.View):
     async def showdown(self):
         player_status = list(map(lambda p: p.amount_of_credits, self.current_game.players))
         round_winners = self.current_game.showdown()
-        winner_names = ', '.join(list(map(lambda p: p.name, round_winners)))
 
         game_finished = self.current_game.game_finished()
 
@@ -571,7 +555,10 @@ class ButtonsMenu(discord.ui.View):
 
             poker_background = await draw_right_panel_on_image(self.client, self.current_game, poker_background, self.font_path)
 
-            draw_player_action_on_image(poker_background, self.font_path, f'{winner_names} won the round!')
+            if len(round_winners) == 1:
+                draw_player_action_on_image(poker_background, round_winners, self.font_path, f'Winner of this round!')
+            else:
+                draw_player_action_on_image(poker_background, round_winners, self.font_path, f'Winners of this round!')
 
             if player_status[player_index]:
                 for index, card in enumerate(player.cards):

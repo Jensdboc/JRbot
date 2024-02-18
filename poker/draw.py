@@ -1,10 +1,11 @@
 import os
+from typing import List
 
 import discord
 import requests
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 
-from poker.constants import player_places, right_panel_player_places, right_panel_start, avatar_size, right_panel_avatar_size, right_panel_credit_places
+from poker.constants import player_places, right_panel_player_places, right_panel_start, avatar_size, right_panel_avatar_size, right_panel_credit_places, lower_panel_actions, background_size
 from poker.game import Game, Player
 
 
@@ -62,20 +63,39 @@ async def draw_right_panel_on_image(client: discord.Client, current_game: Game, 
     return poker_background
 
 
-def draw_player_action_on_image(poker_background: Image, font_path: str, action: str) -> Image:
+def draw_player_action_on_image(poker_background: Image, players: List[Player], font_path: str, action: str) -> Image:
     """
     Display current action on the poker background.
 
     :param poker_background: The display background.
+    :param players: The players that took part in the action.
     :param font_path: The path to the font file.
     :param action: The action to be displayed.
     :return: The edited poker background.
     """
+    if len(players) == 0:
+        font = ImageFont.truetype(font_path, 24)
+        draw = ImageDraw.Draw(poker_background)
+        text_position = (54, 354)
+        text_color = (255, 255, 255)
+        draw.text(text_position, action, fill=text_color, font=font)
+
+        return poker_background
+
+    for player, player_avatar_place in zip(players, lower_panel_actions[len(players) - 1]):
+        player_avatar_lower_panel = Image.open(f"data_pictures/avatars/{player.player_id}_right_panel.png")
+        poker_background.paste(player_avatar_lower_panel, player_avatar_place, player_avatar_lower_panel)
+
     font = ImageFont.truetype(font_path, 24)
     draw = ImageDraw.Draw(poker_background)
-    text_position = (54, 354)
+    text_width = draw.textlength(action, font=font)
+    image_width, _ = background_size
+
+    x = 41 + ((458 - text_width) / 2)
+    y = 390
+
     text_color = (255, 255, 255)
-    draw.text(text_position, action, fill=text_color, font=font)
+    draw.text((x, y), action, fill=text_color, font=font)
 
     return poker_background
 
@@ -139,6 +159,6 @@ def draw_pot(background, current_game, font_path, player, draw_player_action=Fal
     draw.text((545, 88), text, fill=text_color, font=ImageFont.truetype(font_path, 32))
 
     if draw_player_action:
-        draw_player_action_on_image(background, font_path, 'A new round started!')
+        draw_player_action_on_image(background, [], font_path, 'A new round started!')
 
     background.save(f"data_pictures/poker/message_action_{player.player_id}.png")

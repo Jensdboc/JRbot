@@ -105,6 +105,7 @@ other_players_card_places_offsets = [
     (0, other_players_card_size[0]),
     (other_players_card_size[0], 0)
 ]
+
 other_players_card_places = [
     (0, 0),
     (97, 270),
@@ -116,4 +117,11 @@ other_players_card_places = [
     (468, 72),
     (468, 176),
     (358, 270)
+]
+
+lower_panel_actions = [
+    [(255, 350)],
+    [(219, 350), (289, 350)],
+    [(185, 350), (255, 350), (325, 350)],
+    [(149, 350), (219, 350), (289, 350), (359, 350)],
 ]
