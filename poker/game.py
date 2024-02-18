@@ -22,6 +22,8 @@ class Player:
         self.current_bet = 0
         self.amount_of_credits = amount_of_credits
 
+        self.is_dead = False
+
         self.had_possibility_to_raise_or_bet = False
         self.elo = None
 
@@ -105,7 +107,7 @@ class Game:
 
     def next_player_who_is_not_dead(self):
         self.next_player()
-        while self.players[self.current_player_index].current_bet == -1 or self.players[self.current_player_index].amount_of_credits == 0:
+        while self.players[self.current_player_index].is_dead or self.players[self.current_player_index].amount_of_credits == 0:
             self.next_player()
 
     def get_player_index(self, user_id: int) -> int:
@@ -126,10 +128,10 @@ class Game:
 
         this_player_index = self.current_player_index
         self.players[self.current_player_index].amount_of_credits -= self.players[self.current_player_index].current_bet
-        self.players[self.current_player_index].current_bet = -1
+        self.players[self.current_player_index].is_dead = True
         self.next_player()
         while this_player_index != self.current_player_index:
-            if self.players[self.current_player_index].current_bet != -1 and self.players[self.current_player_index].amount_of_credits != 0:
+            if not self.players[self.current_player_index].is_dead and self.players[self.current_player_index].amount_of_credits != 0:
                 players_in_game.append(self.current_player_index)
                 if len(players_in_game) > 1:
                     self.current_player_index = players_in_game[0]
@@ -152,7 +154,7 @@ class Game:
         self.players[self.current_player_index].had_possibility_to_raise_or_bet = True
 
         self.next_player()
-        while self.players[self.current_player_index].current_bet == -1 or self.players[self.current_player_index].amount_of_credits == 0:
+        while self.players[self.current_player_index].is_dead or self.players[self.current_player_index].amount_of_credits == 0:
             self.next_player()
 
     def raise_func(self, value):
@@ -163,18 +165,18 @@ class Game:
         self.raise_lower_bound = value * 2
 
         self.next_player()
-        while self.players[self.current_player_index].current_bet == -1 or self.players[self.current_player_index].amount_of_credits == 0:
+        while self.players[self.current_player_index].is_dead or self.players[self.current_player_index].amount_of_credits == 0:
             self.next_player()
 
     def check_func(self):
         self.players[self.current_player_index].had_possibility_to_raise_or_bet = True
 
         self.next_player()
-        while self.players[self.current_player_index].current_bet == -1 or self.players[self.current_player_index].amount_of_credits == 0:
+        while self.players[self.current_player_index].is_dead or self.players[self.current_player_index].amount_of_credits == 0:
             self.next_player()
 
     def showdown(self) -> List[Player]:
-        undead_players = list(filter(lambda p: p.current_bet != -1 and p.amount_of_credits != 0, self.players))
+        undead_players = list(filter(lambda p: not p.is_dead and p.amount_of_credits != 0, self.players))
 
         best_players = [undead_players[0]]
 
@@ -204,7 +206,7 @@ class Game:
         return best_players
 
     def check_same_bets(self):
-        undead_players = list(filter(lambda x: x.current_bet != -1 and x.amount_of_credits != 0, self.players))
+        undead_players = list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.players))
         return len(set(map(lambda player: player.current_bet, list(filter(lambda p: p.amount_of_credits != p.current_bet, undead_players))))) in [0, 1]
 
     def deal_player_cards(self):
@@ -267,6 +269,9 @@ class Game:
     def start_new_round(self):
         # game logic
         for player in self.players:
+            if player.amount_of_credits != 0:
+                player.is_dead = False
+
             player.cards = []
             player.current_bet = 0
 

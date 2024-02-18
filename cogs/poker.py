@@ -354,7 +354,7 @@ class ButtonsMenu(discord.ui.View):
 
         if fold_result == 'start_new_round':
             await self.showdown()
-        elif not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1 and x.amount_of_credits != 0, self.current_game.players))))):
+        elif not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
@@ -396,7 +396,7 @@ class ButtonsMenu(discord.ui.View):
         self.current_game.call()
         write_poker_games_to_file(self.filename, self.games_obj)
 
-        if not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1 and x.amount_of_credits != 0, self.current_game.players))))):
+        if not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 draw_player_action_on_image(player_image, [current_player], self.font_path, 'Called.')
@@ -437,7 +437,7 @@ class ButtonsMenu(discord.ui.View):
         self.current_game.check_func()
         write_poker_games_to_file(self.filename, self.games_obj)
 
-        if not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: x.current_bet != -1 and x.amount_of_credits != 0, self.current_game.players))))):
+        if not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 draw_player_action_on_image(player_image, [current_player], self.font_path, 'Checked.')
@@ -495,7 +495,7 @@ class ButtonsMenu(discord.ui.View):
                 x_coord, y_coord = card_places_center[index]
                 player_image.paste(player_card_image, (x_coord, y_coord), player_card_image)
 
-            for dead_player in list(filter(lambda p: p.current_bet == -1, self.current_game.players)):
+            for dead_player in list(filter(lambda p: p.is_dead, self.current_game.players)):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(dead_player.player_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
                 draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
@@ -525,7 +525,7 @@ class ButtonsMenu(discord.ui.View):
             x_coord, y_coord = card_places_center[index]
             player_image.paste(player_card_image, (x_coord, y_coord), player_card_image)
 
-            for dead_player in list(filter(lambda p: p.current_bet == -1, self.current_game.players)):
+            for dead_player in list(filter(lambda p: p.is_dead, self.current_game.players)):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(dead_player.player_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
                 draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
