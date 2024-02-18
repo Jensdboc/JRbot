@@ -58,6 +58,7 @@ class Game:
         self.raise_lower_bound = int(start_amount / 100)
         self.start_amount = start_amount
         self.poker_start_message_id = poker_start_message_id
+        self.round_number = 0
 
         self.state = game_states["Starting"]
         self.open_cards = []
@@ -274,6 +275,10 @@ class Game:
         self.open_cards = []
         self.deck = Deck()
         self.current_player_index = 0
+        self.round_number += 1
+        if self.round_number % 20 == 0:
+            self.big_blind += 10
+            self.small_blind = self.big_blind // 2
 
         dealer_index = (self.get_player_index(self.dealer.player_id) + 1) % len(self.players)
         self.dealer = self.players[dealer_index]
