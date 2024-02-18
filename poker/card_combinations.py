@@ -29,9 +29,6 @@ def compare_card_combinations_of_players(cards_player_one: List[Card], cards_pla
     card_combination_player_one = get_card_combination_of_player(cards_player_one)
     card_combination_player_two = get_card_combination_of_player(cards_player_two)
 
-    print(card_combination_player_one)
-    print(card_combination_player_two)
-
     if order_of_card_combinations.index(card_combination_player_one[2]) < order_of_card_combinations.index(card_combination_player_two[2]):
         return 'player_one'
 
