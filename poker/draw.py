@@ -9,28 +9,33 @@ from poker.constants import player_places, right_panel_player_places, right_pane
 from poker.game import Game, Player
 
 
-async def create_and_save_avatar(client: discord.Client, player: Player) -> None:
+async def create_and_save_avatar(client: discord.Client, player: Player, real_player: Player) -> None:
     """
     Create and save the avatar of a player if not saved yet.
 
     :param client: The discord client.
     :param player: The player.
+    :param real_player: One of the real players in the game.
     """
     if not os.path.exists(f"data_pictures/avatars/{player.player_id}.png") or not os.path.exists(f"data_pictures/avatars/{player.player_id}_right_panel.png"):
-        discord_user = await client.fetch_user(player.player_id)
-        avatar = discord_user.display_avatar
-        if avatar is None:
-            avatar = discord_user.default_avatar
+        if player.is_bot:
+            real_discord_user = await client.fetch_user(real_player.player_id)
+            avatar = real_discord_user.default_avatar
+        else:
+            discord_user = await client.fetch_user(player.player_id)
+            avatar = discord_user.display_avatar
+            if avatar is None:
+                avatar = discord_user.default_avatar
 
         with requests.get(avatar.url) as r:
             img_data = r.content
-        with open(f"data_pictures/avatars/{discord_user.id}.png", 'wb') as handler:
+        with open(f"data_pictures/avatars/{player.player_id}.png", 'wb') as handler:
             handler.write(img_data)
 
-        player_avatar = circular_avatar(Image.open(f"data_pictures/avatars/{discord_user.id}.png").convert('RGBA').resize(avatar_size), avatar_size)
-        player_avatar.save(f"data_pictures/avatars/{discord_user.id}.png")
+        player_avatar = circular_avatar(Image.open(f"data_pictures/avatars/{player.player_id}.png").convert('RGBA').resize(avatar_size), avatar_size)
+        player_avatar.save(f"data_pictures/avatars/{player.player_id}.png")
         player_avatar_right_panel = player_avatar.resize(right_panel_avatar_size)
-        player_avatar_right_panel.save(f"data_pictures/avatars/{discord_user.id}_right_panel.png")
+        player_avatar_right_panel.save(f"data_pictures/avatars/{player.player_id}_right_panel.png")
         player_avatar.close()
         player_avatar_right_panel.close()
 
@@ -88,21 +93,17 @@ def circular_avatar(image: Image, size: int) -> Image:
     return output
 
 
-async def create_avatars_for_player(client: discord.Client, player: Player, current_game: Game, player_background: Image) -> Image:
+async def create_avatars_for_player(player: Player, current_game: Game, player_background: Image) -> Image:
     """
     Display avatars for players on their card spots.
 
-    :param client: The discord client.
     :param player: The player.
     :param current_game: The poker game.
-    :param poker_background: The display background.
+    :param player_background: The display background.
     :return: The edited poker background.
     """
     for p, player_place in zip(current_game.players[current_game.get_player_index(player.player_id) + 1:] + current_game.players[:current_game.get_player_index(player.player_id)], player_places):
-        discord_user = await client.fetch_user(p.player_id)
-        await create_and_save_avatar(client, p)
-
-        player_avatar = Image.open(f"data_pictures/avatars/{discord_user.id}.png")
+        player_avatar = Image.open(f"data_pictures/avatars/{p.player_id}.png")
         player_background.paste(player_avatar, player_place, player_avatar)
         player_avatar.close()
 
@@ -124,7 +125,7 @@ def draw_cross(image: Image, cross_upper_left_position: int, cross_upper_right_p
     draw.line([cross_upper_right_position, cross_bottom_left_position], fill="black", width=8)
 
 
-async def draw_right_panel_on_image(client, background, current_game, font_path, player, draw_player_action=False):
+async def draw_right_panel_on_image(background, current_game, font_path, player, draw_player_action=False):
     font = ImageFont.truetype(font_path, 32)
     draw = ImageDraw.Draw(background)
     text = f"Players: {len(current_game.players)}\nBlind: {current_game.small_blind}\n"
@@ -137,7 +138,6 @@ async def draw_right_panel_on_image(client, background, current_game, font_path,
 
     font = ImageFont.truetype(font_path, 30)
     for p, player_place, text_place in zip(current_game.players, right_panel_player_places, right_panel_credit_places):
-        await create_and_save_avatar(client, p)
         player_avatar_right_panel = Image.open(f"data_pictures/avatars/{p.player_id}_right_panel.png")
         background.paste(player_avatar_right_panel, player_place, player_avatar_right_panel)
         draw.text(text_place, f"{p.amount_of_credits}~{p.current_bet}", fill=text_color, font=font)

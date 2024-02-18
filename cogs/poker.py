@@ -11,7 +11,7 @@ from discord.ext import commands
 
 from poker.constants import cross_places, card_places_center, open_card_size, background_size, own_card_size, other_players_card_size, other_players_card_rotations, other_players_card_places, \
     other_players_card_places_offsets
-from poker.draw import create_avatars_for_player, draw_cross, draw_right_panel_on_image, draw_player_action_on_image
+from poker.draw import create_avatars_for_player, draw_cross, draw_right_panel_on_image, draw_player_action_on_image, create_and_save_avatar
 from poker.game import Game, Player
 from poker.utils import contains_number
 
@@ -42,7 +42,7 @@ class RaiseAmount(discord.ui.Modal, title='raise'):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 draw_player_action_on_image(player_image, [self.current_player], self.font_path, f'Raised to {self.current_player.current_bet}.')
 
-                await draw_right_panel_on_image(self.client, player_image, self.current_game, self.font_path, player)
+                await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
                 player_image.close()
 
                 discord_user = await self.client.fetch_user(player.player_id)
@@ -92,7 +92,7 @@ class BetAmount(discord.ui.Modal, title='bet'):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 draw_player_action_on_image(player_image, [self.current_player], self.font_path, f'Placed a bet of {self.current_player.current_bet} credits.')
 
-                await draw_right_panel_on_image(self.client, player_image, self.current_game, self.font_path, player)
+                await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
                 player_image.close()
 
                 discord_user = await self.client.fetch_user(player.player_id)
@@ -177,7 +177,7 @@ def load_poker_games_from_file(input_file: str) -> Games:
 
 
 async def display_player_cards_and_avatars(filename, current_game, poker_background, client, font_path, buttons_to_enable, draw_player_action=False):
-    for player in current_game.players:
+    for player in list(filter(lambda p: not p.is_bot, current_game.players)):
         player_background = poker_background.copy()
 
         if player.amount_of_credits != 0:
@@ -187,7 +187,7 @@ async def display_player_cards_and_avatars(filename, current_game, poker_backgro
                 player_card_image = player_card_image.resize(own_card_size)
                 player_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
 
-        player_background = await create_avatars_for_player(client, player, current_game, player_background)
+        player_background = await create_avatars_for_player(player, current_game, player_background)
 
         for other_player in current_game.players:
             if other_player.amount_of_credits == 0:
@@ -211,7 +211,7 @@ async def display_player_cards_and_avatars(filename, current_game, poker_backgro
 
         player_background.save(f"data_pictures/poker/message_{player.player_id}.png")
 
-        await draw_right_panel_on_image(client, player_background, current_game, font_path, player, draw_player_action=draw_player_action)
+        await draw_right_panel_on_image(player_background, current_game, font_path, player, draw_player_action=draw_player_action)
 
         discord_user = await client.fetch_user(player.player_id)
         player_is_dead = player.amount_of_credits == 0
@@ -295,11 +295,19 @@ class Poker(commands.Cog):
 
             await number_of_bots_message.delete()
 
+            for _ in range(number_of_bots):
+                current_game.add_bot()
+
             # Display general stats
             poker_background = Image.open("data_pictures/poker/poker_background_big_768x432.png").resize(background_size)
 
             if not os.path.exists('data_pictures/avatars'):
                 os.mkdir('data_pictures/avatars')
+
+            real_player = list(filter(lambda x: not x.is_bot, current_game.players))[0]
+
+            for player in current_game.players:
+                await create_and_save_avatar(self.client, player, real_player=real_player)
 
             # Display player cards
             await display_player_cards_and_avatars(self.filename, current_game, poker_background, self.client, self.font_path, ['fold', 'call', 'raise'])
@@ -398,7 +406,7 @@ class ButtonsMenu(discord.ui.View):
 
                 draw_player_action_on_image(player_image, [current_player], self.font_path, 'Folded.')
 
-                await draw_right_panel_on_image(self.client, player_image, self.current_game, self.font_path, player)
+                await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
                 player_image.close()
 
                 discord_user = await self.client.fetch_user(player.player_id)
@@ -435,7 +443,7 @@ class ButtonsMenu(discord.ui.View):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 draw_player_action_on_image(player_image, [current_player], self.font_path, 'Called.')
 
-                await draw_right_panel_on_image(self.client, player_image, self.current_game, self.font_path, player)
+                await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
                 player_image.close()
 
                 discord_user = await self.client.fetch_user(player.player_id)
@@ -476,7 +484,7 @@ class ButtonsMenu(discord.ui.View):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 draw_player_action_on_image(player_image, [current_player], self.font_path, 'Checked.')
 
-                await draw_right_panel_on_image(self.client, player_image, self.current_game, self.font_path, player)
+                await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
                 player_image.close()
 
                 discord_user = await self.client.fetch_user(player.player_id)
@@ -536,7 +544,7 @@ class ButtonsMenu(discord.ui.View):
 
             player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
 
-            await draw_right_panel_on_image(self.client, player_image, self.current_game, self.font_path, player)
+            await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
 
             discord_user = await self.client.fetch_user(player.player_id)
             await last_messages_to_players[player_index].delete()
@@ -566,7 +574,7 @@ class ButtonsMenu(discord.ui.View):
 
             player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
 
-            await draw_right_panel_on_image(self.client, player_image, self.current_game, self.font_path, player)
+            await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
 
             discord_user = await self.client.fetch_user(player.player_id)
             await last_messages_to_players[player_index].delete()
@@ -626,7 +634,7 @@ class ButtonsMenu(discord.ui.View):
                     cross_place = cross_places[user_index_in_game]
                     draw_cross(poker_background, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
 
-            await draw_right_panel_on_image(self.client, poker_background, self.current_game, self.font_path, player)
+            await draw_right_panel_on_image(poker_background, self.current_game, self.font_path, player)
 
             poker_background.close()
 
@@ -683,7 +691,7 @@ class ButtonsMenu(discord.ui.View):
 
         for player in current_game.players:
             player_background = poker_background.copy()
-            player_background = await draw_right_panel_on_image(self.client, player_background, current_game, self.font_path, player)
+            player_background = await draw_right_panel_on_image(player_background, current_game, self.font_path, player)
             player_background.close()
         poker_background.close()
 
