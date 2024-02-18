@@ -180,6 +180,19 @@ async def display_player_cards_and_avatars(filename, current_game, poker_backgro
                 draw_cross(player_background, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
                 player_background.save(f'data_pictures/poker/message_{player.player_id}.png')
 
+        if player.amount_of_credits == 0:
+            for other_player in current_game.players:
+                if other_player.player_id != player.player_id:
+                    index_relative_to_player = current_game.get_player_index_relative_to_other_player(other_player.player_id, player.player_id)
+                    for card_index, card in enumerate(other_player.cards):
+                        card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+                        player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+                        player_card_image = player_card_image.resize(other_players_card_size)
+                        player_card_image = player_card_image.rotate(other_players_card_rotations[index_relative_to_player], expand=True)
+                        other_players_cards_place_x = other_players_card_places[index_relative_to_player][0] + card_index * other_players_card_places_offsets[index_relative_to_player][0]
+                        other_players_cards_place_y = other_players_card_places[index_relative_to_player][1] + card_index * other_players_card_places_offsets[index_relative_to_player][1]
+                        player_background.paste(player_card_image, (other_players_cards_place_x, other_players_cards_place_y), player_card_image)
+
         player_background.save(f"data_pictures/poker/message_{player.player_id}.png")
 
         draw_pot(player_background, current_game, font_path, player, draw_player_action=draw_player_action)
