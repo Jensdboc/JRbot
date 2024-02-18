@@ -371,11 +371,11 @@ class ButtonsMenu(discord.ui.View):
                                                          view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, self.buttons_to_enable))
                 last_messages_to_players[index] = player_message
         elif self.current_game.players[self.current_game.current_player_index].current_bet == max(list(map(lambda x: x.current_bet, self.current_game.players))) and self.current_game.poker_round == 0:
-            await self.flop()
+            await self.flop([current_player], 'Folded.')
         elif self.current_game.players[self.current_game.current_player_index].current_bet == max(list(map(lambda x: x.current_bet, self.current_game.players))) and self.current_game.poker_round == 1:
-            await self.turn_or_river()
+            await self.turn_or_river([current_player], 'Folded.')
         elif self.current_game.players[self.current_game.current_player_index].current_bet == max(list(map(lambda x: x.current_bet, self.current_game.players))) and self.current_game.poker_round == 2:
-            await self.turn_or_river(4)
+            await self.turn_or_river([current_player], 'Folded.', 4)
         else:
             await self.showdown()
 
@@ -408,11 +408,11 @@ class ButtonsMenu(discord.ui.View):
                                                          view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, self.buttons_to_enable))
                 last_messages_to_players[index] = player_message
         elif self.current_game.poker_round == 0:
-            await self.flop()
+            await self.flop([current_player], 'Called.')
         elif self.current_game.poker_round == 1:
-            await self.turn_or_river()
+            await self.turn_or_river([current_player], 'Called.')
         elif self.current_game.poker_round == 2:
-            await self.turn_or_river(4)
+            await self.turn_or_river([current_player], 'Called.', 4)
         else:
             await self.showdown()
 
@@ -449,9 +449,9 @@ class ButtonsMenu(discord.ui.View):
                                                          view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, ['fold', 'bet', 'check']))
                 last_messages_to_players[index] = player_message
         elif self.current_game.poker_round == 1:
-            await self.turn_or_river()
+            await self.turn_or_river([current_player], 'Checked.')
         elif self.current_game.poker_round == 2:
-            await self.turn_or_river(4)
+            await self.turn_or_river([current_player], 'Checked.', 4)
         else:
             await self.showdown()
 
@@ -477,7 +477,7 @@ class ButtonsMenu(discord.ui.View):
         await self.end_game(self.current_game.round_winners[0])
         await interaction.response.defer()
 
-    async def flop(self):
+    async def flop(self, players_action: List[Player], action_to_draw: str):
         self.current_game.reset_possibility_to_raise()
         self.current_game.poker_round += 1
         self.current_game.current_player_index = self.current_game.get_player_index(self.current_game.dealer.player_id)
@@ -500,6 +500,7 @@ class ButtonsMenu(discord.ui.View):
 
             player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
 
+            draw_player_action_on_image(player_image, players_action, self.font_path, action_to_draw)
             draw_pot(player_image, self.current_game, self.font_path, player)
 
             discord_user = await self.client.fetch_user(player.player_id)
@@ -509,7 +510,7 @@ class ButtonsMenu(discord.ui.View):
             last_messages_to_players[player_index] = player_message
             player_image.close()
 
-    async def turn_or_river(self, index=3):
+    async def turn_or_river(self, players_action: List[Player], action_to_draw: str, index=3):
         self.current_game.reset_possibility_to_raise()
         self.current_game.poker_round += 1
 
@@ -530,6 +531,7 @@ class ButtonsMenu(discord.ui.View):
 
             player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
 
+            draw_player_action_on_image(player_image, players_action, self.font_path, action_to_draw)
             draw_pot(player_image, self.current_game, self.font_path, player)
 
             discord_user = await self.client.fetch_user(player.player_id)
