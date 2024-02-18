@@ -63,7 +63,7 @@ class Game:
         self.open_cards = []
         self.deck = Deck()
         self.current_player_index = 0
-        self.last_player_who_raised = None
+        self.last_player_who_raised = []
         self.pot = self.small_blind + self.big_blind
         self.dealer: Player = self.players[0]
         self.round_winners: List[Player] = []
@@ -174,7 +174,9 @@ class Game:
             self.next_player()
 
     def showdown(self) -> List[Player]:
-        undead_players = list(filter(lambda p: p.current_bet != -1 and self.players[self.current_player_index].amount_of_credits != 0, self.players))
+        for player in self.players:
+            print(f'{player.name} has {player.amount_of_credits} credits and a bet of {player.current_bet}!')
+        undead_players = list(filter(lambda p: p.current_bet != -1 and p.amount_of_credits != 0, self.players))
 
         print(list(map(lambda x: x.name, undead_players)))
 
@@ -196,7 +198,10 @@ class Game:
         for player in list(filter(lambda p: p.player_id not in list(map(lambda x: x.player_id, best_players)) and p.amount_of_credits != 0, undead_players)):
             player.amount_of_credits -= player.current_bet
 
-        self.last_player_who_raised.amount_of_credits += unused_credits
+        for player_index in self.last_player_who_raised[::-1]:
+            if self.players[player_index].amount_of_credits != 0:
+                self.players[player_index].amount_of_credits += unused_credits
+                break
 
         self.round_winners = best_players
 
@@ -234,7 +239,7 @@ class Game:
             big_blind_index = (big_blind_index + 1) % len(self.players)
             big_blind = self.players[big_blind_index]
 
-        self.last_player_who_raised = small_blind
+        self.last_player_who_raised = [self.current_player_index]
         small_blind.current_bet = self.small_blind if self.small_blind <= small_blind.amount_of_credits else small_blind.amount_of_credits
         big_blind.current_bet = self.big_blind if self.big_blind <= big_blind.amount_of_credits else big_blind.amount_of_credits
 

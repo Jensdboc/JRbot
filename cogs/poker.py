@@ -423,7 +423,9 @@ class ButtonsMenu(discord.ui.View):
     async def raise_func(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         current_player = self.current_game.players[self.current_game.current_player_index]
 
-        self.current_game.last_player_who_raised = self.current_game.players[self.current_game.current_player_index]
+        if self.current_game.current_player_index in self.current_game.last_player_who_raised:
+            self.current_game.last_player_who_raised.remove(self.current_game.current_player_index)
+        self.current_game.last_player_who_raised.append(self.current_game.current_player_index)
 
         await interaction.response.send_modal(RaiseAmount(self.current_game, current_player, self.font_path, self.client, self.filename, self.games_obj, self.buttons_to_enable))
 
@@ -463,7 +465,9 @@ class ButtonsMenu(discord.ui.View):
     async def bet_func(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         current_player = self.current_game.players[self.current_game.current_player_index]
 
-        self.current_game.last_player_who_raised = self.current_game.players[self.current_game.current_player_index]
+        if self.current_game.current_player_index in self.current_game.last_player_who_raised:
+            self.current_game.last_player_who_raised.remove(self.current_game.current_player_index)
+        self.current_game.last_player_who_raised.append(self.current_game.current_player_index)
 
         await interaction.response.send_modal(BetAmount(self.current_game, current_player, self.font_path, self.client, self.filename, self.games_obj, ['fold', 'call', 'raise']))
 
