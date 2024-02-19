@@ -46,7 +46,7 @@ async def delete_and_send_message(client, filename: str, buttons_to_enable: List
         last_messages_to_players.append(player_message)
 
 
-async def display_player_action_and_send_messages(client, filename: str, buttons_to_enable: List[str], current_game: Game, font_path: str, action_type: str) -> None:
+async def display_player_action_and_send_messages(client, filename: str, buttons_to_enable: List[str], current_game: Game, current_player: Player, font_path: str, action_type: str) -> None:
     """
     Display the action of the player and send a message to all real players.
 
@@ -54,13 +54,12 @@ async def display_player_action_and_send_messages(client, filename: str, buttons
     :param filename: The filename.
     :param buttons_to_enable: The buttons that need to be enabled.
     :param current_game: The current game.
+    :param current_player: The current player.
     :param font_path: The font path.
     :param action_type: The action type (raise, bet, ...).
 
     :return: True if the string contains a number.
     """
-    current_player = current_game.players[current_game.current_player_index]
-
     for index, player in enumerate(current_game.get_real_players()):
         player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
         if action_type == 'raise':
@@ -72,7 +71,7 @@ async def display_player_action_and_send_messages(client, filename: str, buttons
 
         draw_player_action_on_image(player_image, [current_player], font_path, action)
 
-        await draw_right_panel_on_image(player_image, current_game, font_path, player)
+        draw_right_panel_on_image(player_image, current_game, font_path, player)
         player_image.close()
 
         await delete_and_send_message(client, filename, buttons_to_enable, current_game, font_path, player, index)
@@ -107,7 +106,7 @@ async def display_player_cards_and_avatars_and_send_messages(filename: str, curr
 
         player_background.save(f"data_pictures/poker/message_{player.player_id}.png")
 
-        await draw_right_panel_on_image(player_background, current_game, font_path, player, draw_player_action=draw_player_action)
+        draw_right_panel_on_image(player_background, current_game, font_path, player, draw_player_action=draw_player_action)
         player_background.close()
 
         await delete_and_send_message(client, filename, buttons_to_enable, current_game, font_path, player, index, player_is_dead=(player.amount_of_credits == 0), delete_messages=False)
@@ -130,9 +129,10 @@ class RaiseAmount(discord.ui.Modal, title='raise'):
     async def on_submit(self, interaction: discord.Interaction):
         if (contains_number(self.rai.value) and self.current_game.raise_lower_bound <= int(self.rai.value) <= self.current_player.amount_of_credits) or self.rai.value.lower() in ['all-in', 'all', 'all in']:
             raised_value = int(self.rai.value) if contains_number(self.rai.value) else self.current_player.amount_of_credits
+            current_player = self.current_game.players[self.current_game.current_player_index]
             self.current_game.raise_func(raised_value)
 
-            await display_player_action_and_send_messages(self.client, self.filename, self.buttons_to_enable, self.current_game, self.font_path, 'raise')
+            await display_player_action_and_send_messages(self.client, self.filename, self.buttons_to_enable, self.current_game, current_player, self.font_path, 'raise')
         elif contains_number(self.rai.value) and int(self.rai.value) <= self.current_player.amount_of_credits:
             await interaction.response.send_message(f'You must raise by more than {self.current_game.raise_lower_bound} credits!', ephemeral=True)
         elif contains_number(self.rai.value):
@@ -166,9 +166,10 @@ class BetAmount(discord.ui.Modal, title='bet'):
     async def on_submit(self, interaction: discord.Interaction):
         if (contains_number(self.bet.value) and self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players))) <= int(self.bet.value) <= self.current_player.amount_of_credits) or self.bet.value.lower() in ['all-in', 'all', 'all in']:
             raised_value = int(self.bet.value) if contains_number(self.bet.value) else self.current_player.amount_of_credits
+            current_player = self.current_game.players[self.current_game.current_player_index]
             self.current_game.raise_func(raised_value)
 
-            await display_player_action_and_send_messages(self.client, self.filename, self.buttons_to_enable, self.current_game, self.font_path, 'bet')
+            await display_player_action_and_send_messages(self.client, self.filename, self.buttons_to_enable, self.current_game, current_player, self.font_path, 'bet')
         elif contains_number(self.bet.value) and int(self.bet.value) <= self.current_player.amount_of_credits:
             minimum_credits = self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players)))
             await interaction.response.send_message(f'You must bet at least {minimum_credits} credits!', ephemeral=True)
@@ -415,7 +416,7 @@ class ButtonsMenu(discord.ui.View):
 
                 draw_player_action_on_image(player_image, [current_player], self.font_path, 'Folded.')
 
-                await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
+                draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
                 player_image.close()
 
                 await delete_and_send_message(self.client, self.filename, self.buttons_to_enable, self.current_game, self.font_path, player, index)
@@ -447,7 +448,7 @@ class ButtonsMenu(discord.ui.View):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 draw_player_action_on_image(player_image, [current_player], self.font_path, 'Called.')
 
-                await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
+                draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
                 player_image.close()
 
                 await delete_and_send_message(self.client, self.filename, self.buttons_to_enable, self.current_game, self.font_path, player, index)
@@ -483,7 +484,7 @@ class ButtonsMenu(discord.ui.View):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 draw_player_action_on_image(player_image, [current_player], self.font_path, 'Checked.')
 
-                await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
+                draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
                 player_image.close()
 
                 await delete_and_send_message(self.client, self.filename, ['fold', 'bet', 'check'], self.current_game, self.font_path, player, index)
@@ -526,7 +527,7 @@ class ButtonsMenu(discord.ui.View):
             player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
 
             # display the open cards
-            player_image = display_open_cards(player_image, self.current_game.open_cards[:3])
+            player_image = await display_open_cards(player_image, self.current_game.open_cards[:3], cards_range_start=0, cards_range_end=3)
 
             # display a cross for each dead player
             for dead_player in self.current_game.get_dead_players():
@@ -536,9 +537,9 @@ class ButtonsMenu(discord.ui.View):
 
             player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
 
-            player_image = await draw_player_action_on_image(player_image, players_action, self.font_path, action_to_draw)
+            player_image = draw_player_action_on_image(player_image, players_action, self.font_path, action_to_draw)
 
-            await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
+            draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
             player_image.close()
 
             await delete_and_send_message(self.client, self.filename, ['fold', 'bet', 'check'], self.current_game, self.font_path, player, player_index)
@@ -551,18 +552,19 @@ class ButtonsMenu(discord.ui.View):
             player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
 
             # display the open cards
-            player_image = display_open_cards(player_image, [self.current_game.open_cards[index]])
+            player_image = await display_open_cards(player_image, [self.current_game.open_cards[index]], cards_range_start=index, cards_range_end=(index + 1))
 
-            for dead_player in list(filter(lambda p: p.is_dead, self.current_game.players)):
+            for dead_player in self.current_game.get_dead_players():
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(dead_player.player_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
                 player_image = draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
 
+
             player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
 
-            player_image = await draw_player_action_on_image(player_image, players_action, self.font_path, action_to_draw)
+            player_image = draw_player_action_on_image(player_image, players_action, self.font_path, action_to_draw)
 
-            await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
+            draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
             player_image.close()
 
             await delete_and_send_message(self.client, self.filename, ['fold', 'bet', 'check'], self.current_game, self.font_path, player, player_index)
@@ -590,7 +592,7 @@ class ButtonsMenu(discord.ui.View):
                 poker_background = await display_current_player_cards(poker_background, player.cards)
 
             # display the open cards
-            poker_background = display_open_cards(poker_background, self.current_game.open_cards)
+            poker_background = await display_open_cards(poker_background, self.current_game.open_cards, cards_range_start=0, cards_range_end=5)
 
             # display the cards of other players
             for other_player_index, other_player in enumerate(self.current_game.players):
@@ -603,7 +605,7 @@ class ButtonsMenu(discord.ui.View):
                     cross_place = cross_places[user_index_in_game]
                     poker_background = draw_cross(poker_background, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
 
-            await draw_right_panel_on_image(poker_background, self.current_game, self.font_path, player)
+            draw_right_panel_on_image(poker_background, self.current_game, self.font_path, player)
 
             poker_background.close()
 
@@ -651,12 +653,12 @@ class ButtonsMenu(discord.ui.View):
 
         for player in self.current_game.get_real_players():
             player_background = poker_background.copy()
-            player_background = await draw_right_panel_on_image(player_background, self.current_game, self.font_path, player)
+            draw_right_panel_on_image(player_background, self.current_game, self.font_path, player)
             player_background.close()
         poker_background.close()
 
     async def end_game(self, winner: Player):
-        for player_index, player in enumerate(self.current_game.players):
+        for player_index, player in enumerate(self.current_game.get_real_players()):
             discord_user = await self.client.fetch_user(player.player_id)
             await last_messages_to_players[player_index].delete()
 

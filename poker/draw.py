@@ -144,7 +144,7 @@ def draw_player_action_on_image(poker_background: Image, players: List[Player], 
     return display_text_on_image(poker_background, Font(font_path, 24), Text(action, (int(41 + ((458 - text_width) / 2)), 390), (255, 255, 255)))
 
 
-async def draw_right_panel_on_image(background: Image, current_game: Game, font_path: str, player: Player, draw_player_action: bool = False) -> Image:
+def draw_right_panel_on_image(background: Image, current_game: Game, font_path: str, player: Player, draw_player_action: bool = False) -> Image:
     """
     Display the right panel of the poker background.
 
@@ -176,8 +176,6 @@ async def draw_right_panel_on_image(background: Image, current_game: Game, font_
 
     # save the result
     background.save(f"data_pictures/poker/message_action_{player.player_id}.png")
-
-    return background
 
 
 async def display_current_player_cards(background: Image, cards: List[Card]) -> Image:
@@ -224,16 +222,19 @@ async def display_cards_of_another_player(background: Image, cards: List[Card], 
     return background
 
 
-async def display_open_cards(background: Image, cards: List[Card]) -> Image:
+async def display_open_cards(background: Image, cards: List[Card], cards_range_start: int = 0, cards_range_end: int = 3) -> Image:
     """
     Display the open cards.
 
     :param background: The display background.
     :param cards: The open cards.
+    :param cards_range_start: The start index.
+    :param cards_range_end: The end index.
 
     :return: The edited poker background.
     """
-    for index, card in enumerate(cards):
+    for index in range(cards_range_start, cards_range_end):
+        card = cards[index - cards_range_start]
         card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
         player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
         player_card_image = player_card_image.resize(open_card_size)
