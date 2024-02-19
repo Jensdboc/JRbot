@@ -38,3 +38,6 @@ class Player:
                 with open("poker_elo.txt", 'a') as elo_file:
                     self.elo = 1000
                     elo_file.write(f"{player_id} {self.elo}\n")
+
+    def move(self, available_moves):
+        pass

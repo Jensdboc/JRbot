@@ -47,16 +47,16 @@ class Game:
             self.players.append(Player(player.id, player.display_name, amount_of_credits=self.start_amount))
         return "Current players: \n>" + '\n'.join(list(map(lambda x: x.name, self.players)))
 
-    def add_bot(self) -> None:
+    def add_bot(self, bots_level) -> None:
         """
         Add a bot to the starting poker game.
 
-        :param bot: The bot.
+        :param bots_level: The level of the bot.
         :return: The description of the starting embed.
         """
         possible_ids = set(range(10)).difference(set(map(lambda p: p.player_id, self.players)))
         bot_id = choice(list(possible_ids))
-        bot = Bot(bot_id, f'bot_{bot_id}', self.start_amount)
+        bot = Bot(bot_id, f'bot_{bot_id}', self.start_amount, bots_level)
         self.players.append(bot)
 
     def remove_player(self, player: discord.User) -> str:

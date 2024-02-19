@@ -341,7 +341,7 @@ class Poker(commands.Cog):
                 await bots_level_message.delete()
 
             for _ in range(number_of_bots):
-                current_game.add_bot()
+                current_game.add_bot(bots_level)
 
             # Display general stats
             poker_background = Image.open("data_pictures/poker/poker_background_big_768x432.png").resize(background_size)
@@ -355,6 +355,8 @@ class Poker(commands.Cog):
 
             # Display players cards and avatars
             await display_player_cards_and_avatars_and_send_messages(self.filename, current_game, poker_background, self.client, self.font_path, ['fold', 'call', 'raise'])
+
+            await execute_bot_moves(current_game, ['fold', 'call', 'raise'])
 
     @commands.Cog.listener("on_reaction_remove")
     async def on_reaction_remove_poker(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
@@ -704,6 +706,12 @@ class ButtonsMenu(discord.ui.View):
 
         self.games_obj.remove_game(self.current_game)
         write_poker_games_to_file(self.filename, self.games_obj)
+
+
+async def execute_bot_moves(current_game: Game, available_moves):
+    moves = []
+    while current_game.players[current_game.current_player_index].is_bot:
+        moves.append(current_game.players[current_game.current_player_index].move(available_moves))
 
 
 async def setup(client):
