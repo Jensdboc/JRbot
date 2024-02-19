@@ -59,13 +59,13 @@ class Game:
     """
     Class representing a poker game.
     """
-    def __init__(self, player: discord.User, small_blind: int, start_amount: int, poker_start_message_id: int):
+    def __init__(self, player: discord.User, poker_start_message_id: int):
         self.game_author_id = player.id
-        self.players: List[Player] = [Player(player.id, player.display_name, amount_of_credits=start_amount)]
-        self.small_blind = small_blind
+        self.start_amount = 1000
+        self.players: List[Player] = [Player(player.id, player.display_name, amount_of_credits=self.start_amount)]
+        self.small_blind = 5
         self.big_blind = 2 * self.small_blind
-        self.raise_lower_bound = int(start_amount / 100)
-        self.start_amount = start_amount
+        self.raise_lower_bound = 10
         self.poker_start_message_id = poker_start_message_id
         self.round_number = 0
 

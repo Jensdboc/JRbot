@@ -131,7 +131,6 @@ class RaiseAmount(discord.ui.Modal, title='raise'):
         if (contains_number(self.rai.value) and self.current_game.raise_lower_bound <= int(self.rai.value) <= self.current_player.amount_of_credits) or self.rai.value.lower() in ['all-in', 'all', 'all in']:
             raised_value = int(self.rai.value) if contains_number(self.rai.value) else self.current_player.amount_of_credits
             self.current_game.raise_func(raised_value)
-            write_poker_games_to_file(self.filename, self.games_obj)
 
             await display_player_action_and_send_messages(self.client, self.filename, self.buttons_to_enable, self.current_game, self.font_path, 'raise')
         elif contains_number(self.rai.value) and int(self.rai.value) <= self.current_player.amount_of_credits:
@@ -168,7 +167,6 @@ class BetAmount(discord.ui.Modal, title='bet'):
         if (contains_number(self.bet.value) and self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players))) <= int(self.bet.value) <= self.current_player.amount_of_credits) or self.bet.value.lower() in ['all-in', 'all', 'all in']:
             raised_value = int(self.bet.value) if contains_number(self.bet.value) else self.current_player.amount_of_credits
             self.current_game.raise_func(raised_value)
-            write_poker_games_to_file(self.filename, self.games_obj)
 
             await display_player_action_and_send_messages(self.client, self.filename, self.buttons_to_enable, self.current_game, self.font_path, 'bet')
         elif contains_number(self.bet.value) and int(self.bet.value) <= self.current_player.amount_of_credits:
@@ -190,8 +188,10 @@ class BetAmount(discord.ui.Modal, title='bet'):
 
 class SelectNumberOfBots(discord.ui.Select):
     def __init__(self, number_of_players):
+        minimum_number_of_bots = 1 if number_of_players == 1 else 0
+
         options = [
-            discord.SelectOption(label=f'{x} bot') if x == 1 else discord.SelectOption(label=f'{x} bots') for x in range(11 - number_of_players)
+            discord.SelectOption(label=f'{x} bot') if x == 1 else discord.SelectOption(label=f'{x} bots') for x in range(minimum_number_of_bots, 11 - number_of_players)
         ]
         super().__init__(placeholder="Select the number of bots", max_values=1, min_values=1, options=options)
 
@@ -261,30 +261,21 @@ class Poker(commands.Cog):
         write_poker_games_to_file(self.filename, Games())
         print(f"{self.filename} created")
 
-    @commands.command(usage="!poker small_blind",
+    @commands.command(usage="!poker",
                       description="Start a poker game and wait for players to join.",
-                      help="!poker 5")
-    async def poker(self, ctx: commands.Context, small_blind: int = 5) -> None:
+                      help="!poker")
+    async def poker(self, ctx: commands.Context) -> None:
         games_obj = load_poker_games_from_file(self.filename)
-        start_amount = 1000
 
         for game in games_obj.games:
             if (ctx.author.id, ctx.author.display_name) in list(map(lambda x: (x.player_id, x.name), game.players)):
                 await ctx.reply("You are already in a game!")
                 return
 
-        if small_blind <= 0 or small_blind > 500000:
-            await ctx.reply("The small blind must be greater than 0 and less than 500000!")
-            return
-
-        if small_blind > start_amount / 20:
-            await ctx.reply(f"The max small blind for a start amount of {start_amount} is {start_amount / 20}!")
-            return
-
         poker_start_embed = discord.Embed(title="A poker game has started!", description=f"Current players: \n>{ctx.author.display_name}")
         poker_start_message = await ctx.send(embed=poker_start_embed)
 
-        new_game = Game(ctx.author, small_blind, start_amount, poker_start_message.id)
+        new_game = Game(ctx.author, poker_start_message.id)
         games_obj.add_game(new_game)
         write_poker_games_to_file(self.filename, games_obj)
 
@@ -304,11 +295,10 @@ class Poker(commands.Cog):
         if reaction.emoji == '✋' and current_game is not None and len(current_game.players) < 10:
             embed = reaction.message.embeds[0]
             embed.description = current_game.add_player(user)
+            write_poker_games_to_file(self.filename, games_obj)
             await reaction.message.edit(embed=embed)
-            write_poker_games_to_file(self.filename, games_obj)
-        elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0].player_id and 2 <= len(current_game.players) <= 10:
+        elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0].player_id and 0 < len(current_game.players) <= 10:
             current_game.on_game_start()
-            write_poker_games_to_file(self.filename, games_obj)
             await reaction.message.delete()
 
             number_of_bots_message = await user.send("Choose the number of bots please!", view=SelectView(len(current_game.players)))
@@ -327,15 +317,11 @@ class Poker(commands.Cog):
             if not os.path.exists('data_pictures/avatars'):
                 os.mkdir('data_pictures/avatars')
 
-            real_player = list(filter(lambda x: not x.is_bot, current_game.players))[0]
-
             for player in current_game.players:
-                await create_and_save_avatar(self.client, player, real_player=real_player)
+                await create_and_save_avatar(self.client, player, real_player=current_game.get_real_players()[0])
 
             # Display player cards
             await display_player_cards_and_avatars_and_send_messages(self.filename, current_game, poker_background, self.client, self.font_path, ['fold', 'call', 'raise'])
-
-            write_poker_games_to_file(self.filename, games_obj)
 
     @commands.Cog.listener("on_reaction_remove")
     async def on_reaction_remove_poker(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
@@ -348,7 +334,7 @@ class Poker(commands.Cog):
             current_game = filtered_list_of_games[0]
 
         if reaction.emoji == '✋' and current_game is not None:
-            if len(current_game.players) == 1 and user.id == current_game.players[0].player_id:
+            if len(current_game.players) == 0:
                 games_obj.remove_game(current_game)
                 write_poker_games_to_file(self.filename, games_obj)
                 await reaction.message.delete()
@@ -415,7 +401,6 @@ class ButtonsMenu(discord.ui.View):
         current_player = self.current_game.players[self.current_game.current_player_index]
 
         fold_result = self.current_game.fold()
-        write_poker_games_to_file(self.filename, self.games_obj)
 
         if fold_result == 'start_new_round':
             await self.showdown()
@@ -459,7 +444,6 @@ class ButtonsMenu(discord.ui.View):
         current_player = self.current_game.players[self.current_game.current_player_index]
 
         self.current_game.call()
-        write_poker_games_to_file(self.filename, self.games_obj)
 
         if not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
@@ -500,7 +484,6 @@ class ButtonsMenu(discord.ui.View):
         current_player = self.current_game.players[self.current_game.current_player_index]
 
         self.current_game.check_func()
-        write_poker_games_to_file(self.filename, self.games_obj)
 
         if not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.players):
@@ -612,8 +595,6 @@ class ButtonsMenu(discord.ui.View):
 
         game_finished = self.current_game.game_finished()
 
-        write_poker_games_to_file(self.filename, self.games_obj)
-
         for player_index, player in enumerate(self.current_game.players):
             poker_background = Image.open("data_pictures/poker/poker_background_big_768x432.png")
 
@@ -694,8 +675,6 @@ class ButtonsMenu(discord.ui.View):
     async def start_new_round(self, current_game: Game):
         global last_messages_to_players
 
-        games_obj: Games = load_poker_games_from_file(self.filename)
-
         current_game.start_new_round()
 
         for index, player in enumerate(self.current_game.players):
@@ -717,8 +696,6 @@ class ButtonsMenu(discord.ui.View):
             player_background = await draw_right_panel_on_image(player_background, current_game, self.font_path, player)
             player_background.close()
         poker_background.close()
-
-        write_poker_games_to_file(self.filename, games_obj)
 
     async def end_game(self, winner: Player):
         for player_index, player in enumerate(self.current_game.players):
