@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageOps, ImageFont
 
 from poker.card import Card
 from poker.constants import right_panel_player_places, right_panel_start, avatar_size, right_panel_avatar_size, right_panel_credit_places, lower_panel_actions, background_size, own_card_size, \
-    other_players_card_size, other_players_card_rotations, other_players_card_places, other_players_card_places_offsets
+    other_players_card_size, other_players_card_rotations, other_players_card_places, other_players_card_places_offsets, open_card_size, card_places_center
 from poker.game import Player, Game
 from poker.utils import Font, Text
 
@@ -189,7 +189,6 @@ async def display_current_player_cards(background: Image, cards: List[Card]) -> 
 
     :return: The edited poker background.
     """
-
     for index, card in enumerate(cards):
         card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
 
@@ -219,6 +218,28 @@ async def display_cards_of_another_player(background: Image, cards: List[Card], 
         other_players_cards_place_x = other_players_card_places[index_relative_to_current_player][0] + card_index * other_players_card_places_offsets[index_relative_to_current_player][0]
         other_players_cards_place_y = other_players_card_places[index_relative_to_current_player][1] + card_index * other_players_card_places_offsets[index_relative_to_current_player][1]
         background.paste(player_card_image, (other_players_cards_place_x, other_players_cards_place_y), player_card_image)
+
+        player_card_image.close()
+
+    return background
+
+
+async def display_open_cards(background: Image, cards: List[Card]) -> Image:
+    """
+    Display the open cards.
+
+    :param background: The display background.
+    :param cards: The open cards.
+
+    :return: The edited poker background.
+    """
+    for index, card in enumerate(cards):
+        card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+        player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+        player_card_image = player_card_image.resize(open_card_size)
+
+        x_coord, y_coord = card_places_center[index]
+        background.paste(player_card_image, (x_coord, y_coord), player_card_image)
 
         player_card_image.close()
 

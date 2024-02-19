@@ -116,6 +116,9 @@ class Game:
     def get_real_players(self):
         return list(filter(lambda p: not p.is_bot, self.players))
 
+    def get_dead_players(self):
+        return list(filter(lambda p: not p.is_dead, self.players))
+
     def get_player_from_id(self, player_id: int) -> Player:
         index = 0
         p = self.players[index]

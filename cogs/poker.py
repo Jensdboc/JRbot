@@ -9,9 +9,9 @@ from PIL import Image
 import discord
 from discord.ext import commands
 
-from poker.constants import cross_places, card_places_center, open_card_size, background_size, own_card_size, other_players_card_size, other_players_card_rotations, other_players_card_places, \
-    other_players_card_places_offsets, player_places
-from poker.draw import draw_cross, draw_right_panel_on_image, draw_player_action_on_image, create_and_save_avatar, display_avatars, display_current_player_cards, display_cards_of_another_player
+from poker.constants import cross_places, background_size, player_places
+from poker.draw import draw_cross, draw_right_panel_on_image, draw_player_action_on_image, create_and_save_avatar, display_avatars, display_current_player_cards, display_cards_of_another_player, \
+    display_open_cards
 from poker.game import Game, Player
 from poker.utils import contains_number
 
@@ -317,10 +317,11 @@ class Poker(commands.Cog):
             if not os.path.exists('data_pictures/avatars'):
                 os.mkdir('data_pictures/avatars')
 
+            # create the avatars
             for player in current_game.players:
                 await create_and_save_avatar(self.client, player, real_player=current_game.get_real_players()[0])
 
-            # Display player cards
+            # Display player cards and avatars
             await display_player_cards_and_avatars_and_send_messages(self.filename, current_game, poker_background, self.client, self.font_path, ['fold', 'call', 'raise'])
 
     @commands.Cog.listener("on_reaction_remove")
@@ -405,7 +406,7 @@ class ButtonsMenu(discord.ui.View):
         if fold_result == 'start_new_round':
             await self.showdown()
         elif not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.current_game.players))))):
-            for index, player in enumerate(self.current_game.players):
+            for index, player in enumerate(self.current_game.get_real_players()):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
@@ -417,16 +418,12 @@ class ButtonsMenu(discord.ui.View):
                 await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
                 player_image.close()
 
-                discord_user = await self.client.fetch_user(player.player_id)
-                await last_messages_to_players[index].delete()
-                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
-                                                         view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, self.buttons_to_enable))
-                last_messages_to_players[index] = player_message
-        elif self.current_game.players[self.current_game.current_player_index].current_bet == max(list(map(lambda x: x.current_bet, self.current_game.players))) and self.current_game.poker_round == 0:
+                await delete_and_send_message(self.client, self.filename, self.buttons_to_enable, self.current_game, self.font_path, player, index)
+        elif self.current_game.poker_round == 0:
             await self.flop([current_player], 'Folded.')
-        elif self.current_game.players[self.current_game.current_player_index].current_bet == max(list(map(lambda x: x.current_bet, self.current_game.players))) and self.current_game.poker_round == 1:
+        elif self.current_game.poker_round == 1:
             await self.turn_or_river([current_player], 'Folded.')
-        elif self.current_game.players[self.current_game.current_player_index].current_bet == max(list(map(lambda x: x.current_bet, self.current_game.players))) and self.current_game.poker_round == 2:
+        elif self.current_game.poker_round == 2:
             await self.turn_or_river([current_player], 'Folded.', 4)
         else:
             await self.showdown()
@@ -446,18 +443,14 @@ class ButtonsMenu(discord.ui.View):
         self.current_game.call()
 
         if not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.current_game.players))))):
-            for index, player in enumerate(self.current_game.players):
+            for index, player in enumerate(self.current_game.get_real_players()):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 draw_player_action_on_image(player_image, [current_player], self.font_path, 'Called.')
 
                 await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
                 player_image.close()
 
-                discord_user = await self.client.fetch_user(player.player_id)
-                await last_messages_to_players[index].delete()
-                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
-                                                         view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, self.buttons_to_enable))
-                last_messages_to_players[index] = player_message
+                await delete_and_send_message(self.client, self.filename, self.buttons_to_enable, self.current_game, self.font_path, player, index)
         elif self.current_game.poker_round == 0:
             await self.flop([current_player], 'Called.')
         elif self.current_game.poker_round == 1:
@@ -486,18 +479,14 @@ class ButtonsMenu(discord.ui.View):
         self.current_game.check_func()
 
         if not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.current_game.players))))):
-            for index, player in enumerate(self.current_game.players):
+            for index, player in enumerate(self.current_game.get_real_players()):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 draw_player_action_on_image(player_image, [current_player], self.font_path, 'Checked.')
 
                 await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
                 player_image.close()
 
-                discord_user = await self.client.fetch_user(player.player_id)
-                await last_messages_to_players[index].delete()
-                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
-                                                         view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, ['fold', 'bet', 'check']))
-                last_messages_to_players[index] = player_message
+                await delete_and_send_message(self.client, self.filename, ['fold', 'bet', 'check'], self.current_game, self.font_path, player, index)
         elif self.current_game.poker_round == 1:
             await self.turn_or_river([current_player], 'Checked.')
         elif self.current_game.poker_round == 2:
@@ -519,7 +508,7 @@ class ButtonsMenu(discord.ui.View):
 
     @discord.ui.button(label="start new round", style=discord.ButtonStyle.blurple, custom_id="start_new_round", disabled=True)
     async def start_new_round_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        await self.start_new_round(self.current_game)
+        await self.start_new_round()
         await interaction.response.defer()
 
     @discord.ui.button(label="end game", style=discord.ButtonStyle.blurple, custom_id="end_game", disabled=True)
@@ -533,45 +522,36 @@ class ButtonsMenu(discord.ui.View):
         self.current_game.current_player_index = self.current_game.get_player_index(self.current_game.dealer.player_id)
         self.current_game.next_player_who_is_not_dead()
 
-        for player_index, player in enumerate(self.current_game.players):
+        for player_index, player in enumerate(self.current_game.get_real_players()):
             player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
 
-            for index, card in enumerate(self.current_game.open_cards[:3]):
-                card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
-                player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-                player_card_image = player_card_image.resize(open_card_size)
-                x_coord, y_coord = card_places_center[index]
-                player_image.paste(player_card_image, (x_coord, y_coord), player_card_image)
+            # display the open cards
+            player_image = display_open_cards(player_image, self.current_game.open_cards[:3])
 
-            for dead_player in list(filter(lambda p: p.is_dead, self.current_game.players)):
+            # display a cross for each dead player
+            for dead_player in self.current_game.get_dead_players():
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(dead_player.player_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
                 player_image = draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
 
             player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
 
-            await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
+            player_image = await draw_player_action_on_image(player_image, players_action, self.font_path, action_to_draw)
 
-            discord_user = await self.client.fetch_user(player.player_id)
-            await last_messages_to_players[player_index].delete()
-            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
-                                                     view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, ['fold', 'bet', 'check']))
-            last_messages_to_players[player_index] = player_message
+            await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
             player_image.close()
+
+            await delete_and_send_message(self.client, self.filename, ['fold', 'bet', 'check'], self.current_game, self.font_path, player, player_index)
 
     async def turn_or_river(self, players_action: List[Player], action_to_draw: str, index=3):
         self.current_game.reset_possibility_to_raise()
         self.current_game.poker_round += 1
 
-        for player_index, player in enumerate(self.current_game.players):
+        for player_index, player in enumerate(self.current_game.get_real_players()):
             player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
 
-            card = self.current_game.open_cards[index]
-            card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
-            player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-            player_card_image = player_card_image.resize(open_card_size)
-            x_coord, y_coord = card_places_center[index]
-            player_image.paste(player_card_image, (x_coord, y_coord), player_card_image)
+            # display the open cards
+            player_image = display_open_cards(player_image, [self.current_game.open_cards[index]])
 
             for dead_player in list(filter(lambda p: p.is_dead, self.current_game.players)):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(dead_player.player_id, player.player_id)
@@ -580,14 +560,12 @@ class ButtonsMenu(discord.ui.View):
 
             player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
 
-            await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
+            player_image = await draw_player_action_on_image(player_image, players_action, self.font_path, action_to_draw)
 
-            discord_user = await self.client.fetch_user(player.player_id)
-            await last_messages_to_players[player_index].delete()
-            player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
-                                                     view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, ['fold', 'bet', 'check']))
-            last_messages_to_players[player_index] = player_message
+            await draw_right_panel_on_image(player_image, self.current_game, self.font_path, player)
             player_image.close()
+
+            await delete_and_send_message(self.client, self.filename, ['fold', 'bet', 'check'], self.current_game, self.font_path, player, player_index)
 
     async def showdown(self):
         player_status = list(map(lambda p: p.amount_of_credits, self.current_game.players))
@@ -595,43 +573,30 @@ class ButtonsMenu(discord.ui.View):
 
         game_finished = self.current_game.game_finished()
 
-        for player_index, player in enumerate(self.current_game.players):
+        for player_index, player in enumerate(self.current_game.get_real_players()):
             poker_background = Image.open("data_pictures/poker/poker_background_big_768x432.png")
 
             if not os.path.exists('data_pictures/avatars'):
                 os.mkdir('data_pictures/avatars')
 
+            # display the winner message
             if len(round_winners) == 1:
                 draw_player_action_on_image(poker_background, round_winners, self.font_path, 'Winner of this round!')
             else:
                 draw_player_action_on_image(poker_background, round_winners, self.font_path, 'Winners of this round!')
 
+            # display the cards of the current player
             if player_status[player_index]:
-                for index, card in enumerate(player.cards):
-                    card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
-                    player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-                    player_card_image = player_card_image.resize(own_card_size)
-                    poker_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
+                poker_background = await display_current_player_cards(poker_background, player.cards)
 
-            # draw_open_cards
-            for card_index, card in enumerate(self.current_game.open_cards):
-                card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
-                player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-                player_card_image = player_card_image.resize(open_card_size)
-                x_coord, y_coord = card_places_center[card_index]
-                poker_background.paste(player_card_image, (x_coord, y_coord), player_card_image)
+            # display the open cards
+            poker_background = display_open_cards(poker_background, self.current_game.open_cards)
 
+            # display the cards of other players
             for other_player_index, other_player in enumerate(self.current_game.players):
                 if player_status[other_player_index] != 0 and other_player_index != player_index:
                     index_relative_to_player = self.current_game.get_player_index_relative_to_other_player(other_player.player_id, player.player_id)
-                    for card_index, card in enumerate(other_player.cards):
-                        card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
-                        player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
-                        player_card_image = player_card_image.resize(other_players_card_size)
-                        player_card_image = player_card_image.rotate(other_players_card_rotations[index_relative_to_player], expand=True)
-                        other_players_cards_place_x = other_players_card_places[index_relative_to_player][0] + card_index * other_players_card_places_offsets[index_relative_to_player][0]
-                        other_players_cards_place_y = other_players_card_places[index_relative_to_player][1] + card_index * other_players_card_places_offsets[index_relative_to_player][1]
-                        poker_background.paste(player_card_image, (other_players_cards_place_x, other_players_cards_place_y), player_card_image)
+                    poker_background = await display_cards_of_another_player(poker_background, other_player.cards, index_relative_to_player)
 
                 if player_status[other_player_index] == 0:
                     user_index_in_game = self.current_game.get_player_index_relative_to_other_player(other_player.player_id, player.player_id)
@@ -642,22 +607,15 @@ class ButtonsMenu(discord.ui.View):
 
             poker_background.close()
 
-            discord_user = await self.client.fetch_user(player.player_id)
-            await last_messages_to_players[player_index].delete()
-
             if player.player_id == self.current_game.game_author_id:
                 if game_finished:
-                    player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
-                                                             view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, ['end_game']))
-                    last_messages_to_players[player_index] = player_message
+                    buttons_to_enable = ['end_game']
                 else:
-                    player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
-                                                             view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, ['start_new_round']))
-                    last_messages_to_players[player_index] = player_message
+                    buttons_to_enable = ['start_new_round']
             else:
-                player_message = await discord_user.send(file=discord.File(f"data_pictures/poker/message_action_{player.player_id}.png"),
-                                                         view=ButtonsMenu(self.filename, self.current_game, player.player_id, self.client, self.font_path, []))
-                last_messages_to_players[player_index] = player_message
+                buttons_to_enable = []
+
+            await delete_and_send_message(self.client, self.filename, buttons_to_enable, self.current_game, self.font_path, player, player_index)
 
     def enable_and_disable_button(self, custom_id: str, disabled: bool = False) -> None:
         """
@@ -672,12 +630,12 @@ class ButtonsMenu(discord.ui.View):
 
         self.children[child_index].disabled = disabled
 
-    async def start_new_round(self, current_game: Game):
+    async def start_new_round(self):
         global last_messages_to_players
 
-        current_game.start_new_round()
+        self.current_game.start_new_round()
 
-        for index, player in enumerate(self.current_game.players):
+        for index, player in enumerate(self.current_game.get_real_players()):
             await last_messages_to_players[index].delete()
 
         last_messages_to_players = []
@@ -689,11 +647,11 @@ class ButtonsMenu(discord.ui.View):
             os.mkdir('data_pictures/avatars')
 
         # Display player cards
-        await display_player_cards_and_avatars_and_send_messages(self.filename, current_game, poker_background, self.client, self.font_path, ['fold', 'call', 'raise'], draw_player_action=True)
+        await display_player_cards_and_avatars_and_send_messages(self.filename, self.current_game, poker_background, self.client, self.font_path, ['fold', 'call', 'raise'], draw_player_action=True)
 
-        for player in current_game.players:
+        for player in self.current_game.get_real_players():
             player_background = poker_background.copy()
-            player_background = await draw_right_panel_on_image(player_background, current_game, self.font_path, player)
+            player_background = await draw_right_panel_on_image(player_background, self.current_game, self.font_path, player)
             player_background.close()
         poker_background.close()
 
@@ -706,6 +664,9 @@ class ButtonsMenu(discord.ui.View):
                 await discord_user.send(embed=discord.Embed(title="Game result:", description='Congrats, you won the game!'))
             else:
                 await discord_user.send(embed=discord.Embed(title="Game result:", description=f'{winner.name} won the game!'))
+
+        self.games_obj.remove_game(self.current_game)
+        write_poker_games_to_file(self.filename, self.games_obj)
 
 
 async def setup(client):
