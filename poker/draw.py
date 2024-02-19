@@ -5,7 +5,9 @@ import discord
 import requests
 from PIL import Image, ImageDraw, ImageOps, ImageFont
 
-from poker.constants import right_panel_player_places, right_panel_start, avatar_size, right_panel_avatar_size, right_panel_credit_places, lower_panel_actions, background_size
+from poker.card import Card
+from poker.constants import right_panel_player_places, right_panel_start, avatar_size, right_panel_avatar_size, right_panel_credit_places, lower_panel_actions, background_size, own_card_size, \
+    other_players_card_size, other_players_card_rotations, other_players_card_places, other_players_card_places_offsets
 from poker.game import Player, Game
 from poker.utils import Font, Text
 
@@ -174,5 +176,50 @@ async def draw_right_panel_on_image(background: Image, current_game: Game, font_
 
     # save the result
     background.save(f"data_pictures/poker/message_action_{player.player_id}.png")
+
+    return background
+
+
+async def display_current_player_cards(background: Image, cards: List[Card]) -> Image:
+    """
+    Display the cards of the current player.
+
+    :param background: The display background.
+    :param cards: The cards of the current player.
+
+    :return: The edited poker background.
+    """
+
+    for index, card in enumerate(cards):
+        card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+
+        player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png')
+        player_card_image = player_card_image.resize(own_card_size)
+        background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
+
+        player_card_image.close()
+
+    return background
+
+
+async def display_cards_of_another_player(background: Image, cards: List[Card], index_relative_to_current_player: int) -> Image:
+    """
+    Display the cards of another player.
+
+    :param background: The display background.
+    :param cards: The cards of the other player.
+    :param index_relative_to_current_player: The index of the other player relative to the current player.
+
+    :return: The edited poker background.
+    """
+    for card_index, card in enumerate(cards):
+        card_value = card.get_card_integer_value() if card.value not in ['jack', 'queen', 'king', 'ace'] else card.value
+        player_card_image = Image.open(f'data_pictures/playing_cards/{card_value}_{card.card_suit}.png').resize(other_players_card_size)
+        player_card_image = player_card_image.rotate(other_players_card_rotations[index_relative_to_current_player], expand=True)
+        other_players_cards_place_x = other_players_card_places[index_relative_to_current_player][0] + card_index * other_players_card_places_offsets[index_relative_to_current_player][0]
+        other_players_cards_place_y = other_players_card_places[index_relative_to_current_player][1] + card_index * other_players_card_places_offsets[index_relative_to_current_player][1]
+        background.paste(player_card_image, (other_players_cards_place_x, other_players_cards_place_y), player_card_image)
+
+        player_card_image.close()
 
     return background

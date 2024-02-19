@@ -15,6 +15,13 @@ class Font:
 
 
 def contains_number(s):
+    """
+    Check if a string contains a number.
+
+    :param s: The string.
+
+    :return: True if the string contains a number.
+    """
     for char in s:
         if char.isdigit():
             return True

@@ -113,6 +113,9 @@ class Game:
         self.players = list(filter(lambda x: x.player_id != player.id or x.name != player.display_name, self.players))
         return "Current players: \n>" + '\n'.join(list(map(lambda x: x.name, self.players)))
 
+    def get_real_players(self):
+        return list(filter(lambda p: not p.is_bot, self.players))
+
     def get_player_from_id(self, player_id: int) -> Player:
         index = 0
         p = self.players[index]
