@@ -12,25 +12,27 @@ from discord.ext import commands
 from poker.constants import cross_places, background_size, player_places
 from poker.draw import draw_cross, draw_right_panel_on_image, draw_player_action_on_image, create_and_save_avatar, display_avatars, display_current_player_cards, display_cards_of_another_player, \
     display_open_cards
-from poker.game import Game, Player
+from poker.game import Game
+from poker.players.player import Player
 from poker.utils import contains_number
 
 last_messages_to_players = []
 number_of_bots = -1
+bots_level = None
 
 
 async def delete_and_send_message(client, filename: str, buttons_to_enable: List[str], current_game: Game, font_path: str, player: Player, player_index: int, player_is_dead: bool = False, delete_messages: bool = True):
     """
-        Display the action of the player and send a message to all real players.
+        Display the action of the players and send a message to all real players.
 
         :param client: The client.
         :param filename: The filename.
         :param buttons_to_enable: The buttons that need to be enabled.
         :param current_game: The current game.
         :param font_path: The font path.
-        :param player: The player to send a message to.
-        :param player_index: The index of the player.
-        :param player_is_dead: True if the player is dead.
+        :param player: The players to send a message to.
+        :param player_index: The index of the players.
+        :param player_is_dead: True if the players is dead.
         :param delete_messages: True if the previous messages need to be deleted.
 
         :return: True if the string contains a number.
@@ -48,13 +50,13 @@ async def delete_and_send_message(client, filename: str, buttons_to_enable: List
 
 async def display_player_action_and_send_messages(client, filename: str, buttons_to_enable: List[str], current_game: Game, current_player: Player, font_path: str, action_type: str) -> None:
     """
-    Display the action of the player and send a message to all real players.
+    Display the action of the players and send a message to all real players.
 
     :param client: The client.
     :param filename: The filename.
     :param buttons_to_enable: The buttons that need to be enabled.
     :param current_game: The current game.
-    :param current_player: The current player.
+    :param current_player: The current players.
     :param font_path: The font path.
     :param action_type: The action type (raise, bet, ...).
 
@@ -82,14 +84,14 @@ async def display_player_cards_and_avatars_and_send_messages(filename: str, curr
         player_background = poker_background.copy()
 
         if player.amount_of_credits != 0:
-            # display the cards of the current player if he has credits
+            # display the cards of the current players if he has credits
             player_background = await display_current_player_cards(player_background, player.cards)
 
-        # display the avatars on the player places
+        # display the avatars on the players places
         players_in_current_game = current_game.players[current_game.get_player_index(player.player_id) + 1:] + current_game.players[:current_game.get_player_index(player.player_id)]
         player_background = display_avatars(player_background, players_in_current_game, player_places, 'data_pictures/avatars/', '.png')
 
-        # display a cross on the place of a player that has no credits anymore
+        # display a cross on the place of a players that has no credits anymore
         for other_player in current_game.players:
             if other_player.amount_of_credits == 0:
                 user_index_in_game = current_game.get_player_index_relative_to_other_player(other_player.player_id, player.player_id)
@@ -98,7 +100,7 @@ async def display_player_cards_and_avatars_and_send_messages(filename: str, curr
 
         player_background.save(f'data_pictures/poker/message_{player.player_id}.png')
 
-        # display the cards of other players when a player has no credits anymore
+        # display the cards of other players when a players has no credits anymore
         if player.amount_of_credits == 0:
             for other_player in list(filter(lambda p: p.player_id != player.player_id, current_game.players)):
                 index_relative_to_player = current_game.get_player_index_relative_to_other_player(other_player.player_id, player.player_id)
@@ -192,9 +194,9 @@ class SelectNumberOfBots(discord.ui.Select):
         minimum_number_of_bots = 1 if number_of_players == 1 else 0
 
         options = [
-            discord.SelectOption(label=f'{x} bot') if x == 1 else discord.SelectOption(label=f'{x} bots') for x in range(minimum_number_of_bots, 11 - number_of_players)
+            discord.SelectOption(label=f'{x} bot') if x == 1 else discord.SelectOption(label=f'{x} players') for x in range(minimum_number_of_bots, 11 - number_of_players)
         ]
-        super().__init__(placeholder="Select the number of bots", max_values=1, min_values=1, options=options)
+        super().__init__(placeholder="Select the number of players", max_values=1, min_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
         global number_of_bots
@@ -203,10 +205,31 @@ class SelectNumberOfBots(discord.ui.Select):
         await interaction.response.defer()
 
 
-class SelectView(discord.ui.View):
+class SelectNumberOfBotsView(discord.ui.View):
     def __init__(self, number_of_players, *, timeout=180):
         super().__init__(timeout=timeout)
         self.add_item(SelectNumberOfBots(number_of_players))
+
+
+class SelectBotsLevel(discord.ui.Select):
+    def __init__(self):
+        options = [
+            discord.SelectOption(label='Easy')
+        ]
+        super().__init__(placeholder="Select the level of the bots", max_values=1, min_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        global bots_level
+
+        bots_level = self.values[0]
+
+        await interaction.response.defer()
+
+
+class SelectBotsLevelView(discord.ui.View):
+    def __init__(self, *, timeout=180):
+        super().__init__(timeout=timeout)
+        self.add_item(SelectBotsLevel())
 
 
 class Games:
@@ -302,12 +325,20 @@ class Poker(commands.Cog):
             current_game.on_game_start()
             await reaction.message.delete()
 
-            number_of_bots_message = await user.send("Choose the number of bots please!", view=SelectView(len(current_game.players)))
+            number_of_bots_message = await user.send("Choose the number of players please!", view=SelectNumberOfBotsView(len(current_game.players)))
 
             while number_of_bots == -1:
                 await asyncio.sleep(0.2)
 
             await number_of_bots_message.delete()
+
+            if number_of_bots > 0:
+                bots_level_message = await user.send("Choose the bots level!", view=SelectBotsLevelView())
+
+                while bots_level is None:
+                    await asyncio.sleep(0.2)
+
+                await bots_level_message.delete()
 
             for _ in range(number_of_bots):
                 current_game.add_bot()
@@ -322,7 +353,7 @@ class Poker(commands.Cog):
             for player in current_game.players:
                 await create_and_save_avatar(self.client, player, real_player=current_game.get_real_players()[0])
 
-            # Display player cards and avatars
+            # Display players cards and avatars
             await display_player_cards_and_avatars_and_send_messages(self.filename, current_game, poker_background, self.client, self.font_path, ['fold', 'call', 'raise'])
 
     @commands.Cog.listener("on_reaction_remove")
@@ -390,14 +421,7 @@ class ButtonsMenu(discord.ui.View):
 
         return result
 
-    @discord.ui.button(label="fold", style=discord.ButtonStyle.blurple, custom_id="fold", disabled=True)
-    async def fold(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        """
-        Fold.
-
-        :param interaction: Used to handle the button interaction.
-        :param button: The button object.
-        """
+    async def fold_func(self):
         global last_messages_to_players
 
         current_player = self.current_game.players[self.current_game.current_player_index]
@@ -406,7 +430,8 @@ class ButtonsMenu(discord.ui.View):
 
         if fold_result == 'start_new_round':
             await self.showdown()
-        elif not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.current_game.players))))):
+        elif not self.current_game.check_same_bets() or not all(
+                list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.get_real_players()):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
@@ -428,6 +453,16 @@ class ButtonsMenu(discord.ui.View):
             await self.turn_or_river([current_player], 'Folded.', 4)
         else:
             await self.showdown()
+
+    @discord.ui.button(label="fold", style=discord.ButtonStyle.blurple, custom_id="fold", disabled=True)
+    async def fold(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        """
+        Fold.
+
+        :param interaction: Used to handle the button interaction.
+        :param button: The button object.
+        """
+        await self.fold_func()
 
         await interaction.response.defer()
 
@@ -529,7 +564,7 @@ class ButtonsMenu(discord.ui.View):
             # display the open cards
             player_image = await display_open_cards(player_image, self.current_game.open_cards[:3], cards_range_start=0, cards_range_end=3)
 
-            # display a cross for each dead player
+            # display a cross for each dead players
             for dead_player in self.current_game.get_dead_players():
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(dead_player.player_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
@@ -587,7 +622,7 @@ class ButtonsMenu(discord.ui.View):
             else:
                 draw_player_action_on_image(poker_background, round_winners, self.font_path, 'Winners of this round!')
 
-            # display the cards of the current player
+            # display the cards of the current players
             if player_status[player_index]:
                 poker_background = await display_current_player_cards(poker_background, player.cards)
 
@@ -648,7 +683,7 @@ class ButtonsMenu(discord.ui.View):
         if not os.path.exists('data_pictures/avatars'):
             os.mkdir('data_pictures/avatars')
 
-        # Display player cards
+        # Display players cards
         await display_player_cards_and_avatars_and_send_messages(self.filename, self.current_game, poker_background, self.client, self.font_path, ['fold', 'call', 'raise'], draw_player_action=True)
 
         for player in self.current_game.get_real_players():

@@ -2,57 +2,13 @@ import math
 from random import choice
 from typing import List
 
-import os
 import discord
 
 from poker.card import Deck
 from poker.card_combinations import compare_card_combinations_of_players
 from poker.constants import game_states
-
-
-class Player:
-    """
-    Class representing a player object in a poker game.
-    """
-    def __init__(self, player_id: int, name: str, amount_of_credits: int, is_bot=False):
-        self.player_id = player_id
-        self.name = name
-
-        self.cards = []
-        self.current_bet = 0
-        self.amount_of_credits = amount_of_credits
-
-        self.is_dead = False
-        self.is_bot = is_bot
-
-        self.had_possibility_to_raise_or_bet = False
-        self.elo = None
-
-        if not os.path.exists("poker_elo.txt"):
-            # Create file and set elo for first player
-            with open("poker_elo.txt", 'w') as elo_file:
-                print("poker_elo.txt created")
-                self.elo = 1000
-                elo_file.write(f"{player_id} {self.elo}\n")
-        else:
-            # Check if player present in file and set elo
-            with open("poker_elo.txt", 'r') as elo_file:
-                for line in elo_file.readlines():
-                    split_line = line.rstrip("\n").split(" ")
-                    if self.player_id == split_line[0]:
-                        self.elo = int(split_line[1])
-                        pass
-            # If player not present, set elo for player
-            if not self.elo:
-                with open("poker_elo.txt", 'a') as elo_file:
-                    self.elo = 1000
-                    elo_file.write(f"{player_id} {self.elo}\n")
-
-
-class Bot(Player):
-    def __init__(self, player_id: int, name: str, amount_of_credits: int):
-        super().__init__(player_id, name, amount_of_credits)
-        self.is_bot = True
+from poker.players.bot import Bot
+from poker.players.player import Player
 
 
 class Game:
@@ -82,9 +38,9 @@ class Game:
 
     def add_player(self, player: discord.User) -> str:
         """
-        Add a player to the starting poker game.
+        Add a players to the starting poker game.
 
-        :param player: The player.
+        :param player: The players.
         :return: The description of the starting embed.
         """
         if (player.id, player.display_name) not in list(map(lambda x: (x.player_id, x.name), self.players)):
@@ -105,9 +61,9 @@ class Game:
 
     def remove_player(self, player: discord.User) -> str:
         """
-        Remove a player to the starting poker game.
+        Remove a players to the starting poker game.
 
-        :param player: The player.
+        :param player: The players.
         :return: The description of the starting embed.
         """
         self.players = list(filter(lambda x: x.player_id != player.id or x.name != player.display_name, self.players))
@@ -269,7 +225,7 @@ class Game:
 
         self.raise_lower_bound = int(self.start_amount / 100)
 
-        # deal player cards
+        # deal players cards
         self.deal_player_cards()
 
         # deal open cards

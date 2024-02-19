@@ -68,15 +68,15 @@ def display_avatars(background: Image, players: List[Player], places: List[Tuple
 
 async def create_and_save_avatar(client: discord.Client, player: Player, real_player: Player) -> None:
     """
-    Create and save the avatar of a player if not saved yet.
+    Create and save the avatar of a players if not saved yet.
 
     :param client: The discord client.
-    :param player: The player.
+    :param player: The players.
     :param real_player: One of the real players in the game.
     """
     if not os.path.exists(f"data_pictures/avatars/{player.player_id}.png") or not os.path.exists(f"data_pictures/avatars/{player.player_id}_right_panel.png"):
         if player.is_bot:
-            # if a player is a bot, use the default avatar
+            # if a players is a bot, use the default avatar
             real_discord_user = await client.fetch_user(real_player.player_id)
             avatar = real_discord_user.default_avatar
         else:
@@ -136,7 +136,7 @@ def draw_player_action_on_image(poker_background: Image, players: List[Player], 
     # display the avatars of the players that took part in the action
     poker_background = display_avatars(poker_background, players, lower_panel_actions[len(players) - 1], 'data_pictures/avatars/', '_right_panel.png')
 
-    # display the action of the player(s)
+    # display the action of the players(s)
     font = ImageFont.truetype(font_path, 24)
     draw = ImageDraw.Draw(poker_background)
     text_width = draw.textlength(action, font=font)
@@ -151,8 +151,8 @@ def draw_right_panel_on_image(background: Image, current_game: Game, font_path: 
     :param background: The display background.
     :param current_game: The current poker game.
     :param font_path: The path to the font file.
-    :param player: The player.
-    :param draw_player_action: True if a player action has to be displayed (in this case that a new round started).
+    :param player: The players.
+    :param draw_player_action: True if a players action has to be displayed (in this case that a new round started).
 
     :return: The edited poker background.
     """
@@ -180,10 +180,10 @@ def draw_right_panel_on_image(background: Image, current_game: Game, font_path: 
 
 async def display_current_player_cards(background: Image, cards: List[Card]) -> Image:
     """
-    Display the cards of the current player.
+    Display the cards of the current players.
 
     :param background: The display background.
-    :param cards: The cards of the current player.
+    :param cards: The cards of the current players.
 
     :return: The edited poker background.
     """
@@ -201,11 +201,11 @@ async def display_current_player_cards(background: Image, cards: List[Card]) -> 
 
 async def display_cards_of_another_player(background: Image, cards: List[Card], index_relative_to_current_player: int) -> Image:
     """
-    Display the cards of another player.
+    Display the cards of another players.
 
     :param background: The display background.
-    :param cards: The cards of the other player.
-    :param index_relative_to_current_player: The index of the other player relative to the current player.
+    :param cards: The cards of the other players.
+    :param index_relative_to_current_player: The index of the other players relative to the current players.
 
     :return: The edited poker background.
     """
