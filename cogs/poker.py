@@ -10,8 +10,8 @@ import discord
 from discord.ext import commands
 
 from poker.constants import cross_places, card_places_center, open_card_size, background_size, own_card_size, other_players_card_size, other_players_card_rotations, other_players_card_places, \
-    other_players_card_places_offsets
-from poker.draw import create_avatars_for_player, draw_cross, draw_right_panel_on_image, draw_player_action_on_image, create_and_save_avatar
+    other_players_card_places_offsets, player_places
+from poker.draw import draw_cross, draw_right_panel_on_image, draw_player_action_on_image, create_and_save_avatar, display_avatars
 from poker.game import Game, Player
 from poker.utils import contains_number
 
@@ -187,13 +187,14 @@ async def display_player_cards_and_avatars(filename, current_game, poker_backgro
                 player_card_image = player_card_image.resize(own_card_size)
                 player_background.paste(player_card_image, (198 + index * player_card_image.size[0], 242), player_card_image)
 
-        player_background = await create_avatars_for_player(player, current_game, player_background)
+        players_in_current_game = current_game.players[current_game.get_player_index(player.player_id) + 1:] + current_game.players[:current_game.get_player_index(player.player_id)]
+        player_background = display_avatars(player_background, players_in_current_game, player_places, 'data_pictures/avatars/', '.png')
 
         for other_player in current_game.players:
             if other_player.amount_of_credits == 0:
                 user_index_in_game = current_game.get_player_index_relative_to_other_player(other_player.player_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
-                draw_cross(player_background, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
+                player_background = draw_cross(player_background, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
                 player_background.save(f'data_pictures/poker/message_{player.player_id}.png')
 
         if player.amount_of_credits == 0:
@@ -401,7 +402,7 @@ class ButtonsMenu(discord.ui.View):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
-                draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
+                player_image = draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
                 player_image.save(f'data_pictures/poker/message_{player.player_id}.png')
 
                 draw_player_action_on_image(player_image, [current_player], self.font_path, 'Folded.')
@@ -540,7 +541,7 @@ class ButtonsMenu(discord.ui.View):
             for dead_player in list(filter(lambda p: p.is_dead, self.current_game.players)):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(dead_player.player_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
-                draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
+                player_image = draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
 
             player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
 
@@ -570,7 +571,7 @@ class ButtonsMenu(discord.ui.View):
             for dead_player in list(filter(lambda p: p.is_dead, self.current_game.players)):
                 user_index_in_game = self.current_game.get_player_index_relative_to_other_player(dead_player.player_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
-                draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
+                player_image = draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
 
             player_image.save(f"data_pictures/poker/message_{player.player_id}.png")
 
@@ -632,7 +633,7 @@ class ButtonsMenu(discord.ui.View):
                 if player_status[other_player_index] == 0:
                     user_index_in_game = self.current_game.get_player_index_relative_to_other_player(other_player.player_id, player.player_id)
                     cross_place = cross_places[user_index_in_game]
-                    draw_cross(poker_background, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
+                    poker_background = draw_cross(poker_background, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
 
             await draw_right_panel_on_image(poker_background, self.current_game, self.font_path, player)
 
