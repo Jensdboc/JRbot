@@ -8,10 +8,9 @@ class Bot(Player):
         self.is_bot = True
         self.level = bots_level
 
-    def move(self, available_moves):
+    async def move(self, available_moves, raise_lower_bound, raise_upper_bound, bet_lower_bound, bet_upper_bound):
         if self.level == 'Easy':
-            print('test')
-            return await random_move(available_moves)
+            return await random_move(available_moves, raise_lower_bound, raise_upper_bound, bet_lower_bound, bet_upper_bound)
 
         return 'fold'
 

@@ -39,5 +39,5 @@ class Player:
                     self.elo = 1000
                     elo_file.write(f"{player_id} {self.elo}\n")
 
-    def move(self, available_moves):
+    async def move(self, available_moves, raise_lower_bound, raise_upper_bound, bet_lower_bound, bet_upper_bound):
         pass

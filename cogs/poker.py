@@ -114,6 +114,13 @@ async def display_player_cards_and_avatars_and_send_messages(filename: str, curr
         await delete_and_send_message(client, filename, buttons_to_enable, current_game, font_path, player, index, player_is_dead=(player.amount_of_credits == 0), delete_messages=False)
 
 
+async def raise_game_func(raise_value, client, filename, buttons_to_enable, current_game: Game, current_player, font_path):
+    current_player = current_game.players[current_game.current_player_index]
+    current_game.raise_func(raise_value)
+
+    await display_player_action_and_send_messages(client, filename, buttons_to_enable, current_game, current_player, font_path, 'raise')
+
+
 class RaiseAmount(discord.ui.Modal, title='raise'):
     def __init__(self, current_game: Game, current_player: Player, font_path, client, filename, games_obj, buttons_to_enable, **kwargs):
         super().__init__(**kwargs)
@@ -149,6 +156,13 @@ class RaiseAmount(discord.ui.Modal, title='raise'):
 
         # Make sure we know what the error actually is
         traceback.print_exception(type(error), error, error.__traceback__)
+
+
+async def bet_game_func(bet_value, client, filename, current_game: Game, current_player, font_path):
+    current_player = current_game.players[current_game.current_player_index]
+    current_game.raise_func(bet_value)
+
+    await display_player_action_and_send_messages(client, filename, ['fold', 'call', 'raise'], current_game, current_player, font_path, 'bet')
 
 
 class BetAmount(discord.ui.Modal, title='bet'):
@@ -194,9 +208,9 @@ class SelectNumberOfBots(discord.ui.Select):
         minimum_number_of_bots = 1 if number_of_players == 1 else 0
 
         options = [
-            discord.SelectOption(label=f'{x} bot') if x == 1 else discord.SelectOption(label=f'{x} players') for x in range(minimum_number_of_bots, 11 - number_of_players)
+            discord.SelectOption(label=f'{x} bot') if x == 1 else discord.SelectOption(label=f'{x} bots') for x in range(minimum_number_of_bots, 11 - number_of_players)
         ]
-        super().__init__(placeholder="Select the number of players", max_values=1, min_values=1, options=options)
+        super().__init__(placeholder="Select the number of bots", max_values=1, min_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
         global number_of_bots
@@ -322,10 +336,9 @@ class Poker(commands.Cog):
             write_poker_games_to_file(self.filename, games_obj)
             await reaction.message.edit(embed=embed)
         elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0].player_id and 0 < len(current_game.players) <= 10:
-            current_game.on_game_start()
             await reaction.message.delete()
 
-            number_of_bots_message = await user.send("Choose the number of players please!", view=SelectNumberOfBotsView(len(current_game.players)))
+            number_of_bots_message = await user.send("Choose the number of bots please!", view=SelectNumberOfBotsView(len(current_game.players)))
 
             while number_of_bots == -1:
                 await asyncio.sleep(0.2)
@@ -343,6 +356,10 @@ class Poker(commands.Cog):
             for _ in range(number_of_bots):
                 current_game.add_bot(bots_level)
 
+            write_poker_games_to_file(self.filename, games_obj)
+
+            current_game.on_game_start()
+
             # Display general stats
             poker_background = Image.open("data_pictures/poker/poker_background_big_768x432.png").resize(background_size)
 
@@ -355,8 +372,6 @@ class Poker(commands.Cog):
 
             # Display players cards and avatars
             await display_player_cards_and_avatars_and_send_messages(self.filename, current_game, poker_background, self.client, self.font_path, ['fold', 'call', 'raise'])
-
-            await execute_bot_moves(current_game, ['fold', 'call', 'raise'])
 
     @commands.Cog.listener("on_reaction_remove")
     async def on_reaction_remove_poker(self, reaction: discord.Reaction, user: Union[discord.Member, discord.User]):
@@ -396,16 +411,27 @@ class ButtonsMenu(discord.ui.View):
         self.font_path = font_path
         self.buttons_to_enable = buttons_to_enable
 
-        if 'start_new_round' in buttons_to_enable:
-            self.enable_and_disable_button('start_new_round')
+        if self.current_game.players[self.current_game.current_player_index].is_bot:
+            if 'start_new_round' not in buttons_to_enable and 'end_game' not in buttons_to_enable:
+                self.loop = asyncio.get_event_loop()
+                self.loop.create_task(self.execute_bot_moves())
+            else:
+                if 'start_new_round' in buttons_to_enable:
+                    self.enable_and_disable_button('start_new_round')
 
-        if 'end_game' in buttons_to_enable:
-            self.enable_and_disable_button('end_game')
+                if 'end_game' in buttons_to_enable:
+                    self.enable_and_disable_button('end_game')
+        else:
+            if 'start_new_round' in buttons_to_enable:
+                self.enable_and_disable_button('start_new_round')
 
-        if not player_is_dead and self.current_game.current_player_index == self.current_game.get_player_index(self.user_id):
-            current_player = self.current_game.players[self.current_game.current_player_index]
-            for move in self.check_if_moves_can_be_enabled(buttons_to_enable, current_player):
-                self.enable_and_disable_button(move)
+            if 'end_game' in buttons_to_enable:
+                self.enable_and_disable_button('end_game')
+
+            if not player_is_dead and self.current_game.current_player_index == self.current_game.get_player_index(self.user_id):
+                current_player = self.current_game.players[self.current_game.current_player_index]
+                for move in self.check_if_moves_can_be_enabled(buttons_to_enable, current_player):
+                    self.enable_and_disable_button(move)
 
     def check_if_moves_can_be_enabled(self, moves, current_player):
         result = []
@@ -423,6 +449,41 @@ class ButtonsMenu(discord.ui.View):
 
         return result
 
+    async def get_bot_move(self, available_moves):
+        raise_lower_bound, raise_upper_bound = self.current_game.raise_lower_bound, self.current_game.players[self.current_game.current_player_index].amount_of_credits
+        bet_lower_bound, bet_upper_bound = self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players))), self.current_game.players[self.current_game.current_player_index].amount_of_credits
+        chosen_move, chosen_bet_value = await self.current_game.players[self.current_game.current_player_index].move(available_moves, raise_lower_bound, raise_upper_bound, bet_lower_bound, bet_upper_bound)
+
+        if chosen_move == 'fold':
+            await self.fold_func()
+        elif chosen_move == 'call':
+            await self.call_func()
+        elif chosen_move == 'raise':
+            current_player = self.current_game.players[self.current_game.current_player_index]
+
+            if self.current_game.current_player_index in self.current_game.last_player_who_raised:
+                self.current_game.last_player_who_raised.remove(self.current_game.current_player_index)
+            self.current_game.last_player_who_raised.append(self.current_game.current_player_index)
+
+            await raise_game_func(chosen_bet_value, self.client, self.filename, self.buttons_to_enable, self.current_game, current_player, self.font_path)
+        elif chosen_move == 'bet':
+            current_player = self.current_game.players[self.current_game.current_player_index]
+
+            if self.current_game.current_player_index in self.current_game.last_player_who_raised:
+                self.current_game.last_player_who_raised.remove(self.current_game.current_player_index)
+            self.current_game.last_player_who_raised.append(self.current_game.current_player_index)
+
+            await bet_game_func(chosen_bet_value, self.client, self.filename, self.current_game, current_player, self.font_path)
+        else:
+            await self.check_func()
+
+    async def execute_bot_moves(self):
+        available_moves = []
+        current_player = self.current_game.players[self.current_game.current_player_index]
+        for move in self.check_if_moves_can_be_enabled(self.buttons_to_enable, current_player):
+            available_moves.append(move)
+        await self.get_bot_move(available_moves)
+
     async def fold_func(self):
         global last_messages_to_players
 
@@ -431,11 +492,11 @@ class ButtonsMenu(discord.ui.View):
         fold_result = self.current_game.fold()
 
         if fold_result == 'start_new_round':
-            await self.showdown()
+            await self.showdown(round_winner=self.current_game.players[(self.current_game.current_player_index + 1) % len(self.current_game.players)])
         elif not self.current_game.check_same_bets() or not all(
                 list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.get_real_players()):
-                user_index_in_game = self.current_game.get_player_index_relative_to_other_player(self.user_id, player.player_id)
+                user_index_in_game = self.current_game.get_player_index_relative_to_other_player(current_player.player_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 player_image = draw_cross(player_image, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
@@ -468,19 +529,13 @@ class ButtonsMenu(discord.ui.View):
 
         await interaction.response.defer()
 
-    @discord.ui.button(label="call", style=discord.ButtonStyle.blurple, custom_id="call", disabled=True)
-    async def call(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        """
-        Call.
-
-        :param interaction: Used to handle the button interaction.
-        :param button: The button object.
-        """
+    async def call_func(self):
         current_player = self.current_game.players[self.current_game.current_player_index]
 
         self.current_game.call()
 
-        if not self.current_game.check_same_bets() or not all(list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.current_game.players))))):
+        if not self.current_game.check_same_bets() or not all(
+                list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.get_real_players()):
                 player_image = Image.open(f'data_pictures/poker/message_{player.player_id}.png')
                 draw_player_action_on_image(player_image, [current_player], self.font_path, 'Called.')
@@ -498,6 +553,16 @@ class ButtonsMenu(discord.ui.View):
         else:
             await self.showdown()
 
+    @discord.ui.button(label="call", style=discord.ButtonStyle.blurple, custom_id="call", disabled=True)
+    async def call(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        """
+        Call.
+
+        :param interaction: Used to handle the button interaction.
+        :param button: The button object.
+        """
+        await self.call_func()
+
         await interaction.response.defer()
 
     @discord.ui.button(label="raise", style=discord.ButtonStyle.blurple, custom_id="raise", disabled=True)
@@ -510,8 +575,7 @@ class ButtonsMenu(discord.ui.View):
 
         await interaction.response.send_modal(RaiseAmount(self.current_game, current_player, self.font_path, self.client, self.filename, self.games_obj, self.buttons_to_enable))
 
-    @discord.ui.button(label="check", style=discord.ButtonStyle.blurple, custom_id="check", disabled=True)
-    async def check_func(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def check_func(self):
         current_player = self.current_game.players[self.current_game.current_player_index]
 
         self.current_game.check_func()
@@ -531,6 +595,10 @@ class ButtonsMenu(discord.ui.View):
             await self.turn_or_river([current_player], 'Checked.', 4)
         else:
             await self.showdown()
+
+    @discord.ui.button(label="check", style=discord.ButtonStyle.blurple, custom_id="check", disabled=True)
+    async def check(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        await self.check_func()
 
         await interaction.response.defer()
 
@@ -606,9 +674,9 @@ class ButtonsMenu(discord.ui.View):
 
             await delete_and_send_message(self.client, self.filename, ['fold', 'bet', 'check'], self.current_game, self.font_path, player, player_index)
 
-    async def showdown(self):
+    async def showdown(self, round_winner: Player = None):
         player_status = list(map(lambda p: p.amount_of_credits, self.current_game.players))
-        round_winners = self.current_game.showdown()
+        round_winners = self.current_game.showdown(round_winner)
 
         game_finished = self.current_game.game_finished()
 
@@ -706,12 +774,6 @@ class ButtonsMenu(discord.ui.View):
 
         self.games_obj.remove_game(self.current_game)
         write_poker_games_to_file(self.filename, self.games_obj)
-
-
-async def execute_bot_moves(current_game: Game, available_moves):
-    moves = []
-    while current_game.players[current_game.current_player_index].is_bot:
-        moves.append(current_game.players[current_game.current_player_index].move(available_moves))
 
 
 async def setup(client):

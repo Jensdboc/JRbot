@@ -156,18 +156,21 @@ class Game:
         while self.players[self.current_player_index].is_dead or self.players[self.current_player_index].amount_of_credits == 0:
             self.next_player()
 
-    def showdown(self) -> List[Player]:
+    def showdown(self, round_winner: Player = None) -> List[Player]:
         undead_players = list(filter(lambda p: not p.is_dead and p.amount_of_credits != 0, self.players))
 
-        best_players = [undead_players[0]]
+        if round_winner is None:
+            best_players = [undead_players[0]]
 
-        for player in undead_players[1:]:
-            card_comparison = compare_card_combinations_of_players(best_players[0].cards + self.open_cards, player.cards + self.open_cards)
+            for player in undead_players[1:]:
+                card_comparison = compare_card_combinations_of_players(best_players[0].cards + self.open_cards, player.cards + self.open_cards)
 
-            if card_comparison == 'player_two':
-                best_players = [player]
-            elif card_comparison == 'tie':
-                best_players.append(player)
+                if card_comparison == 'player_two':
+                    best_players = [player]
+                elif card_comparison == 'tie':
+                    best_players.append(player)
+        else:
+            best_players = [round_winner]
 
         pot_split, unused_credits = math.floor(self.pot / len(best_players)), self.pot % len(best_players)
 
@@ -242,7 +245,12 @@ class Game:
         """
         Start the poker game with the selected settings and players.
         """
-        self.dealer = choice(self.players)
+        possible_starters = []
+        for index, player in enumerate(self.players):
+            if not player.is_bot:
+                possible_starters.append(self.players[(index - 3) % len(self.players)])
+
+        self.dealer = choice(possible_starters)
         self.state = game_states["Playing"]
 
         self.reset_game_logic()
