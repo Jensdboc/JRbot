@@ -240,12 +240,13 @@ def three_of_a_kind(cards: List[Card]) -> Tuple[bool, int, str]:
     return x_of_a_kind(cards, 3, kind='three_of_a_kind')
 
 
-def x_pair(cards: List[Card], n: int, kind = 'two_pair') -> Tuple[bool, List[int], str]:
+def x_pair(cards: List[Card], n: int, kind: str = 'two_pair') -> Tuple[bool, List[int], str]:
     """
     Check if an x pair is present.
 
     :param cards: List of cards.
-    :param x: The amount of pairs.
+    :param n: The amount of pairs.
+    :param kind: The kind of pair.
     :return: True if x pair, else False.
     """
     card_values_to_occurrences = {value: 0 for value in list(map_card_value_to_integer.keys())}
