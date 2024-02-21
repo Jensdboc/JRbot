@@ -6,7 +6,7 @@ import numpy as np
 import math
 
 from poker.card import Card
-from poker.constants import suits
+from poker.constants import suits, map_card_value_to_integer
 
 
 async def static_eval_move(available_moves, raise_lower_bound, raise_upper_bound, bet_lower_bound, bet_upper_bound, cards: List[Card]):
@@ -85,3 +85,27 @@ def calculate_chance_on_straight_flush(cards: [Card]):
                 number_of_good_combinations += combination_result
 
     return number_of_good_combinations / total_possibilities
+
+
+def calculate_chance_on_x_of_a_kind(cards: [Card], n: int):
+    total_possibilities = math.comb(52 - len(cards), 7 - len(cards))
+
+    combinations = {val: n for val in map_card_value_to_integer.values()}
+
+    for card in cards:
+        combinations[card.get_card_integer_value()] -= 1
+        if combinations[card.get_card_integer_value()] == 0:
+            return 1
+
+    chance = 0
+    for cards_needed in combinations.values():
+        if cards_needed <= 7 - len(cards):
+            temp_res = 1
+            divisor = 52 - len(cards)
+            for i in range(cards_needed, 0, -1):
+                temp_res *= (i / divisor)
+                divisor -= 1
+
+            chance += (temp_res * math.comb(7 - len(cards), cards_needed))
+
+    return chance
