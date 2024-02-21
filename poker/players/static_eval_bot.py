@@ -88,8 +88,6 @@ def calculate_chance_on_straight_flush(cards: [Card]):
 
 
 def calculate_chance_on_x_of_a_kind(cards: [Card], n: int):
-    total_possibilities = math.comb(52 - len(cards), 7 - len(cards))
-
     combinations = {val: n for val in map_card_value_to_integer.values()}
 
     for card in cards:
