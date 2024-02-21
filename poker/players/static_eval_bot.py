@@ -294,3 +294,14 @@ def calculate_chance_on_two_pairs(cards: [Card]):
                 chance += (temp_res * math.comb(7 - len(cards), needed_cards))
 
     return chance
+
+
+def calculate_chance_on_one_pair(cards: [Card]):
+    combinations = {val: 2 for val in map_card_value_to_integer.values()}
+
+    for card in cards:
+        combinations[card.get_card_integer_value()] -= 1
+        if combinations[card.get_card_integer_value()] == 0:
+            return 1
+
+    return ((math.comb(13 - len(cards), 1) * math.comb(13 - len(cards) - 1, 7 - len(cards) - 1) * math.comb(4, 2) * (4 ** (7 - len(cards) - 2))) / math.comb(52 - len(cards), 7 - len(cards))) + ((math.comb(len(cards), 1) * math.comb(13 - len(cards), 7 - len(cards) - 1) * 3 * (4 ** (7 - len(cards) - 1))) / math.comb(52 - len(cards), 7 - len(cards)))
