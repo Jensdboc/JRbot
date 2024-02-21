@@ -156,3 +156,27 @@ def calculate_chance_on_full_house(cards: [Card]):
                 chance += (temp_res * math.comb(7 - len(cards), needed_cards_of_values[0] - 1))
 
     return chance
+
+
+def calculate_chance_on_flush(cards: [Card]):
+    combinations = {suit: 5 for suit in suits}
+
+    for card in cards:
+        combinations[card.card_suit] -= 1
+        if combinations[card.card_suit] == 0:
+            return 1
+
+    chance = 0
+    for needed_cards in combinations.values():
+        if needed_cards <= 7 - len(cards):
+            temp_res = 1
+            divisor = 52 - len(cards)
+            i = (13 - (5 - needed_cards))
+            for _ in range(needed_cards, 0, -1):
+                temp_res *= (i / divisor)
+                i -= 1
+                divisor -= 1
+
+            chance += (temp_res * math.comb(7 - len(cards), needed_cards))
+
+    return chance
