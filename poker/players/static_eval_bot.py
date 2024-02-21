@@ -38,29 +38,28 @@ async def static_eval_move(available_moves, raise_lower_bound, raise_upper_bound
 
 
 def calculate_chance_on_royal_flush(cards: [Card]):
-    total_possibilities = math.comb(52 - len(cards), 7 - len(cards))
-
-    combinations = {suit: (5, 13) for suit in suits}
+    combinations = {suit: 5 for suit in suits}
 
     for card in cards:
-        tup = combinations[card.card_suit]
-        combinations[card.card_suit] = (tup[0] - 1 if card.get_card_integer_value() >= 10 else tup[0], tup[1] - 1)
+        combinations[card.card_suit] = combinations[card.card_suit] - 1 if card.get_card_integer_value() >= 10 else combinations[card.card_suit]
+        if combinations[card.card_suit] == 0:
+            return 1
 
-    number_of_good_combinations = 0
-    for needed_cards_of_suit, cards_left_of_suit in combinations.values():
-        combination_result = math.comb(cards_left_of_suit, needed_cards_of_suit)
-        if combination_result == 1:
-            return combination_result
-
+    chance = 0
+    for needed_cards_of_suit in combinations.values():
         if needed_cards_of_suit <= 7 - len(cards):
-            number_of_good_combinations += combination_result
+            temp_res = 1
+            divisor = 52 - len(cards)
+            for i in range(needed_cards_of_suit, 0, -1):
+                temp_res *= (i / divisor)
+                divisor -= 1
 
-    return number_of_good_combinations / total_possibilities
+            chance += (temp_res * math.comb(7 - len(cards), needed_cards_of_suit))
+
+    return chance
 
 
 def calculate_chance_on_straight_flush(cards: [Card]):
-    total_possibilities = math.comb(52 - len(cards), 7 - len(cards))
-
     combinations = {suit: {} for suit in suits}
 
     for i in range(1, 11):
@@ -76,15 +75,19 @@ def calculate_chance_on_straight_flush(cards: [Card]):
                 if suit_combinations[straight_flush_combination] == 0:
                     return 1
 
-    number_of_good_combinations = 0
+    chance = 0
     for straight_flush_possibilities in combinations.values():
         for possibility in straight_flush_possibilities.values():
-            combination_result = math.comb(13 - (5 - min(list(straight_flush_possibilities.values()))), possibility)
-
             if possibility <= 7 - len(cards):
-                number_of_good_combinations += combination_result
+                temp_res = 1
+                divisor = 52 - len(cards)
+                for i in range(possibility, 0, -1):
+                    temp_res *= (i / divisor)
+                    divisor -= 1
 
-    return number_of_good_combinations / total_possibilities
+                chance += (temp_res * math.comb(7 - len(cards), possibility))
+
+    return chance
 
 
 def calculate_chance_on_x_of_a_kind(cards: [Card], n: int):
