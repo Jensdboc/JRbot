@@ -453,17 +453,7 @@ class ButtonsMenu(discord.ui.View):
         raise_lower_bound, raise_upper_bound = self.current_game.raise_lower_bound, self.current_game.players[self.current_game.current_player_index].amount_of_credits
         bet_lower_bound, bet_upper_bound = self.current_game.big_blind + max(list(map(lambda x: x.current_bet, self.current_game.players))), self.current_game.players[self.current_game.current_player_index].amount_of_credits
 
-        viewable_open_cards = []
-        if self.current_game.poker_round == 1:
-            viewable_open_cards.extend([self.current_game.open_cards[:3]])
-        elif self.current_game.poker_round == 2:
-            viewable_open_cards.append(self.current_game.open_cards[3])
-        elif self.current_game.poker_round == 3:
-            viewable_open_cards.append(self.current_game.open_cards[4])
-
-        viewable_cards = self.current_game.players[self.current_game.current_player_index].cards + viewable_open_cards
-
-        chosen_move, chosen_bet_value = await self.current_game.players[self.current_game.current_player_index].move(available_moves, raise_lower_bound, raise_upper_bound, bet_lower_bound, bet_upper_bound, viewable_cards)
+        chosen_move, chosen_bet_value = await self.current_game.players[self.current_game.current_player_index].move(available_moves, raise_lower_bound, raise_upper_bound, bet_lower_bound, bet_upper_bound)
 
         if chosen_move == 'fold':
             await self.fold_func()

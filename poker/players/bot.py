@@ -9,9 +9,9 @@ class Bot(Player):
         self.is_bot = True
         self.level = bots_level
 
-    async def move(self, available_moves, raise_lower_bound, raise_upper_bound, bet_lower_bound, bet_upper_bound, viewable_cards):
+    async def move(self, available_moves, raise_lower_bound, raise_upper_bound, bet_lower_bound, bet_upper_bound):
         if self.level == 'Easy':
-            return await random_move(available_moves, raise_lower_bound, raise_upper_bound, bet_lower_bound, bet_upper_bound, viewable_cards)
+            return await random_move(available_moves, raise_lower_bound, raise_upper_bound, bet_lower_bound, bet_upper_bound)
 
         if self.level == 'Medium':
             return await static_eval_move(available_moves, raise_lower_bound, raise_upper_bound, bet_lower_bound, bet_upper_bound)
