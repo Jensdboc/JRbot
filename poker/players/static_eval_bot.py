@@ -86,8 +86,8 @@ def calculate_chance_on_straight_flush(cards: [Card]):
     return chance
 
 
-def calculate_chance_on_x_of_a_kind(cards: [Card], n: int):
-    combinations = {val: n for val in map_card_value_to_integer.values()}
+def calculate_chance_on_four_of_a_kind(cards: [Card]):
+    combinations = {val: 4 for val in map_card_value_to_integer.values()}
 
     for card in cards:
         combinations[card.get_card_integer_value()] -= 1
@@ -201,6 +201,30 @@ def calculate_chance_on_straight(cards: [Card]):
             temp_res = 1
             divisor = 52 - len(cards)
             i = 4 * needed_cards
+            for _ in range(needed_cards, 0, -1):
+                temp_res *= (i / divisor)
+                i -= 1
+                divisor -= 1
+
+            chance += (temp_res * math.comb(7 - len(cards), needed_cards))
+
+    return chance
+
+
+def calculate_chance_on_three_of_a_kind(cards: [Card]):
+    combinations = {val: 3 for val in map_card_value_to_integer.values()}
+
+    for card in cards:
+        combinations[card.get_card_integer_value()] -= 1
+        if combinations[card.get_card_integer_value()] == 0:
+            return 1
+
+    chance = 0
+    for needed_cards in combinations.values():
+        if needed_cards <= 7 - len(cards):
+            temp_res = 1
+            divisor = 52 - len(cards)
+            i = needed_cards + 1
             for _ in range(needed_cards, 0, -1):
                 temp_res *= (i / divisor)
                 i -= 1
