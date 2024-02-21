@@ -180,3 +180,32 @@ def calculate_chance_on_flush(cards: [Card]):
             chance += (temp_res * math.comb(7 - len(cards), needed_cards))
 
     return chance
+
+
+def calculate_chance_on_straight(cards: [Card]):
+    combinations = {}
+
+    for i in range(1, 11):
+        combinations[(i, i + 1, i + 2, i + 3, i + 4)] = 5
+
+    for card in cards:
+        for straight_combination, number_of_cards_needed in combinations.items():
+            if card.get_card_integer_value() in straight_combination or (card.get_card_integer_value() == 14 and 1 in straight_combination):
+                combinations[straight_combination] -= 1
+                if combinations[straight_combination] == 0:
+                    return 1
+
+    chance = 0
+    for needed_cards in combinations.values():
+        if needed_cards <= 7 - len(cards):
+            temp_res = 1
+            divisor = 52 - len(cards)
+            i = 4 * needed_cards
+            for _ in range(needed_cards, 0, -1):
+                temp_res *= (i / divisor)
+                i -= 1
+                divisor -= 1
+
+            chance += (temp_res * math.comb(7 - len(cards), needed_cards))
+
+    return chance
