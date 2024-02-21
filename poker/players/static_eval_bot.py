@@ -153,7 +153,7 @@ def calculate_chance_on_full_house(cards: [Card]):
                     i -= 1
                     divisor -= 1
 
-                chance += (temp_res * math.comb(7 - len(cards), needed_cards_of_values[0] - 1))
+                chance += (temp_res * math.comb(7 - len(cards), needed_cards))
 
     return chance
 
@@ -231,5 +231,66 @@ def calculate_chance_on_three_of_a_kind(cards: [Card]):
                 divisor -= 1
 
             chance += (temp_res * math.comb(7 - len(cards), needed_cards))
+
+    return chance
+
+
+def calculate_chance_on_two_pairs(cards: [Card]):
+    combinations = {}
+    # fill combinations
+    for index1, val1 in enumerate(list(map_card_value_to_integer.values())):
+        for index2, val2 in enumerate(list(map_card_value_to_integer.values())[index1 + 1:]):
+            if val1 != val2:
+                combinations[(val1, val2)] = (2, 2)
+
+    for card in cards:
+        card_value = card.get_card_integer_value()
+
+        for value in range(2, card_value):
+            tup = combinations[(value, card_value)]
+            res = (tup[0], tup[1] - 1)
+            if res == (0, 0):
+                return 1
+            combinations[(value, card_value)] = res
+
+        for value in range(card_value + 1, 15):
+            tup = combinations[(card_value, value)]
+            res = (tup[0] - 1, tup[1])
+            if res == (0, 0):
+                return 1
+            combinations[(card_value, value)] = res
+
+    chance = 0
+    for needed_cards_of_values in combinations.values():
+        needed_cards = needed_cards_of_values[0] + needed_cards_of_values[1]
+
+        if needed_cards <= 7 - len(cards):
+            temp_res = 1
+            divisor = 52 - len(cards)
+
+            if needed_cards_of_values[0] == 0:
+                i = needed_cards_of_values[1] + 2
+                for _ in range(needed_cards_of_values[1], 0, -1):
+                    temp_res *= (i / divisor)
+                    i -= 1
+                    divisor -= 1
+
+                chance += (temp_res * math.comb(7 - len(cards), needed_cards_of_values[1]))
+            elif needed_cards_of_values[1] == 0:
+                i = needed_cards_of_values[0] + 2
+                for _ in range(needed_cards_of_values[0], 0, -1):
+                    temp_res *= (i / divisor)
+                    i -= 1
+                    divisor -= 1
+
+                chance += (temp_res * math.comb(7 - len(cards), needed_cards_of_values[0]))
+            else:
+                i = 8 - needed_cards
+                for _ in range(needed_cards_of_values[0] + needed_cards_of_values[1], 0, -1):
+                    temp_res *= (i / divisor)
+                    i -= 1
+                    divisor -= 1
+
+                chance += (temp_res * math.comb(7 - len(cards), needed_cards))
 
     return chance
