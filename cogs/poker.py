@@ -228,7 +228,8 @@ class SelectNumberOfBotsView(discord.ui.View):
 class SelectBotsLevel(discord.ui.Select):
     def __init__(self):
         options = [
-            discord.SelectOption(label='Easy')
+            discord.SelectOption(label='Easy'),
+            discord.SelectOption(label='Medium')
         ]
         super().__init__(placeholder="Select the level of the bots", max_values=1, min_values=1, options=options)
 
