@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageOps, ImageFont
 
 from poker.card import Card
 from poker.constants import right_panel_player_places, right_panel_start, avatar_size, right_panel_avatar_size, right_panel_credit_places, lower_panel_actions, background_size, own_card_size, \
-    other_players_card_size, other_players_card_rotations, other_players_card_places, other_players_card_places_offsets, open_card_size, card_places_center
+    other_players_card_size, other_players_card_rotations, other_players_card_places, other_players_card_places_offsets, open_card_size, card_places_center, player_role_places
 from poker.game import Player, Game
 from poker.utils import Font, Text
 
@@ -245,3 +245,22 @@ async def display_open_cards(background: Image, cards: List[Card], cards_range_s
         player_card_image.close()
 
     return background
+
+
+def display_player_roles(background: Image, current_game: Game, font_path: str, player: Player) -> Image:
+    font = ImageFont.truetype(font_path, 30)
+    text_color = (255, 255, 255)
+    draw = ImageDraw.Draw(background)
+
+    roles = ['S', 'B', 'D']
+    role_players = [current_game.small_blind_player, current_game.big_blind_player, current_game.dealer]
+    role_player_indices = list(map(lambda x: current_game.get_player_index_relative_to_other_player(x.player_id, player.player_id), role_players))
+
+    index = 0
+    for text_position_index, role in zip(role_player_indices, roles):
+        if text_position_index not in role_player_indices[:index] and text_position_index != 0:
+            draw.text(player_role_places[text_position_index], role, fill=text_color, font=font)
+        index += 1
+
+    return background
+

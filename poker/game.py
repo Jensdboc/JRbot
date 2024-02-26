@@ -32,6 +32,7 @@ class Game:
         self.last_player_who_raised = []
         self.pot = self.small_blind + self.big_blind
         self.dealer: Player = self.players[0]
+        self.small_blind_player, self.big_blind_player = None, None
         self.round_winners: List[Player] = []
 
         self.poker_round = 0
@@ -212,19 +213,19 @@ class Game:
         self.next_player_who_is_not_dead()
         small_blind_index, big_blind_index = self.current_player_index, (self.current_player_index + 1) % len(self.players)
 
-        small_blind, big_blind = self.players[small_blind_index], self.players[big_blind_index]
-        while small_blind.amount_of_credits == 0:
+        self.small_blind_player, self.big_blind_player = self.players[small_blind_index], self.players[big_blind_index]
+        while self.small_blind_player.amount_of_credits == 0:
             small_blind_index = (small_blind_index + 1) % len(self.players)
-            small_blind = self.players[small_blind_index]
-        while big_blind.amount_of_credits == 0:
+            self.small_blind_player = self.players[small_blind_index]
+        while self.big_blind_player.amount_of_credits == 0:
             big_blind_index = (big_blind_index + 1) % len(self.players)
-            big_blind = self.players[big_blind_index]
+            self.big_blind_player = self.players[big_blind_index]
 
         self.last_player_who_raised = [self.current_player_index]
-        small_blind.current_bet = self.small_blind if self.small_blind <= small_blind.amount_of_credits else small_blind.amount_of_credits
-        big_blind.current_bet = self.big_blind if self.big_blind <= big_blind.amount_of_credits else big_blind.amount_of_credits
+        self.small_blind_player.current_bet = self.small_blind if self.small_blind <= self.small_blind_player.amount_of_credits else self.small_blind_player.amount_of_credits
+        self.big_blind_player.current_bet = self.big_blind if self.big_blind <= self.big_blind_player.amount_of_credits else self.big_blind_player.amount_of_credits
 
-        self.pot = small_blind.current_bet + big_blind.current_bet
+        self.pot = self.small_blind_player.current_bet + self.big_blind_player.current_bet
 
         self.raise_lower_bound = int(self.start_amount / 100)
 

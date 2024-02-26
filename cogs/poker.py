@@ -11,7 +11,7 @@ from discord.ext import commands
 
 from poker.constants import cross_places, background_size, player_places
 from poker.draw import draw_cross, draw_right_panel_on_image, draw_player_action_on_image, create_and_save_avatar, display_avatars, display_current_player_cards, display_cards_of_another_player, \
-    display_open_cards
+    display_open_cards, display_player_roles
 from poker.game import Game
 from poker.players.player import Player
 from poker.utils import contains_number
@@ -97,6 +97,8 @@ async def display_player_cards_and_avatars_and_send_messages(filename: str, curr
                 user_index_in_game = current_game.get_player_index_relative_to_other_player(other_player.player_id, player.player_id)
                 cross_place = cross_places[user_index_in_game]
                 player_background = draw_cross(player_background, cross_place[0], cross_place[1], cross_place[2], cross_place[3])
+
+        player_background = display_player_roles(player_background, current_game, font_path, player)
 
         player_background.save(f'data_pictures/poker/message_{player.player_id}.png')
 
