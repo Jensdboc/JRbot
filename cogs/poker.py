@@ -341,7 +341,7 @@ class Poker(commands.Cog):
         elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0].player_id and 1 < len(current_game.players) <= 10:
             await reaction.message.delete()
 
-            number_of_bots_message = await user.send("Choose the number of bots please!", view=SelectNumberOfBotsView(len(current_game.players)))
+            '''number_of_bots_message = await user.send("Choose the number of bots please!", view=SelectNumberOfBotsView(len(current_game.players)))
 
             while number_of_bots == -1:
                 await asyncio.sleep(0.2)
@@ -359,7 +359,7 @@ class Poker(commands.Cog):
             for _ in range(number_of_bots):
                 current_game.add_bot(bots_level)
 
-            write_poker_games_to_file(self.filename, games_obj)
+            write_poker_games_to_file(self.filename, games_obj)'''
 
             current_game.on_game_start()
 
@@ -392,6 +392,9 @@ class Poker(commands.Cog):
                 write_poker_games_to_file(self.filename, games_obj)
                 await reaction.message.delete()
                 return
+
+            if user.id == current_game.game_author_id:
+                current_game.game_author_id = current_game.players[1].player_id
 
             embed = reaction.message.embeds[0]
             embed.description = current_game.remove_player(user)
@@ -776,8 +779,12 @@ class ButtonsMenu(discord.ui.View):
             else:
                 await discord_user.send(embed=discord.Embed(title="Game result:", description=f'{winner.name} won the game!'))
 
-        self.games_obj.remove_game(self.current_game)
-        write_poker_games_to_file(self.filename, self.games_obj)
+        games_obj = load_poker_games_from_file(self.filename)
+        filtered_list_of_games: List[Game] = list(filter(lambda game: current_game.poker_start_message_id == game.poker_start_message_id, games_obj.games))
+        if len(filtered_list_of_games) > 0:
+            current_game = filtered_list_of_games[0]
+            self.games_obj.remove_game(self.current_game)
+            write_poker_games_to_file(self.filename, self.games_obj)
 
 
 async def setup(client):
