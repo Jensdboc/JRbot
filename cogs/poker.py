@@ -341,7 +341,7 @@ class Poker(commands.Cog):
         elif reaction.emoji == '▶' and current_game is not None and user.id == current_game.players[0].player_id and 1 < len(current_game.players) <= 10:
             await reaction.message.delete()
 
-            '''number_of_bots_message = await user.send("Choose the number of bots please!", view=SelectNumberOfBotsView(len(current_game.players)))
+            number_of_bots_message = await user.send("Choose the number of bots please!", view=SelectNumberOfBotsView(len(current_game.players)))
 
             while number_of_bots == -1:
                 await asyncio.sleep(0.2)
@@ -359,7 +359,7 @@ class Poker(commands.Cog):
             for _ in range(number_of_bots):
                 current_game.add_bot(bots_level)
 
-            write_poker_games_to_file(self.filename, games_obj)'''
+            write_poker_games_to_file(self.filename, games_obj)
 
             current_game.on_game_start()
 
