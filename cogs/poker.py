@@ -496,7 +496,7 @@ class ButtonsMenu(discord.ui.View):
         fold_result = self.current_game.fold()
 
         if fold_result == 'start_new_round':
-            await self.showdown(round_winner=self.current_game.players[(self.current_game.current_player_index + 1) % len(self.current_game.players)])
+            await self.showdown(round_winner=self.current_game.players[self.current_game.current_player_index])
         elif not self.current_game.check_same_bets() or not all(
                 list(map(lambda p: p.had_possibility_to_raise_or_bet, list(filter(lambda x: not x.is_dead and x.amount_of_credits != 0, self.current_game.players))))):
             for index, player in enumerate(self.current_game.get_real_players()):

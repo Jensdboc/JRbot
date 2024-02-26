@@ -106,23 +106,18 @@ class Game:
                 return index
 
     def fold(self):
-        players_in_game = []
-
-        this_player_index = self.current_player_index
         self.players[self.current_player_index].amount_of_credits -= self.players[self.current_player_index].current_bet
         self.players[self.current_player_index].is_dead = True
-        self.next_player()
-        while this_player_index != self.current_player_index:
-            if not self.players[self.current_player_index].is_dead and self.players[self.current_player_index].amount_of_credits != 0:
-                players_in_game.append(self.current_player_index)
-                if len(players_in_game) > 1:
-                    self.current_player_index = players_in_game[0]
-                    break
-            self.next_player()
+        self.next_player_who_is_not_dead()
 
-        if self.current_player_index == this_player_index:
+        next_player = self.current_player_index
+
+        self.next_player_who_is_not_dead()
+
+        if self.current_player_index == next_player:
             return 'start_new_round'
 
+        self.current_player_index = next_player
         return 'continue_round'
 
     def call(self):
