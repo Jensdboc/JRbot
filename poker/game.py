@@ -2,63 +2,26 @@ import math
 from random import choice
 from typing import List
 
-import os
 import discord
 
 from poker.card import Deck
 from poker.card_combinations import compare_card_combinations_of_players
 from poker.constants import game_states
-
-
-class Player:
-    """
-    Class representing a player object in a poker game.
-    """
-    def __init__(self, player_id: int, name: str, amount_of_credits: int):
-        self.player_id = player_id
-        self.name = name
-
-        self.cards = []
-        self.current_bet = 0
-        self.amount_of_credits = amount_of_credits
-
-        self.is_dead = False
-
-        self.had_possibility_to_raise_or_bet = False
-        self.elo = None
-
-        if not os.path.exists("poker_elo.txt"):
-            # Create file and set elo for first player
-            with open("poker_elo.txt", 'w') as elo_file:
-                print("poker_elo.txt created")
-                self.elo = 1000
-                elo_file.write(f"{player_id} {self.elo}\n")
-        else:
-            # Check if player present in file and set elo
-            with open("poker_elo.txt", 'r') as elo_file:
-                for line in elo_file.readlines():
-                    split_line = line.rstrip("\n").split(" ")
-                    if self.player_id == split_line[0]:
-                        self.elo = int(split_line[1])
-                        pass
-            # If player not present, set elo for player
-            if not self.elo:
-                with open("poker_elo.txt", 'a') as elo_file:
-                    self.elo = 1000
-                    elo_file.write(f"{player_id} {self.elo}\n")
+from poker.players.bot import Bot
+from poker.players.player import Player
 
 
 class Game:
     """
     Class representing a poker game.
     """
-    def __init__(self, player: discord.User, small_blind: int, start_amount: int, poker_start_message_id: int):
+    def __init__(self, player: discord.User, poker_start_message_id: int):
         self.game_author_id = player.id
-        self.players: List[Player] = [Player(player.id, player.display_name, amount_of_credits=start_amount)]
-        self.small_blind = small_blind
+        self.start_amount = 1000
+        self.players: List[Player] = [Player(player.id, player.display_name, amount_of_credits=self.start_amount)]
+        self.small_blind = 5
         self.big_blind = 2 * self.small_blind
-        self.raise_lower_bound = int(start_amount / 100)
-        self.start_amount = start_amount
+        self.raise_lower_bound = 10
         self.poker_start_message_id = poker_start_message_id
         self.round_number = 0
 
@@ -69,30 +32,49 @@ class Game:
         self.last_player_who_raised = []
         self.pot = self.small_blind + self.big_blind
         self.dealer: Player = self.players[0]
+        self.small_blind_player, self.big_blind_player = None, None
         self.round_winners: List[Player] = []
 
         self.poker_round = 0
 
     def add_player(self, player: discord.User) -> str:
         """
-        Add a player to the starting poker game.
+        Add a players to the starting poker game.
 
-        :param player: The player.
+        :param player: The players.
         :return: The description of the starting embed.
         """
         if (player.id, player.display_name) not in list(map(lambda x: (x.player_id, x.name), self.players)):
             self.players.append(Player(player.id, player.display_name, amount_of_credits=self.start_amount))
         return "Current players: \n>" + '\n'.join(list(map(lambda x: x.name, self.players)))
 
+    def add_bot(self, bots_level) -> None:
+        """
+        Add a bot to the starting poker game.
+
+        :param bots_level: The level of the bot.
+        :return: The description of the starting embed.
+        """
+        possible_ids = set(range(10)).difference(set(map(lambda p: p.player_id, self.players)))
+        bot_id = choice(list(possible_ids))
+        bot = Bot(bot_id, f'bot_{bot_id}', self.start_amount, bots_level)
+        self.players.append(bot)
+
     def remove_player(self, player: discord.User) -> str:
         """
-        Remove a player to the starting poker game.
+        Remove a players to the starting poker game.
 
-        :param player: The player.
+        :param player: The players.
         :return: The description of the starting embed.
         """
         self.players = list(filter(lambda x: x.player_id != player.id or x.name != player.display_name, self.players))
         return "Current players: \n>" + '\n'.join(list(map(lambda x: x.name, self.players)))
+
+    def get_real_players(self):
+        return list(filter(lambda p: not p.is_bot, self.players))
+
+    def get_dead_players(self):
+        return list(filter(lambda p: p.is_dead, self.players))
 
     def get_player_from_id(self, player_id: int) -> Player:
         index = 0
@@ -175,18 +157,21 @@ class Game:
         while self.players[self.current_player_index].is_dead or self.players[self.current_player_index].amount_of_credits == 0:
             self.next_player()
 
-    def showdown(self) -> List[Player]:
+    def showdown(self, round_winner: Player = None) -> List[Player]:
         undead_players = list(filter(lambda p: not p.is_dead and p.amount_of_credits != 0, self.players))
 
-        best_players = [undead_players[0]]
+        if round_winner is None:
+            best_players = [undead_players[0]]
 
-        for player in undead_players[1:]:
-            card_comparison = compare_card_combinations_of_players(best_players[0].cards + self.open_cards, player.cards + self.open_cards)
+            for player in undead_players[1:]:
+                card_comparison = compare_card_combinations_of_players(best_players[0].cards + self.open_cards, player.cards + self.open_cards)
 
-            if card_comparison == 'player_two':
-                best_players = [player]
-            elif card_comparison == 'tie':
-                best_players.append(player)
+                if card_comparison == 'player_two':
+                    best_players = [player]
+                elif card_comparison == 'tie':
+                    best_players.append(player)
+        else:
+            best_players = [round_winner]
 
         pot_split, unused_credits = math.floor(self.pot / len(best_players)), self.pot % len(best_players)
 
@@ -228,23 +213,23 @@ class Game:
         self.next_player_who_is_not_dead()
         small_blind_index, big_blind_index = self.current_player_index, (self.current_player_index + 1) % len(self.players)
 
-        small_blind, big_blind = self.players[small_blind_index], self.players[big_blind_index]
-        while small_blind.amount_of_credits == 0:
+        self.small_blind_player, self.big_blind_player = self.players[small_blind_index], self.players[big_blind_index]
+        while self.small_blind_player.amount_of_credits == 0:
             small_blind_index = (small_blind_index + 1) % len(self.players)
-            small_blind = self.players[small_blind_index]
-        while big_blind.amount_of_credits == 0:
+            self.small_blind_player = self.players[small_blind_index]
+        while self.big_blind_player.amount_of_credits == 0:
             big_blind_index = (big_blind_index + 1) % len(self.players)
-            big_blind = self.players[big_blind_index]
+            self.big_blind_player = self.players[big_blind_index]
 
         self.last_player_who_raised = [self.current_player_index]
-        small_blind.current_bet = self.small_blind if self.small_blind <= small_blind.amount_of_credits else small_blind.amount_of_credits
-        big_blind.current_bet = self.big_blind if self.big_blind <= big_blind.amount_of_credits else big_blind.amount_of_credits
+        self.small_blind_player.current_bet = self.small_blind if self.small_blind <= self.small_blind_player.amount_of_credits else self.small_blind_player.amount_of_credits
+        self.big_blind_player.current_bet = self.big_blind if self.big_blind <= self.big_blind_player.amount_of_credits else self.big_blind_player.amount_of_credits
 
-        self.pot = small_blind.current_bet + big_blind.current_bet
+        self.pot = self.small_blind_player.current_bet + self.big_blind_player.current_bet
 
         self.raise_lower_bound = int(self.start_amount / 100)
 
-        # deal player cards
+        # deal players cards
         self.deal_player_cards()
 
         # deal open cards
@@ -261,7 +246,12 @@ class Game:
         """
         Start the poker game with the selected settings and players.
         """
-        self.dealer = choice(self.players)
+        possible_starters = []
+        for index, player in enumerate(self.players):
+            if not player.is_bot:
+                possible_starters.append(self.players[(index - 3) % len(self.players)])
+
+        self.dealer = choice(possible_starters)
         self.state = game_states["Playing"]
 
         self.reset_game_logic()
