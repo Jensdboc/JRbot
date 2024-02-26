@@ -118,8 +118,8 @@ class Amongus(commands.Cog):
         global dead
         await ctx.send(dead)
 
-    @commands.Cog.listener()
-    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User) -> None:
+    @commands.Cog.listener("on_reaction_add")
+    async def on_reaction_add_among_us(self, reaction: discord.Reaction, user: discord.User) -> None:
         """
         Execute the code whenever a reaction is pressed.
 
@@ -127,7 +127,10 @@ class Amongus(commands.Cog):
         :param user: The user.
         """
         global dead
-        if user.id != self.client.user.id:
+        if user.bot:
+            return
+
+        if self.client.mute_message != None:
             try:
                 if (reaction.message.id == self.client.mute_message.id):
                     mute_emoji = '\N{Speaker with Cancellation Stroke}'

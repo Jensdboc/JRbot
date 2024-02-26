@@ -6,3 +6,5 @@ __pycache__
 venv
 *.pkl
 *.idea
+*.pptx
+data_pictures/avatar/*.png
