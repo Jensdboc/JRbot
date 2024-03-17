@@ -780,11 +780,11 @@ class ButtonsMenu(discord.ui.View):
                 await discord_user.send(embed=discord.Embed(title="Game result:", description=f'{winner.name} won the game!'))
 
         games_obj = load_poker_games_from_file(self.filename)
-        filtered_list_of_games: List[Game] = list(filter(lambda game: current_game.poker_start_message_id == game.poker_start_message_id, games_obj.games))
-        if len(filtered_list_of_games) > 0:
-            current_game = filtered_list_of_games[0]
-            self.games_obj.remove_game(self.current_game)
-            write_poker_games_to_file(self.filename, self.games_obj)
+        filtered_list = list(map(lambda game: game.poker_start_message_id, games_obj.games))
+        if self.current_game.poker_start_message_id in filtered_list:
+            index = filtered_list.index(self.current_game.poker_start_message_id)
+            del games_obj.games[index]
+            write_poker_games_to_file(self.filename, games_obj)
 
 
 async def setup(client):
