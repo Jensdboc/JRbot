@@ -75,6 +75,9 @@ class Personal(commands.Cog):
             embed = discord.Embed(title="The bank", description=f"Your current balance is {str(newnumber)}, use it wisely!", color=0x7289da)
             await channel.send(embed=embed)
 
+    def test_git():
+        pass
+
 
 # Allows to connect cog to bot
 async def setup(client):
